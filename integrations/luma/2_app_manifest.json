@@ -1,0 +1,22 @@
+{
+  "appName": "Luma_Suite",
+  "description": "Luma public API integration for event discovery, attendee management, and calendar coordination.",
+  "domain": "events",
+  "use_case": "Event discovery, guest list retrieval, calendar browsing, RSVP tracking, and community event analysis.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Luma_ListEvents",
+        "Luma_GetEvent",
+        "Luma_ListGuests",
+        "Luma_GetCalendar",
+        "Luma_ListCalendarEvents",
+        "Luma_CreateEvent"
+      ]
+    }
+  ]
+}

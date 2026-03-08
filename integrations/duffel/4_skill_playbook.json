@@ -1,0 +1,87 @@
+{
+  "skillId": "DUFL-SKILL-001",
+  "skillArtifactId": "DUFL-ART-001",
+  "name": "Duffel_Travel_Planner",
+  "description": "Provides intelligent flight search and booking capabilities via Duffel's travel API. Enables the Mind to search flights across 300+ airlines, compare pricing, browse seat maps, and manage bookings for comprehensive travel planning.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Duffel_CreateOfferRequest",
+    "Duffel_ListOffers",
+    "Duffel_GetOffer",
+    "Duffel_CreateOrder",
+    "Duffel_GetSeatMap",
+    "Duffel_ListAirlines"
+  ],
+  "compatibility_formula": "(travel_planning_need * 3.0) + (flight_search_frequency * 2.5) + (booking_management_need * 2.0)",
+  "progressive_unlock": "Flight search and offer comparison available immediately. Booking creation and seat selection unlock after Mind has successfully completed at least one search and viewed offer details.",
+  "constraints": [
+    "WRITE-CAPABLE: Order creation charges real money \u2014 ALWAYS require explicit Steward confirmation with price breakdown before booking",
+    "Respect Duffel API rate limit as specified in response headers",
+    "Always validate IATA airport codes before creating offer requests",
+    "Never expose Duffel API token in logs, outputs, or error messages",
+    "Cache airline list in LTM with key 'duffel_airlines' (7-day TTL)",
+    "Cache offer request results in STREAM with 15-minute TTL (prices expire)",
+    "Present all prices with currency code and convert to user's preferred currency if possible",
+    "For multi-segment trips, clearly separate outbound and return legs in presentation",
+    "Track offer expiry times \u2014 warn user if viewing stale offers",
+    "Never cache passenger PII (names, documents) in LTM \u2014 STREAM only with session TTL"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm IATA codes are 3 uppercase letters, dates are YYYY-MM-DD and in the future, passenger types are valid enums.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Duffel API token from TENET.apiKey.duffel. Construct Authorization header as 'Bearer {token}'. Set Duffel-Version header to '2024-06-01'.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine query intent: flight search (find flights), offer details (deep dive on specific option), seat selection (browse seat map), booking (purchase tickets), or airline info (carrier lookup).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For flight search: execute Duffel_CreateOfferRequest with slices and passengers. Store offer_request_id in STREAM. Then execute Duffel_ListOffers sorted by total_amount.",
+      "toolCall": "Duffel_CreateOfferRequest"
+    },
+    {
+      "step": 5,
+      "instruction": "For offer listing: execute Duffel_ListOffers with offer_request_id. Present top 5-10 options with airline, times, duration, stops, and price. Note offer expiry time.",
+      "toolCall": "Duffel_ListOffers"
+    },
+    {
+      "step": 6,
+      "instruction": "For offer details: execute Duffel_GetOffer. Present full segment breakdown, baggage allowance, fare conditions, and price breakdown. Cache in STREAM.duffel_offer_{id}.",
+      "toolCall": "Duffel_GetOffer"
+    },
+    {
+      "step": 7,
+      "instruction": "For seat selection: execute Duffel_GetSeatMap. Present available seats by row with type (window/middle/aisle), legroom, and extra cost. Cache in STREAM.",
+      "toolCall": "Duffel_GetSeatMap"
+    },
+    {
+      "step": 8,
+      "instruction": "For booking: CRITICAL \u2014 present full price breakdown and passenger details to Steward. Wait for explicit confirmation. Execute Duffel_CreateOrder only after approval. Store booking reference.",
+      "toolCall": "Duffel_CreateOrder"
+    },
+    {
+      "step": 9,
+      "instruction": "For airline info: execute Duffel_ListAirlines. Cache full list in LTM. Present filtered results matching user query.",
+      "toolCall": "Duffel_ListAirlines"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile travel results with clear formatting. Present times in departure/arrival timezone. Calculate total journey time. Highlight any long layovers (>3h).",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Log operation in LTM with key 'duffel_op_{timestamp}' including intent, route, and booking reference if applicable.",
+      "toolCall": null
+    }
+  ]
+}

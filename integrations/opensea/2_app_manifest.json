@@ -1,0 +1,22 @@
+{
+  "appName": "OpenSea_Suite",
+  "description": "OpenSea NFT marketplace API v2 integration for browsing collections, checking floor prices, analyzing sales, and monitoring NFT activity.",
+  "domain": "web3",
+  "use_case": "NFT collection analysis, floor price tracking, sales history research, listing monitoring, and marketplace trend discovery.",
+  "tier": "verified",
+  "auth_type": "API Key Header",
+  "header_key": "X-API-KEY",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "OpenSea_GetCollection",
+        "OpenSea_ListNFTs",
+        "OpenSea_GetNFT",
+        "OpenSea_GetCollectionStats",
+        "OpenSea_ListEvents",
+        "OpenSea_GetListings"
+      ]
+    }
+  ]
+}

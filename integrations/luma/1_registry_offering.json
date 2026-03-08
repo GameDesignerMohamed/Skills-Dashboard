@@ -1,0 +1,9 @@
+{
+  "title": "Luma Events Suite v1.0",
+  "offeringId": "LUMA-001-EVENTS",
+  "description": "Luma API integration for event management, attendee tracking, and community event discovery. Read-only access to events, guests, calendars, and host profiles for event intelligence and community coordination.",
+  "endpoints": [
+    "https://api.lu.ma/public/v1"
+  ],
+  "lastUpdate": "2026-03-08"
+}

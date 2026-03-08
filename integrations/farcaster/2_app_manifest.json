@@ -1,0 +1,22 @@
+{
+  "appName": "Farcaster_Suite",
+  "description": "Farcaster decentralized social protocol integration via Neynar API for reading casts, user profiles, channels, reactions, and social graph.",
+  "domain": "web3_social",
+  "use_case": "Cast (post) browsing, user profile lookup, channel discovery, social graph analysis, reaction tracking, and decentralized social feed monitoring.",
+  "tier": "verified",
+  "auth_type": "API Key Header",
+  "header_key": "api_key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Farcaster_GetUser",
+        "Farcaster_GetUserCasts",
+        "Farcaster_GetCast",
+        "Farcaster_SearchCasts",
+        "Farcaster_GetChannel",
+        "Farcaster_GetTrendingCasts"
+      ]
+    }
+  ]
+}

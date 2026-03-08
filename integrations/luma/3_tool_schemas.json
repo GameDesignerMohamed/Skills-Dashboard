@@ -1,0 +1,229 @@
+[
+  {
+    "toolSlug": "Luma_ListEvents",
+    "toolPurpose": "List events hosted by the authenticated user or organization with pagination.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/event/get-events",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "after": {
+          "type": "string",
+          "description": "Pagination cursor for next page"
+        },
+        "series_mode": {
+          "type": "string",
+          "description": "Series handling mode",
+          "enum": [
+            "series",
+            "sessions"
+          ]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": [
+        "after",
+        "series_mode"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Luma_GetEvent",
+    "toolPurpose": "Retrieve detailed information for a specific event by API ID or URL slug.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/event/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "api_id": {
+          "type": "string",
+          "description": "Event API ID"
+        },
+        "url": {
+          "type": "string",
+          "description": "Event URL slug (alternative to api_id)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": [
+        "api_id",
+        "url"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Luma_ListGuests",
+    "toolPurpose": "List guests (attendees) for a specific event with RSVP status and approval state.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/event/get-guests",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "event_api_id": {
+          "type": "string",
+          "description": "Event API ID to list guests for"
+        },
+        "approval_status": {
+          "type": "string",
+          "description": "Filter by approval status",
+          "enum": [
+            "approved",
+            "pending_approval",
+            "declined"
+          ]
+        },
+        "after": {
+          "type": "string",
+          "description": "Pagination cursor"
+        }
+      },
+      "required": [
+        "event_api_id"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "event_api_id"
+      ],
+      "optional": [
+        "approval_status",
+        "after"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Luma_GetCalendar",
+    "toolPurpose": "Retrieve calendar details including name, description, and settings.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/calendar/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "api_id": {
+          "type": "string",
+          "description": "Calendar API ID"
+        },
+        "url_key": {
+          "type": "string",
+          "description": "Calendar URL key (alternative to api_id)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": [
+        "api_id",
+        "url_key"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Luma_ListCalendarEvents",
+    "toolPurpose": "List all events belonging to a specific calendar with pagination.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/calendar/list-events",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "calendar_api_id": {
+          "type": "string",
+          "description": "Calendar API ID"
+        },
+        "after": {
+          "type": "string",
+          "description": "Pagination cursor"
+        },
+        "period": {
+          "type": "string",
+          "description": "Filter by time period",
+          "enum": [
+            "future",
+            "past",
+            "all"
+          ]
+        }
+      },
+      "required": [
+        "calendar_api_id"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "calendar_api_id"
+      ],
+      "optional": [
+        "after",
+        "period"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Luma_CreateEvent",
+    "toolPurpose": "Create a new event with title, description, start/end times, location, and calendar assignment.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/event/create",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Event title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Event description (Markdown supported)"
+        },
+        "start_at": {
+          "type": "string",
+          "description": "Start time (ISO 8601)"
+        },
+        "end_at": {
+          "type": "string",
+          "description": "End time (ISO 8601)"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone (e.g., 'America/New_York')"
+        },
+        "geo_address_json": {
+          "type": "object",
+          "description": "Location object with address fields"
+        },
+        "calendar_api_id": {
+          "type": "string",
+          "description": "Calendar to assign event to"
+        }
+      },
+      "required": [
+        "name",
+        "start_at"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "name",
+        "start_at"
+      ],
+      "optional": [
+        "description",
+        "end_at",
+        "timezone",
+        "geo_address_json",
+        "calendar_api_id"
+      ]
+    }
+  }
+]

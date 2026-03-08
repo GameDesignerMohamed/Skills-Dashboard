@@ -1,0 +1,9 @@
+{
+  "title": "Coinbase Exchange Data Suite v1.0",
+  "offeringId": "CBASE-001-EXCHANGE",
+  "description": "Coinbase Advanced Trade API integration for cryptocurrency exchange data including account portfolios, order history, product trading pairs, and market data. Read-only access to exchange accounts, fills, and real-time pricing.",
+  "endpoints": [
+    "https://api.coinbase.com/api/v3"
+  ],
+  "lastUpdate": "2026-03-08"
+}

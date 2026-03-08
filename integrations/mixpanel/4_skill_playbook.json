@@ -1,0 +1,87 @@
+{
+  "skillId": "MXPL-SKILL-001",
+  "skillArtifactId": "MXPL-ART-001",
+  "name": "Mixpanel_Product_Analyst",
+  "description": "Provides intelligent read-only access to Mixpanel product analytics data including event queries, funnel analysis, retention cohorts, and user segmentation. Bridges the Mind's analytical capabilities to real user behavior data for product intelligence.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Mixpanel_QueryEvents",
+    "Mixpanel_GetFunnel",
+    "Mixpanel_GetRetention",
+    "Mixpanel_GetUserProfile",
+    "Mixpanel_ListTopEvents",
+    "Mixpanel_GetSegmentation"
+  ],
+  "compatibility_formula": "(product_analytics_need * 3.0) + (data_driven_decision * 2.5) + (user_behavior_interest * 2.0)",
+  "progressive_unlock": "Top events and basic event queries available immediately. Funnel analysis, retention cohorts, and segmentation unlock after Mind has queried events at least twice to establish analytics context.",
+  "constraints": [
+    "READ-ONLY access: Never attempt to track events, update profiles, or modify project settings",
+    "Respect Mixpanel rate limit of 60 requests per hour for free tier, 1000 for paid",
+    "Always specify date ranges to avoid unbounded queries that timeout",
+    "Never expose Mixpanel API secret or project token in logs or outputs",
+    "Cache top events in LTM with key 'mixpanel_top_events' (24-hour TTL)",
+    "Use 'day' as default unit unless user requests finer granularity",
+    "Limit engage queries to 1000 profiles per request to prevent payload overload",
+    "Present percentages and conversion rates with 2 decimal precision",
+    "Track API call count in STREAM.mixpanel_rate_counter per hour window",
+    "Validate date ranges \u2014 from_date must precede to_date, max range 365 days"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm dates are YYYY-MM-DD format, event names are strings, funnel_ids are integers, and enums match allowed values.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Mixpanel API secret from TENET.apiKey.mixpanel. Construct Basic Auth header as base64(api_secret + ':').",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine query intent: event volume (how much?), funnel performance (where do users drop?), retention health (do users come back?), user lookup (who is this?), top events (what's popular?), or segmentation (how do groups differ?).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For event volume: execute Mixpanel_QueryEvents with event names and date range. Use 'unique' type for DAU-style counting. Cache in STREAM.mxpl_events_{hash} (5min TTL).",
+      "toolCall": "Mixpanel_QueryEvents"
+    },
+    {
+      "step": 5,
+      "instruction": "For funnel analysis: execute Mixpanel_GetFunnel with funnel_id. Calculate step-over-step conversion rates and identify largest drop-off. Cache in STREAM.mxpl_funnel_{id} (5min TTL).",
+      "toolCall": "Mixpanel_GetFunnel"
+    },
+    {
+      "step": 6,
+      "instruction": "For retention analysis: execute Mixpanel_GetRetention with born_event and return event. Present as cohort table with week-over-week retention percentages. Cache summary in LTM.",
+      "toolCall": "Mixpanel_GetRetention"
+    },
+    {
+      "step": 7,
+      "instruction": "For user lookup: execute Mixpanel_GetUserProfile with distinct_id or where clause. Present key properties and last_seen timestamp. Respect PII handling \u2014 never cache raw user data in LTM.",
+      "toolCall": "Mixpanel_GetUserProfile"
+    },
+    {
+      "step": 8,
+      "instruction": "For event discovery: execute Mixpanel_ListTopEvents. Present ranked list with event counts. Cache in LTM with key 'mixpanel_top_events' (24-hour TTL) for reference.",
+      "toolCall": "Mixpanel_ListTopEvents"
+    },
+    {
+      "step": 9,
+      "instruction": "For segmentation: execute Mixpanel_GetSegmentation with property breakdown. Present grouped results with percentage distribution. Cache in STREAM.mxpl_seg_{hash} (5min TTL).",
+      "toolCall": "Mixpanel_GetSegmentation"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile analytical summary with key insights. Highlight notable trends, anomalies, or significant drop-offs. Present data in tables where appropriate. Update STREAM with query metrics.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Log query execution in LTM with key 'mixpanel_query_{timestamp}' including intent, tools used, date range covered, and rate limit status.",
+      "toolCall": null
+    }
+  ]
+}

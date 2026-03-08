@@ -1,0 +1,271 @@
+[
+  {
+    "toolSlug": "Amplitude_QueryEvents",
+    "toolPurpose": "Query event totals and unique users for specific events over a date range with optional grouping.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/events/segmentation",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "e": {
+          "type": "object",
+          "description": "Event specification with event_type"
+        },
+        "start": {
+          "type": "string",
+          "description": "Start date (YYYYMMDD)"
+        },
+        "end": {
+          "type": "string",
+          "description": "End date (YYYYMMDD)"
+        },
+        "m": {
+          "type": "string",
+          "description": "Metric type",
+          "enum": [
+            "uniques",
+            "totals",
+            "avg",
+            "pctdau"
+          ]
+        },
+        "g": {
+          "type": "string",
+          "description": "Group by property"
+        }
+      },
+      "required": [
+        "e",
+        "start",
+        "end"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "e",
+        "start",
+        "end"
+      ],
+      "optional": [
+        "m",
+        "g"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Amplitude_GetFunnel",
+    "toolPurpose": "Analyze conversion through a multi-step funnel with drop-off rates between each step.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/funnels",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "e": {
+          "type": "array",
+          "description": "Ordered list of funnel step events",
+          "items": {
+            "type": "object"
+          }
+        },
+        "start": {
+          "type": "string",
+          "description": "Start date (YYYYMMDD)"
+        },
+        "end": {
+          "type": "string",
+          "description": "End date (YYYYMMDD)"
+        },
+        "n": {
+          "type": "string",
+          "description": "Conversion window",
+          "enum": [
+            "day",
+            "7days",
+            "14days",
+            "30days"
+          ]
+        }
+      },
+      "required": [
+        "e",
+        "start",
+        "end"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "e",
+        "start",
+        "end"
+      ],
+      "optional": [
+        "n"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Amplitude_GetRetention",
+    "toolPurpose": "Analyze user retention with configurable start and return events across date cohorts.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/retention",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "se": {
+          "type": "object",
+          "description": "Start event specification"
+        },
+        "re": {
+          "type": "object",
+          "description": "Return event specification"
+        },
+        "start": {
+          "type": "string",
+          "description": "Start date (YYYYMMDD)"
+        },
+        "end": {
+          "type": "string",
+          "description": "End date (YYYYMMDD)"
+        },
+        "rm": {
+          "type": "string",
+          "description": "Retention mode",
+          "enum": [
+            "bracket",
+            "rolling",
+            "n-day"
+          ]
+        }
+      },
+      "required": [
+        "se",
+        "re",
+        "start",
+        "end"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "se",
+        "re",
+        "start",
+        "end"
+      ],
+      "optional": [
+        "rm"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Amplitude_GetUserActivity",
+    "toolPurpose": "Retrieve event stream for a specific user showing their chronological activity.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/useractivity",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "Amplitude user ID or device ID"
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Event offset for pagination",
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Max events to return",
+          "maximum": 1000,
+          "default": 100
+        }
+      },
+      "required": [
+        "user"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "user"
+      ],
+      "optional": [
+        "offset",
+        "limit"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Amplitude_GetCohorts",
+    "toolPurpose": "List all saved behavioral cohorts with their definitions and sizes.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/cohorts",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Amplitude_GetSegmentation",
+    "toolPurpose": "Run segmentation analysis breaking down event metrics by user or event properties.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/events/segmentation",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "e": {
+          "type": "object",
+          "description": "Event specification"
+        },
+        "start": {
+          "type": "string",
+          "description": "Start date (YYYYMMDD)"
+        },
+        "end": {
+          "type": "string",
+          "description": "End date (YYYYMMDD)"
+        },
+        "g": {
+          "type": "string",
+          "description": "Group by property name"
+        },
+        "m": {
+          "type": "string",
+          "description": "Metric",
+          "enum": [
+            "uniques",
+            "totals",
+            "avg"
+          ]
+        }
+      },
+      "required": [
+        "e",
+        "start",
+        "end",
+        "g"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "e",
+        "start",
+        "end",
+        "g"
+      ],
+      "optional": [
+        "m"
+      ]
+    }
+  }
+]

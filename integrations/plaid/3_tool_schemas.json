@@ -1,0 +1,222 @@
+[
+  {
+    "toolSlug": "Plaid_GetBalance",
+    "toolPurpose": "Retrieve real-time balance information for all connected bank accounts.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/accounts/balance/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "Plaid access token for the linked institution"
+        },
+        "options": {
+          "type": "object",
+          "description": "Optional filters",
+          "properties": {
+            "account_ids": {
+              "type": "array",
+              "description": "Specific account IDs to query",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "access_token"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "access_token"
+      ],
+      "optional": [
+        "options"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Plaid_GetTransactions",
+    "toolPurpose": "Retrieve transaction history for connected accounts within a specified date range.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/transactions/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "Plaid access token"
+        },
+        "start_date": {
+          "type": "string",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        "end_date": {
+          "type": "string",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "description": "Number of transactions (max 500)",
+              "maximum": 500,
+              "default": 100
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Pagination offset",
+              "default": 0
+            },
+            "account_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "access_token",
+        "start_date",
+        "end_date"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "access_token",
+        "start_date",
+        "end_date"
+      ],
+      "optional": [
+        "options"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Plaid_GetAccounts",
+    "toolPurpose": "List all connected bank accounts with type, subtype, and account mask.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/accounts/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "Plaid access token"
+        }
+      },
+      "required": [
+        "access_token"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "access_token"
+      ],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Plaid_GetIdentity",
+    "toolPurpose": "Retrieve identity information (name, email, phone, address) associated with connected accounts.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/identity/get",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "Plaid access token"
+        }
+      },
+      "required": [
+        "access_token"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "access_token"
+      ],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Plaid_SearchInstitutions",
+    "toolPurpose": "Search for financial institutions by name with support for country and product filtering.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/institutions/search",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query (institution name)"
+        },
+        "products": {
+          "type": "array",
+          "description": "Filter by supported products",
+          "items": {
+            "type": "string",
+            "enum": [
+              "transactions",
+              "auth",
+              "balance",
+              "identity",
+              "investments"
+            ]
+          }
+        },
+        "country_codes": {
+          "type": "array",
+          "description": "ISO country codes",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "US"
+          ]
+        }
+      },
+      "required": [
+        "query",
+        "country_codes"
+      ]
+    },
+    "inputsSpec": {
+      "required": [
+        "query",
+        "country_codes"
+      ],
+      "optional": [
+        "products"
+      ]
+    }
+  },
+  {
+    "toolSlug": "Plaid_GetCategories",
+    "toolPurpose": "Retrieve the full Plaid transaction category taxonomy for classification reference.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/categories/get",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": []
+    }
+  }
+]

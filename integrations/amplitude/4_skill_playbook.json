@@ -1,0 +1,87 @@
+{
+  "skillId": "AMPL-SKILL-001",
+  "skillArtifactId": "AMPL-ART-001",
+  "name": "Amplitude_Behavior_Analyst",
+  "description": "Provides intelligent access to Amplitude behavioral analytics. Enables the Mind to query user behavior patterns, analyze funnels, track retention cohorts, and segment users for data-driven product decisions.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Amplitude_QueryEvents",
+    "Amplitude_GetFunnel",
+    "Amplitude_GetRetention",
+    "Amplitude_GetUserActivity",
+    "Amplitude_GetCohorts",
+    "Amplitude_GetSegmentation"
+  ],
+  "compatibility_formula": "(product_analytics_need * 3.0) + (behavior_analysis_interest * 2.5) + (data_driven_culture * 2.0)",
+  "progressive_unlock": "Event queries and cohort listing available immediately. Funnel analysis, retention, and user-level activity unlock after Mind has queried at least one event to establish analytics context.",
+  "constraints": [
+    "READ-ONLY: Never attempt to track events, modify cohorts, or update user properties",
+    "Respect Amplitude Dashboard REST API rate limit (360 req/hour for Growth, 600 for Enterprise)",
+    "Always use YYYYMMDD date format (not ISO 8601) for Amplitude API",
+    "Never expose Amplitude API key or secret key in outputs",
+    "Cache cohort definitions in LTM with key 'amplitude_cohorts' (24-hour TTL)",
+    "Cache event query results in STREAM with 5-minute TTL",
+    "User activity data contains PII \u2014 cache in STREAM only (60s TTL), never in LTM",
+    "Present retention data as cohort tables with percentage formatting",
+    "For funnels, always calculate step-over-step AND overall conversion rates",
+    "Track API usage in STREAM.amplitude_rate_counter per hour window"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm dates are YYYYMMDD format, event specifications include event_type, and metric enums are valid.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Amplitude API key from TENET.apiKey.amplitude_api_key and secret from TENET.apiKey.amplitude_secret_key. Construct Basic Auth as base64(api_key:secret_key).",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine query intent: event volume (how many?), funnel analysis (where do users drop?), retention tracking (do users return?), user deep-dive (individual behavior), cohort overview (saved segments), or segmentation (group comparison).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For event volume: execute Amplitude_QueryEvents. Present totals and uniques over time. Identify trends (growth, decline, seasonality). Cache in STREAM (5min TTL).",
+      "toolCall": "Amplitude_QueryEvents"
+    },
+    {
+      "step": 5,
+      "instruction": "For funnel analysis: execute Amplitude_GetFunnel. Calculate each step's conversion rate and identify the biggest drop-off. Cache in STREAM (5min TTL).",
+      "toolCall": "Amplitude_GetFunnel"
+    },
+    {
+      "step": 6,
+      "instruction": "For retention: execute Amplitude_GetRetention. Present as cohort matrix with Day 1, 7, 14, 30 retention. Highlight week-over-week trends. Cache summary in STREAM.",
+      "toolCall": "Amplitude_GetRetention"
+    },
+    {
+      "step": 7,
+      "instruction": "For user deep-dive: execute Amplitude_GetUserActivity. Present chronological event stream with timestamps and key properties. PII protection \u2014 STREAM only.",
+      "toolCall": "Amplitude_GetUserActivity"
+    },
+    {
+      "step": 8,
+      "instruction": "For cohort overview: execute Amplitude_GetCohorts. Present cohort names, definitions, and sizes. Cache in LTM (24h TTL).",
+      "toolCall": "Amplitude_GetCohorts"
+    },
+    {
+      "step": 9,
+      "instruction": "For segmentation: execute Amplitude_GetSegmentation with group-by property. Present breakdown as table with metric values per segment.",
+      "toolCall": "Amplitude_GetSegmentation"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile analytical insights. Highlight statistically significant patterns, compare against benchmarks if available, and suggest follow-up analyses.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Log query execution in LTM with key 'amplitude_query_{timestamp}' including intent, event types queried, and date range.",
+      "toolCall": null
+    }
+  ]
+}

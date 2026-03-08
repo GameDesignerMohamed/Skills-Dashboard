@@ -1,0 +1,10 @@
+{
+  "title": "Farcaster Social Protocol Suite v1.0",
+  "offeringId": "FCAST-001-WEB3SOCIAL",
+  "description": "Farcaster Hub API and Neynar API integration for decentralized social networking. Read-only access to casts (posts), user profiles, channels, reactions, and social graph data on the Farcaster protocol.",
+  "endpoints": [
+    "https://api.neynar.com/v2",
+    "https://hub.farcaster.xyz"
+  ],
+  "lastUpdate": "2026-03-08"
+}

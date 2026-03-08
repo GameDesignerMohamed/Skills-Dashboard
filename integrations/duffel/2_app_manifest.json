@@ -1,0 +1,22 @@
+{
+  "appName": "Duffel_Suite",
+  "description": "Duffel travel API integration for searching flights, comparing offers, managing bookings, and seat selection across 300+ airlines.",
+  "domain": "travel",
+  "use_case": "Flight search and comparison, offer pricing, booking creation, seat map browsing, and itinerary management.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Duffel_CreateOfferRequest",
+        "Duffel_ListOffers",
+        "Duffel_GetOffer",
+        "Duffel_CreateOrder",
+        "Duffel_GetSeatMap",
+        "Duffel_ListAirlines"
+      ]
+    }
+  ]
+}

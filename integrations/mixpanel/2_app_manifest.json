@@ -1,0 +1,22 @@
+{
+  "appName": "Mixpanel_Suite",
+  "description": "Mixpanel analytics API integration for querying event data, user profiles, funnel performance, and retention cohorts.",
+  "domain": "analytics",
+  "use_case": "Event analytics querying, funnel conversion analysis, user segmentation, retention cohort tracking, and product usage pattern identification.",
+  "tier": "verified",
+  "auth_type": "Basic Auth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Mixpanel_QueryEvents",
+        "Mixpanel_GetFunnel",
+        "Mixpanel_GetRetention",
+        "Mixpanel_GetUserProfile",
+        "Mixpanel_ListTopEvents",
+        "Mixpanel_GetSegmentation"
+      ]
+    }
+  ]
+}

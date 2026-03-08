@@ -1,0 +1,22 @@
+{
+  "appName": "CoinGecko_Suite",
+  "description": "CoinGecko REST API v3 integration for cryptocurrency market data, pricing, trending analysis, and exchange information. Read-only access to coins, markets, exchanges, and global crypto metrics.",
+  "domain": "crypto",
+  "use_case": "Token price lookup, market cap ranking, trending coin discovery, historical price analysis, exchange volume comparison, and global crypto market overview.",
+  "tier": "verified",
+  "auth_type": "Query Parameter",
+  "header_key": "x_cg_demo_api_key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "CoinGecko_GetPrice",
+        "CoinGecko_GetCoinData",
+        "CoinGecko_ListTrending",
+        "CoinGecko_GetMarketChart",
+        "CoinGecko_ListExchanges",
+        "CoinGecko_GetGlobalData"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Duffel Travel API Suite v1.0",
+  "offeringId": "DUFL-001-TRAVEL",
+  "description": "Duffel API integration for flight search, airline offers, seat selection, and booking management. Provides access to 300+ airlines for real-time pricing, availability, and itinerary management.",
+  "endpoints": [
+    "https://api.duffel.com"
+  ],
+  "lastUpdate": "2026-03-08"
+}

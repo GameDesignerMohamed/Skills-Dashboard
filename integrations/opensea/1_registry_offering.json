@@ -1,0 +1,9 @@
+{
+  "title": "OpenSea NFT Marketplace Suite v1.0",
+  "offeringId": "OSEA-001-NFT",
+  "description": "OpenSea API v2 integration for NFT collection data, floor prices, sales history, and marketplace analytics. Read-only access to collections, NFTs, listings, and offers across Ethereum, Polygon, Solana, and other supported chains.",
+  "endpoints": [
+    "https://api.opensea.io/api/v2"
+  ],
+  "lastUpdate": "2026-03-08"
+}

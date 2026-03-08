@@ -1,0 +1,9 @@
+{
+  "title": "CoinGecko Crypto Data Suite v1.0",
+  "offeringId": "CGKO-001-CRYPTO",
+  "description": "CoinGecko API v3 integration for cryptocurrency market data, token pricing, trending coins, exchange volumes, and historical OHLC data. Provides comprehensive read-only access to the broadest crypto data aggregator covering 13,000+ coins across 600+ exchanges.",
+  "endpoints": [
+    "https://api.coingecko.com/api/v3"
+  ],
+  "lastUpdate": "2026-03-08"
+}

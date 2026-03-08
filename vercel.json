@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/api/dashboard" }
+  ],
+  "crons": [
+    { "path": "/api/dashboard", "schedule": "0 0 * * *" }
+  ]
+}
