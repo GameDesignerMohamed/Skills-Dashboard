@@ -1,0 +1,62 @@
+{
+  "templateId": "TPL-GODOT-021",
+  "name": "Sports Game Starter (Soccer/Football)",
+  "genre": "sports",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Top-down soccer/football game with two AI-managed teams. Features player-controlled character within a team, realistic ball physics (RigidBody2D), dynamic player switching, AI teammate positioning based on formations, difficulty-scaling opponent AI, goal detection, match timer with halves, and comprehensive scoreboard tracking.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with input mappings: move_up/down/left/right, pass, shoot, tackle, switch_player, pause",
+    "scenes/": {
+      "pitch.tscn": "Node2D representing soccer field, TileMap for field texture/grid, StaticBody2D for field boundaries (walls), goal area markers (Area2D for offside line, goal line)",
+      "player_controlled.tscn": "CharacterBody2D with CollisionShape2D (circle ~20px), AnimatedSprite2D (team-colored sprite), player_input_enabled flag, target_player reference for switching, interaction distance for pass detection",
+      "player_ai_teammate.tscn": "CharacterBody2D with CollisionShape2D, AnimatedSprite2D (teammate team color), formation_position property, current_position Node2D, marker for target movement location",
+      "player_ai_opponent.tscn": "CharacterBody2D with CollisionShape2D, AnimatedSprite2D (opponent team color), difficulty_level property (easy/medium/hard affects decision making), pressure_range property",
+      "ball.tscn": "RigidBody2D with CollisionShape2D (small circle ~8px), Sprite2D (white sphere/texture), linear_velocity property, angular_velocity for spin, friction coefficient, bounce coefficient for realistic physics",
+      "goal.tscn": "Area2D representing goal box, goal line Area2D for detection, net visual (Sprite2D or MeshInstance2D), score_team property indicating which team scores",
+      "ui/": {
+        "scoreboard.tscn": "CanvasLayer showing Team A score (left), Team B score (right), match status (live/halftime/finished), possession indicator",
+        "match_timer.tscn": "CanvasLayer with timer display (MM:SS format), current_half display (1st Half / 2nd Half), paused state indicator",
+        "player_indicator.tscn": "CanvasLayer with controlled player outline highlight, ball possession indicator showing which team has control",
+        "halftime_screen.tscn": "CanvasLayer with halftime statistics, team stats (possession %, shots, passes), continue button",
+        "match_result.tscn": "CanvasLayer showing final score, winner announcement, match MVP (highest scoring player), replay/menu buttons"
+      }
+    }
+  },
+  "preBuiltMechanics": [
+    "CharacterBody2D player movement: 4-directional input mapped to velocity (200-250 units/sec), deceleration on input release",
+    "Ball physics: RigidBody2D with gravity, friction (0.1-0.2 for realistic slide), bounce coefficient (0.6-0.8), linear/angular velocity tracking",
+    "Pass mechanic: detect nearby teammates in pass_range (~100px), directional pass toward target teammate at fixed velocity (400 units/sec)",
+    "Shoot mechanic: apply large force to ball in aimed direction, scales with charge time (hold shoot button), ball travels 500-800 units/sec when shot",
+    "Tackle mechanic: Area2D check within tackle_range (~30px), applies opposing force to ball and target player, risk of foul if too aggressive",
+    "Player switching: hold switch_player input to cycle through team members, highlight next player, swap control to selected player",
+    "Ball possession logic: track which player/team last touched ball, possession indicator shows current ball holder",
+    "AI teammate positioning: formation_system.gd provides position targets per formation (4-4-2, 4-3-3, 3-5-2), teammates move toward assigned formation position at 150 units/sec",
+    "AI teammate decision making: if ball is free nearby, chase; if teammate has ball, move into support position; if opponent has ball, track opponent",
+    "AI opponent behavior: scaling with difficulty_level (easy: slower responses, larger errors; medium: reactive; hard: predictive passing, aggressive pressing)",
+    "Goal detection: ball enters goal Area2D, match_manager adds score, plays goal sound, resets ball to center, camera zoom effect",
+    "Offsides detection: optional feature checking if field position exceeds opponent goal line minus player spacing before pass completion",
+    "Match timer: 2 halves of 45 seconds (gameplay time, can scale), halftime break 10 seconds, timer display updates every frame",
+    "Match phases: kickoff → first half (active play) → halftime (5 sec break) → second half → final whistle (results screen)"
+  ],
+  "customizationPoints": [
+    "Formation system: expand beyond 4-4-2/4-3-3 to include 5-3-2, 3-4-3, wing-back formations; add dynamic formation changes during match",
+    "Player attributes: add individual player stats (speed, skill, passing accuracy, shooting power), scale AI behavior per player archetype",
+    "Match length: adjust halves from 45 seconds to 5+ minutes, add injury time randomization",
+    "AI difficulty tiers: create easy/medium/hard/legendary difficulty scaling opponent reaction time, pass accuracy, tactical awareness",
+    "Visual feedback: add motion blur for ball travel, slide marks on pitch, player shadow indicators showing player position from above",
+    "Crowd system: add background crowd sprites, crowd noise audio scaling with match intensity, crowd reaction to goals/fouls",
+    "Foul system: implement yellow/red card system for excessive tackles, free kick/penalty kick mechanics for fouls",
+    "Weather system: add rain affecting ball physics (more friction, less bounce), wind affecting ball trajectory, field condition affecting movement speed",
+    "Career mode: implement season tracking, team management, player development, budget constraints for player transfers",
+    "Replay system: record match events, play back key moments, slow-motion replay on goals"
+  ],
+  "examplePrompts": [
+    "Create a soccer player that moves at 200 units/sec with 4-directional input, can pass to teammates within 100 pixels at 400 units/sec, and can shoot with charge-up for 500-1000 units/sec ball velocity",
+    "Implement a 4-4-2 formation where 4 defenders position along a line 200 pixels from goal, 4 midfielders in middle band, 2 strikers near opponent goal, and teammates move toward their formation slots at 150 units/sec",
+    "Design an opponent AI system with 3 difficulty levels: easy (50% pass accuracy, slow 1 second response time), medium (70% accuracy, 0.5 sec response), hard (90% accuracy, 0.2 sec response with predictive interception)",
+    "Create a goal detection system where ball entering goal area triggers +1 score, plays crowd cheer sound, applies 2x camera zoom, resets ball to center after 2 second delay",
+    "Implement a match timer showing minutes and seconds for two 45-second halves with halftime break, display current half (1st/2nd), and trigger match end screen at final whistle"
+  ]
+}

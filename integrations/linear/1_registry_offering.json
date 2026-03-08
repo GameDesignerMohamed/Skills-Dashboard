@@ -1,0 +1,9 @@
+{
+  "title": "Linear Project Suite v1.0",
+  "offeringId": "LINEAR-001-PM",
+  "description": "Linear GraphQL API integration for managing issues, projects, and teams. Enables a Mind to create, track, and organize issues as an external execution layer for Steward project management and team collaboration.",
+  "endpoints": [
+    "https://api.linear.app/graphql"
+  ],
+  "lastUpdate": "2026-03-05"
+}

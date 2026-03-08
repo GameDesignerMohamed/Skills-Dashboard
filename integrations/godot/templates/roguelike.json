@@ -1,0 +1,82 @@
+{
+  "templateId": "TPL-GODOT-014",
+  "name": "Roguelike Dungeon Crawler Starter",
+  "genre": "roguelike",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Turn-based or real-time 2D roguelike with procedural dungeon generation using BSP algorithm. Player with stats (HP, ATK, DEF, SPD). Turn-based grid movement. Enemy AI with A* pathfinding. Fog of war visibility system. Randomized weapon/potion/scroll drops. Permadeath with run summary. Floor progression with stairs.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project config with AutoLoads: TurnManager (singleton for turn ordering)",
+    "scenes/": {
+      "dungeon_level.tscn": "Root Node2D with TileMap (base layer, walls layer, fog_of_war layer), Player, EnemySpawner, ItemSpawner, Stairs, MessageLog CanvasLayer, StatsPanel CanvasLayer",
+      "player.tscn": "CharacterBody2D with Sprite2D, CollisionShape2D, GridMovement script, InventoryNode, StatsNode (HP/ATK/DEF/SPD)",
+      "enemy_skeleton.tscn": "CharacterBody2D enemy with Sprite2D, CollisionShape2D, AIComponent (pathfinding), CombatComponent, LootTable",
+      "enemy_slime.tscn": "CharacterBody2D enemy with simpler AI (melee-only), lower stats than skeleton",
+      "items/weapon.tscn": "Area2D item with Sprite2D, random properties (atk_bonus: 0-5, crit_chance: 0-20%)",
+      "items/potion.tscn": "Area2D item (healing: 25-50 HP, mana: 0-30, stat boost: +5 STR for 3 turns)",
+      "items/scroll.tscn": "Area2D item with spell effects (fireball: 15 damage in radius, teleport, identify unknown items)",
+      "stairs.tscn": "Area2D with Sprite2D (stair icon), Area2D trigger for floor transition",
+      "ui/stats_panel.tscn": "CanvasLayer with VBoxContainer showing Player stats (HP/max_HP, ATK, DEF, SPD, Level, XP bar)",
+      "ui/minimap.tscn": "CanvasLayer TextureRect or custom minimap renderer showing visible dungeon + fog",
+      "ui/inventory.tscn": "CanvasLayer with GridContainer (3x4) showing equipped items + inventory slots",
+      "ui/death_screen.tscn": "PopupPanel with run summary: deepest_floor, enemies_killed, gold_collected, items_found, final_stats",
+      "ui/message_log.tscn": "CanvasLayer with RichTextLabel auto-scrolling message history (red for damage, green for heal, white for events)"
+    },
+    "scripts/": {
+      "dungeon_generator.gd": "Implements BSP dungeon generation. Methods: generate(width, height, max_room_size) → creates TileMap with walls/floors, rooms array, corridor connections. Uses Rect2 binary space partition to recursively divide space, carve rooms, and connect via corridors. Returns list of room centers for enemy spawning",
+      "player.gd": "Inherits CharacterBody2D. Properties: hp (int), atk (int), def (int), spd (int), level (int), xp (int). Methods: move_to(grid_pos) validates path via TileMap, enemies_in_the_way, updates visibility fog. take_damage(amount) applies DEF reduction. gain_xp(amount) triggers level_up on threshold. Signals: player_moved, player_died, level_increased",
+      "enemy_ai.gd": "Inherits CharacterBody2D. Attached to enemy scene. Properties: state (patrol/chase/attack), hp, atk, def. Methods: _physics_process() implements state machine. On player visibility (via fog_of_war), transitions to chase. Uses AStar2D pathfinding to move toward player each turn. On adjacent to player, attacks. On out-of-sight, returns to patrol. Signals: enemy_died(loot_table)",
+      "turn_manager.gd": "AutoLoad singleton. Manages turn order. Array of turn_actors (player, all enemies). Methods: next_turn() increments turn, calls _ready() on current actor. Tracks current_turn_actor. Signals: turn_changed, player_turn, enemy_turn",
+      "fog_of_war.gd": "Creates visibility TileMap layer (separate from main). On player_moved signal, clears visible_cells set. Uses RayCast2D circle cast from player in 8 directions to determine visible tiles. Updates fog layer: visible=transparent, invisible=dark overlay. Methods: update_visibility(player_pos)",
+      "item_generator.gd": "Static methods for random loot. Methods: generate_weapon() → Weapon.tscn with random atk_bonus (0-5) and crit_chance (0-20%). generate_potion() → Potion with random effect. generate_scroll() → Scroll with random spell. Uses weights dict for rarity: common (60%), uncommon (30%), rare (10%)",
+      "combat_resolver.gd": "Static combat system. Methods: calculate_hit(attacker_atk, defender_def, crit_chance) → bool. calculate_damage(base_atk, attacker_bonus, defender_def) → int (applies ATK + bonus, reduced by DEF). Called by player.gd and enemy_ai.gd on attack",
+      "floor_manager.gd": "Tracks current_floor (int), generates level on load via DungeonGenerator, spawns enemies via ItemGenerator, manages floor transitions. On stairs.area_entered(player), increments floor, clears scene, generates next floor. Scales enemy stats with floor number (hp+10%, atk+5% per floor)"
+    },
+    "assets/": {
+      "tilesets/dungeon.tres": "TileSet with: floor (walkable), wall (collision), door, stairs_up, stairs_down",
+      "sprites/player.png": "32x32 player character sprite with 4-direction idle/moving frames",
+      "sprites/enemies/skeleton.png": "32x32 skeleton with 4-direction frames",
+      "sprites/enemies/slime.png": "32x32 gelatinous slime sprite",
+      "sprites/items/": "16x16 weapon/potion/scroll icon sprites",
+      "sprites/ui/": "Icons for stats, minimap, health bar",
+      "fonts/": "Monospace font for message log, default font for UI"
+    }
+  },
+  "preBuiltMechanics": [
+    "BSP procedural dungeon generation with room-and-corridor layout",
+    "Grid-based turn system alternating player and AI enemies",
+    "Player stats: HP, ATK, DEF, SPD with leveling/XP system",
+    "Enemy AI using A* pathfinding (AStar2D) with state machine (patrol/chase/attack)",
+    "Fog of war visibility layer updated per turn using RayCast2D circle cast",
+    "Combat system: hit chance based on ATK/DEF, critical strike chance, damage calculation",
+    "Item drops: weapons (ATK bonus), potions (healing/buff), scrolls (spells)",
+    "Permadeath with run summary (floor reached, kills, gold, items found)",
+    "Floor progression with difficulty scaling (enemy stats increase per floor)",
+    "Real-time minimap showing explored areas and current position"
+  ],
+  "customizationPoints": [
+    "Add player classes (warrior/rogue/mage) with unique starting stats and abilities",
+    "Implement spell/ability system with mana resource and cooldowns",
+    "Create boss encounters on specific floors with unique mechanics",
+    "Add status effects: poison, stun, bleed, burn (damage over time)",
+    "Implement equipment slots: head/body/hands/feet/rings with stat bonuses",
+    "Create trap system: pressure plates, dart shooters, bear traps with detection/disarm",
+    "Add merchant NPC rooms for mid-run item purchases",
+    "Implement multiplayer co-op with shared dungeon and PvP zones",
+    "Create artifact system with unique passive abilities and legendary items",
+    "Add hardcore/ironman mode with global leaderboards"
+  ],
+  "examplePrompts": [
+    "Add player classes (Warrior/Rogue/Mage) with different starting stats and unique abilities",
+    "Implement a mana system with spellcasting (fireball, freeze, teleport)",
+    "Create status effects (poison damage per turn, stun prevents movement, bleed stacks)",
+    "Add equipment system: head/body/legs/feet/2-rings with stat bonuses",
+    "Implement trap tiles: pressure plates trigger dart traps, floor spikes deal damage",
+    "Create an NPC merchant on every 5th floor offering item purchases",
+    "Add a boss enemy on floor 10 with 3 phases and special attacks",
+    "Implement a 'run history' that tracks best runs and leaderboard",
+    "Create cursed items that grant power but with downsides (cursed ring auto-equips, -5% accuracy)",
+    "Add food/hunger system where player must eat to avoid HP drain per turn"
+  ]
+}

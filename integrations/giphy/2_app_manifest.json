@@ -1,0 +1,21 @@
+{
+  "appName": "Giphy_Suite",
+  "description": "Giphy API integration for searching, browsing, and discovering GIFs and stickers. Enables media content discovery, trending analysis, and phrase-to-GIF translation for creative and communicative use cases.",
+  "domain": "media",
+  "use_case": "GIF search and discovery, trending content analysis, random GIF generation, phrase-to-GIF translation, and sticker search for creative workflows.",
+  "tier": "verified",
+  "auth_type": "APIKey",
+  "header_key": "query:api_key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Giphy_SearchGifs",
+        "Giphy_GetTrending",
+        "Giphy_GetRandom",
+        "Giphy_TranslateToGif",
+        "Giphy_SearchStickers"
+      ]
+    }
+  ]
+}

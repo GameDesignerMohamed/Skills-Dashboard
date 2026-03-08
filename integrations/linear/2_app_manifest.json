@@ -1,0 +1,22 @@
+{
+  "appName": "Linear_Suite",
+  "description": "Linear GraphQL API integration for issue tracking, project management, and team collaboration.",
+  "domain": "project_management",
+  "use_case": "Issue creation and tracking, project organization, priority management, team resource allocation, and issue state management.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Linear_ListIssues",
+        "Linear_GetIssue",
+        "Linear_CreateIssue",
+        "Linear_UpdateIssue",
+        "Linear_ListProjects",
+        "Linear_ListTeams"
+      ]
+    }
+  ]
+}

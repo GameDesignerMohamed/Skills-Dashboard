@@ -1,0 +1,21 @@
+{
+  "appName": "PandaDoc_Suite",
+  "description": "PandaDoc API v1 integration for document management, template-based document creation, and signing workflow automation.",
+  "domain": "documents",
+  "use_case": "Document creation from templates, document distribution for signing, document status tracking, template library management, and signing workflow orchestration.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "PandaDoc_ListDocuments",
+        "PandaDoc_GetDocumentDetails",
+        "PandaDoc_CreateDocumentFromTemplate",
+        "PandaDoc_SendDocument",
+        "PandaDoc_ListTemplates"
+      ]
+    }
+  ]
+}

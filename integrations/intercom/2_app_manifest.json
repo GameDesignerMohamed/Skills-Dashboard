@@ -1,0 +1,22 @@
+{
+  "appName": "Intercom_Suite",
+  "description": "Intercom REST API v2.11 integration for customer support management, conversation tracking, and help center article search.",
+  "domain": "support",
+  "use_case": "Contact search and retrieval, conversation management, message replies, help center article discovery, and customer communication tracking.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Intercom_SearchContacts",
+        "Intercom_GetContact",
+        "Intercom_ListConversations",
+        "Intercom_GetConversation",
+        "Intercom_ReplyToConversation",
+        "Intercom_SearchArticles"
+      ]
+    }
+  ]
+}

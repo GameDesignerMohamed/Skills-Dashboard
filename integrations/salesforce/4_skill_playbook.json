@@ -1,0 +1,43 @@
+{
+  "skillId": "SF-SKILL-001",
+  "skillArtifactId": "SF-ART-001",
+  "name": "Salesforce_CRM_Navigator",
+  "description": "Navigates and queries Salesforce CRM data for the Mind's business intelligence and record retrieval. Bridges Steward intent to CRM operations, enabling record queries, full-text search, metadata discovery, and data aggregation for decision-making.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Salesforce_Query",
+    "Salesforce_GetRecord",
+    "Salesforce_SearchRecords",
+    "Salesforce_ListObjects",
+    "Salesforce_DescribeObject",
+    "Salesforce_GetRecentItems"
+  ],
+  "compatibility_formula": "(crm_interest * 3.0) + sales_volume + (data_aggregation_need * 2.0)",
+  "progressive_unlock": "Object listing and metadata inspection available immediately. Record queries and searches unlock after Mind has listed available objects at least once to understand schema. Recent items retrieval available once authentication is verified.",
+  "constraints": [
+    "Never expose Salesforce OAuth token in logs, outputs, or error messages",
+    "Respect Salesforce governor limits: 50,000 API calls per organization per 24-hour period for most editions; 100,000+ for Enterprise",
+    "Validate SOQL syntax before execution — malformed queries consume API calls without returning data",
+    "SOSL queries must use proper syntax: FIND {term} IN ALL FIELDS RETURNING sObjectType(field1, field2)",
+    "Instance URL must be retrieved from TENET.salesforce.instance — never hardcode or assume instance domains",
+    "Do not expose record IDs publicly in unsecured contexts; treat 18-character IDs as sensitive",
+    "Record field access depends on Salesforce user profile permissions — some fields may return null if user lacks visibility",
+    "Limit SOQL/SOSL result sets: default to LIMIT 100 or smaller for large queries to preserve API quota",
+    "Cache frequently accessed object metadata (via Salesforce_DescribeObject) for 1 hour to reduce API consumption",
+    "Do not attempt to bypass Salesforce security (FLS, OLS) — queries execute in authenticated user context"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. For SOQL/SOSL: verify syntax compliance.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Salesforce instance URL and OAuth Bearer token from TENET.salesforce.instance and TENET.apiKey.salesforce. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: discovery (list objects, describe schema), query (SOQL for records), search (SOSL full-text), retrieval (specific record by ID), or recent items.", "toolCall": null },
+    { "step": 4, "instruction": "For discovery: execute Salesforce_ListObjects with optional name filter. If first-time interaction, call Salesforce_ListObjects to populate available objects in STREAM.crm_schema. Cache results for 1 hour.", "toolCall": "Salesforce_ListObjects" },
+    { "step": 5, "instruction": "For schema inspection: call Salesforce_DescribeObject for target sObject. Return field definitions, relationships, required fields, and API access notes. Store in LTM under key 'sf_schema_{sObjectType}'.", "toolCall": "Salesforce_DescribeObject" },
+    { "step": 6, "instruction": "For SOQL queries: build query string with SELECT, WHERE, ORDER BY, and LIMIT clauses. Limit results to 100 or fewer by default. Execute Salesforce_Query. Log query execution for API quota tracking.", "toolCall": "Salesforce_Query" },
+    { "step": 7, "instruction": "For SOSL full-text search: construct FIND{} clause with search term, specify IN ALL FIELDS or IN NAME FIELDS, list target sObjects in RETURNING clause. Execute Salesforce_SearchRecords with appropriate limits.", "toolCall": "Salesforce_SearchRecords" },
+    { "step": 8, "instruction": "For record retrieval: validate sObjectType and recordId format (18 characters). Call Salesforce_GetRecord. If specific fields requested, pass fields array to minimize payload.", "toolCall": "Salesforce_GetRecord" },
+    { "step": 9, "instruction": "For recent items: call Salesforce_GetRecentItems with optional limit (default 10). Useful for quick access to frequently used records without querying.", "toolCall": "Salesforce_GetRecentItems" },
+    { "step": 10, "instruction": "Process API responses: check for errors (invalid syntax, governor limit exceeded, insufficient permissions). Log API call count toward daily quota. Return sanitized results without exposing record IDs in unsecured contexts.", "toolCall": null },
+    { "step": 11, "instruction": "Compile CRM data summary with key insights: opportunity pipeline, account status, contact counts, or custom business metrics. Push daily CRM summary to LTM with key 'sf_daily_{date}'. Update STREAM with current object counts and API usage.", "toolCall": null }
+  ]
+}

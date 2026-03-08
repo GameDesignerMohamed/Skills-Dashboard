@@ -1,0 +1,22 @@
+{
+  "appName": "Notion_Suite",
+  "description": "Notion workspace integration for reading, writing, and managing pages and databases.",
+  "domain": "productivity",
+  "use_case": "Knowledge management, note-taking, project tracking, and database operations within a Notion workspace.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Notion_SearchPages",
+        "Notion_GetPage",
+        "Notion_CreatePage",
+        "Notion_UpdatePage",
+        "Notion_QueryDatabase",
+        "Notion_GetDatabaseSchema"
+      ]
+    }
+  ]
+}

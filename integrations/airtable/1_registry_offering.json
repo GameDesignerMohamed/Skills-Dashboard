@@ -1,0 +1,10 @@
+{
+  "title": "Airtable Database Suite v1.0",
+  "offeringId": "AIRT-001-DB",
+  "description": "Airtable REST API v0 integration for managing bases, tables, and records. Enables a Mind to create, read, update, and organize structured data as an external database and information retrieval layer for Steward productivity and knowledge management.",
+  "endpoints": [
+    "https://api.airtable.com/v0",
+    "https://api.airtable.com/v0/meta/bases"
+  ],
+  "lastUpdate": "2026-03-05"
+}

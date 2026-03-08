@@ -1,0 +1,80 @@
+{
+  "skillId": "ICOM-SKILL-001",
+  "skillArtifactId": "ICOM-ART-001",
+  "name": "Intercom_Support_Agent",
+  "description": "Manages customer support conversations and contact information in Intercom as the Mind's external execution layer. Searches contacts, retrieves conversations, replies to customer inquiries, and discovers help center articles. Bridges support operations from the Mind's SUPPORT surface to actionable customer interactions in Intercom.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Intercom_SearchContacts",
+    "Intercom_GetContact",
+    "Intercom_ListConversations",
+    "Intercom_GetConversation",
+    "Intercom_ReplyToConversation",
+    "Intercom_SearchArticles"
+  ],
+  "compatibility_formula": "(support_volume * 2.0) + (customer_interaction_frequency * 1.5) + (help_center_usage * 1.2)",
+  "progressive_unlock": "Contact search and conversation retrieval available immediately. Conversation replies unlock only after Steward approval of response draft. Article search available immediately to support representative context.",
+  "constraints": [
+    "Never expose Intercom API token in logs, outputs, or error messages",
+    "Respect Intercom rate limits which vary by plan (typically 100-1000 requests per minute)",
+    "Require explicit Steward confirmation before sending any reply to a conversation via Intercom_ReplyToConversation",
+    "Redact or mask PII (personal identifiable information) in any summaries or logs — never include customer email, phone, or custom attribute data in unencrypted storage",
+    "Do not modify customer records or delete conversations without explicit Steward authorization",
+    "Always retrieve full conversation context before drafting replies to ensure accurate, contextual responses",
+    "Store conversation IDs and contact IDs in STREAM.entity for quick access during support interactions",
+    "Use help center article search to provide self-service resources before escalating to support team"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Intercom API token from TENET.apiKey.intercom. Construct Authorization header as 'Bearer {token}'. Include Intercom-Version: 2.11 and Accept: application/json headers.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: search (find contact or article), retrieve (get contact or conversation details), or reply (send conversation message).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For contact search: use Intercom_SearchContacts with email, name, phone, external_id, or custom attributes. Limit results to 20 by default unless higher limit requested.",
+      "toolCall": "Intercom_SearchContacts"
+    },
+    {
+      "step": 5,
+      "instruction": "For contact retrieval: use Intercom_GetContact with contact_id or email. Extract profile data, custom attributes, and interaction history. Store contact_id in STREAM.entity.",
+      "toolCall": "Intercom_GetContact"
+    },
+    {
+      "step": 6,
+      "instruction": "For conversation listing: use Intercom_ListConversations with optional filters (status, assignee_id, contact_id). Default sort by updated_at descending to show most recent conversations first.",
+      "toolCall": "Intercom_ListConversations"
+    },
+    {
+      "step": 7,
+      "instruction": "For conversation details: use Intercom_GetConversation to fetch full message thread. Read all previous messages to establish context and tone before drafting a reply.",
+      "toolCall": "Intercom_GetConversation"
+    },
+    {
+      "step": 8,
+      "instruction": "For conversation reply: draft the response message. Present the draft to Steward for review and explicit approval. Never send a reply without Steward confirmation. Once approved, execute Intercom_ReplyToConversation.",
+      "toolCall": "Intercom_ReplyToConversation"
+    },
+    {
+      "step": 9,
+      "instruction": "For article search: use Intercom_SearchArticles to find relevant help center articles. Include article titles and URLs in conversation context to suggest self-service resources to the Mind.",
+      "toolCall": "Intercom_SearchArticles"
+    },
+    {
+      "step": 10,
+      "instruction": "After any support action: redact PII from logs (email, phone, custom attributes). Compile interaction summary with conversation_id, contact_name (no email), action taken, and timestamp. Push support summary to LTM with key: 'intercom_interaction_{date}_{conversation_id}'. Update STREAM with open conversation count and most recent contact info.",
+      "toolCall": null
+    }
+  ]
+}

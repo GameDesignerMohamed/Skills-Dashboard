@@ -1,0 +1,83 @@
+{
+  "skillId": "OWEATH-SKILL-001",
+  "skillArtifactId": "OWEATH-ART-001",
+  "name": "OpenWeather_Weather_Monitor",
+  "description": "Monitors real-time weather conditions, forecasts, and environmental data across locations. Provides current weather, multi-day forecasting, air quality monitoring, comprehensive One Call data, and historical weather analysis. Bridges weather-dependent decision-making for the Mind's planning and situational awareness.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "OpenWeather_GetCurrentWeather",
+    "OpenWeather_GetForecast",
+    "OpenWeather_GetAirQuality",
+    "OpenWeather_GetOneCall",
+    "OpenWeather_GetHistorical"
+  ],
+  "compatibility_formula": "(location_awareness * 2.0) + (planning_horizon * 1.5) + (health_concern * 1.2) + (activity_planning * 1.8)",
+  "progressive_unlock": "Current weather retrieval available immediately. Forecasting unlocks after first location query. Air quality and One Call data available after understanding location coordinates. Historical analysis unlocks after retrieving forecast data at least once.",
+  "constraints": [
+    "Never expose OpenWeather API key in logs, outputs, or error messages",
+    "Respect OpenWeather free tier rate limit of 60 requests per minute and 1,000,000 calls per month",
+    "Always specify units preference (metric/imperial) in requests — default to metric unless user specifies otherwise",
+    "For city name queries, include country code when ambiguous (e.g., 'London,GB' not just 'London')",
+    "One Call API has a 8-day historical lookback — use GetHistorical tool for dates older than 8 days",
+    "Air quality data requires coordinates (lat/lon) — city names must be geocoded first to lat/lon",
+    "Cache location coordinates in STREAM.entity to avoid repeated geocoding API calls",
+    "Weather alerts (severe weather warnings) only available for certain regions — check response for null alerts",
+    "Minutely precipitation data only available for premium tiers — handle gracefully for free tier users",
+    "Historical data accessible from 1979-01-01 onwards — validate date ranges before querying",
+    "Always prefer One Call API (GetOneCall) when comprehensive weather data needed — reduces API call count",
+    "Store location-weather mappings in LTM with key 'openweather_location_{latitude}_{longitude}' for quick access"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Ensure required parameters are present and correctly typed. For city-based queries, verify city name syntax. For coordinate queries, validate lat/lon ranges (-90 to 90, -180 to 180).",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve OpenWeather API key from TENET.apiKey.openweather. Construct query parameter 'appid={key}'. Never expose the key in logs or responses.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: current_weather (point-in-time conditions), forecast (future planning), air_quality (health concern), one_call (comprehensive data), or historical (trend analysis). Classify based on user context and time horizons requested.",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For current weather: If city name provided, use OpenWeather_GetCurrentWeather with 'q' parameter. If coordinates provided, use 'lat' and 'lon'. Default to 'metric' units unless user specifies otherwise. Store location (lat/lon) in STREAM.entity for future reference.",
+      "toolCall": "OpenWeather_GetCurrentWeather"
+    },
+    {
+      "step": 5,
+      "instruction": "For forecasting: Use OpenWeather_GetForecast for 5-day/3-hour granularity planning. Specify 'cnt' parameter if user requests specific time windows (e.g., 'next 24 hours' = cnt:8). Extract relevant forecast periods for user's planning horizon. Compare with current conditions to identify trending patterns.",
+      "toolCall": "OpenWeather_GetForecast"
+    },
+    {
+      "step": 6,
+      "instruction": "For air quality: User must provide or Mind must geocode location to coordinates first. Call OpenWeather_GetAirQuality with 'lat' and 'lon'. Extract PM2.5, PM10, NO2, SO2, O3, CO values. Provide health impact assessment: AQI category (Good/Fair/Moderate/Poor/Very Poor) and activity recommendations (outdoor exercise safe/moderate caution/avoid outdoor activity).",
+      "toolCall": "OpenWeather_GetAirQuality"
+    },
+    {
+      "step": 7,
+      "instruction": "For comprehensive data: Call OpenWeather_GetOneCall with coordinates. This single call returns current, minutely, hourly, daily, and alerts in one response — more efficient than multiple calls. Use 'exclude' parameter to filter unnecessary data blocks if bandwidth constrained. Extract and summarize: current conditions, next 24 hours (hourly), next 8 days (daily), and any weather alerts.",
+      "toolCall": "OpenWeather_GetOneCall"
+    },
+    {
+      "step": 8,
+      "instruction": "For historical analysis: Validate date range (start/end). If date range > 8 days, use OpenWeather_GetHistorical instead of One Call. Extract temperature trends, precipitation patterns, wind patterns. Compare historical data with forecast to identify seasonal patterns or anomalies. Store analysis in LTM with key 'openweather_analysis_{location}_{date_range}'.",
+      "toolCall": "OpenWeather_GetHistorical"
+    },
+    {
+      "step": 9,
+      "instruction": "For all responses: Compile weather summary with: location (city/lat/lon), current conditions (temp, 'feels like', humidity, pressure), precipitation probability, wind speed/direction, visibility, and UV index if available. Include temporal context (time of retrieval, timezone offset if known).",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Generate contextual insights: For planning-related queries, highlight forecast turning points (rain arrival, temperature swings, wind events). For health-related queries (air quality), provide recommendations. For historical queries, highlight trends and anomalies. Push daily weather summary to LTM with key 'openweather_summary_{date}'. Update STREAM.weather_status with current conditions and alert status.",
+      "toolCall": null
+    }
+  ]
+}

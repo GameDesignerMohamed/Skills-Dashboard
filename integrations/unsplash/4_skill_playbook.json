@@ -1,0 +1,42 @@
+{
+  "skillId": "UNSPL-SKILL-001",
+  "skillArtifactId": "UNSPL-ART-001",
+  "name": "Unsplash_Image_Curator",
+  "description": "Manages image discovery, retrieval, and curation from Unsplash as the Mind's visual content layer. Searches, discovers, and accesses high-quality photos with comprehensive metadata. Bridges creative intent from the Mind's VISUAL surface to actionable image resources.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Unsplash_SearchPhotos",
+    "Unsplash_GetPhoto",
+    "Unsplash_GetRandomPhoto",
+    "Unsplash_ListTopics",
+    "Unsplash_GetCollectionPhotos"
+  ],
+  "compatibility_formula": "(visual_content_need * 3.0) + (creative_project_volume * 2.0) + (image_research_intensity * 1.5)",
+  "progressive_unlock": "Basic photo search available immediately. Topic and collection access unlock after Mind has executed at least one successful search to verify API connectivity. Random photo generation available after first search execution.",
+  "constraints": [
+    "CRITICAL: Always credit photographer using format 'Photo by [name] on Unsplash' with link to photographer's profile (unsplash.com/@[username]). Unsplash requires attribution for all images.",
+    "Never expose Unsplash API key in logs, outputs, or downloadable content",
+    "Respect Unsplash rate limits: 50 requests/hour for demo tier, 5000 requests/hour for production tier. Monitor and warn before approaching limits.",
+    "Do not download images for storage without explicit Steward permission and confirmation that attribution will be maintained",
+    "Use cached metadata when possible to reduce API calls. Store recently accessed photo IDs in STREAM.entity for quick re-access.",
+    "Include photographer username and link in all photo results. Never return images without photographer attribution data.",
+    "For collection access, verify collection_id exists first before fetching photos to prevent unnecessary API errors",
+    "When suggesting images, prioritize featured photos and trending topics to surface high-quality content",
+    "Provide image dimensions and download URL in results, but never auto-download without explicit user action",
+    "Filter by content_filter='high' when searching for general-audience content. Use 'low' only when explicitly requested."
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Verify query strings for special characters.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Unsplash API key from TENET.apiKey.unsplash. Construct Authorization header as 'Client-ID {api_key}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: search (by keyword), retrieve (specific photo), discover (random/topic), explore (list topics), or curate (collection photos).", "toolCall": null },
+    { "step": 4, "instruction": "For search: execute Unsplash_SearchPhotos with query and filters. Apply orientation/color filters if specified. Default per_page to 10 for performance. Return paginated results with photographer attribution.", "toolCall": "Unsplash_SearchPhotos" },
+    { "step": 5, "instruction": "For single photo retrieval: execute Unsplash_GetPhoto with photo_id. Validate photo exists. Return full metadata including photographer name, username, profile URL, download statistics, and image URLs at multiple sizes.", "toolCall": "Unsplash_GetPhoto" },
+    { "step": 6, "instruction": "For random discovery: execute Unsplash_GetRandomPhoto with optional filters (topic, collection, featured status, username). If count>1, ensure diversity across results. Include photographer info for each photo returned.", "toolCall": "Unsplash_GetRandomPhoto" },
+    { "step": 7, "instruction": "For topic exploration: execute Unsplash_ListTopics to display available curated categories. Cache topic list in STREAM.cache for reference. Return topic IDs, slugs, and descriptions for use in filtered searches.", "toolCall": "Unsplash_ListTopics" },
+    { "step": 8, "instruction": "For collection curation: execute Unsplash_GetCollectionPhotos with collection_id and pagination. Display photos with consistent layout. Include collection metadata (title, description) if available. Attribute each photo to its photographer.", "toolCall": "Unsplash_GetCollectionPhotos" },
+    { "step": 9, "instruction": "For all results: compile photographer attribution in standardized format. Include: photographer name, username link (unsplash.com/@[username]), and image URL. Store attribution data in STREAM.imageMetadata with key format 'unsplash_{photo_id}'.", "toolCall": null },
+    { "step": 10, "instruction": "Log API call metrics (request count against hourly limit, response time, result count). Warn if approaching rate limit threshold (>80% of limit used). Update STREAM with rate limit tracking.", "toolCall": null },
+    { "step": 11, "instruction": "If image download requested: confirm with Steward that attribution will be maintained. Generate download link. Before providing link, output mandatory attribution line: 'Photo credit required: [photographer name on Unsplash](unsplash.com/@[username])'.", "toolCall": null }
+  ]
+}

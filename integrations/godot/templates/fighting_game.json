@@ -1,0 +1,70 @@
+{
+  "templateId": "TPL-GODOT-007",
+  "name": "2D Fighting Game Starter",
+  "genre": "fighting",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "1v1 2D fighting game with state machines for fighter animations, hitbox/hurtbox collision system, combo tracking, input buffering, and round-based progression with health bars and timers.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with physics set to 2D, default scene: res://scenes/arena.tscn, input_map: ui_light_attack (Z), ui_heavy_attack (X), ui_special (C), ui_block (Space)",
+    "scenes/": {
+      "arena.tscn": "Node2D root with: ColorRect (background gradient blue-purple), TileMap (ground collision), fighter_p1 instance (left side, x=300), fighter_p2 instance (right side, x=700), round_ui instance, timer_display instance, CanvasLayer (hud)",
+      "fighter_base.tscn": "CharacterBody2D with: Sprite2D (character art, 80x120), CollisionShape2D (standing capsule), AnimationPlayer (idle, walk_f, walk_b, jump, crouch, light_attack, heavy_attack, special, block, hit_stun, knockdown animations), facing_direction (1 or -1), state_machine (fighter_state_machine.gd), health_value (100), facing property, position lock on X during attacks",
+      "hitbox.tscn": "Area2D with Sprite2D (debug rectangle, semi-transparent red), CollisionShape2D (rectangle), damage_value, knockback_force, active flag, lifetime (frames until deactivation)",
+      "hurtbox.tscn": "Area2D with CollisionShape2D (full body or limb-specific), damage_multiplier (0.5-1.5 depending on limb), stun_frames",
+      "health_bar.tscn": "CanvasLayer with TextureProgressBar (green-to-red gradient), Label (health text: 100/100), offset positioned above fighter, updates in real-time from fighter health",
+      "combo_counter.tscn": "CanvasLayer with Label (combo count: 0 hit), Label (combo damage: 0), Timer (reset on 2s without hit), color flash on milestone hits (5-hit, 10-hit)",
+      "round_ui.tscn": "CanvasLayer with: Label (Round 1/3), TextureProgressBar (round timer: 60s), Button (Fight! - start round), Label (winner if round complete), transitions between rounds with 3s delay"
+    },
+    "scripts/": {
+      "fighter_state_machine.gd": "Node script: current_state, state_dict {idle, walk, jump, crouch, light_attack, heavy_attack, special, block, hit_stun, knockdown}. Methods: change_state(new_state) calls _exit on current, _enter on new. Each state has _process, _input, _physics_process handling. idle: play animation, handle input (A/D for walk, Space for jump, Z/X/C for attacks, Space for block). walk: continuous movement in direction, return to idle on release. jump: apply jump_velocity once, apply gravity, land detection via collision. crouch: reduced hitbox, can block low hits, crouch animations. light_attack: 12 frames of animation, hitbox active frames 4-8, return to idle on completion. heavy_attack: 20 frames, hitbox 6-14, more knockback. special: 30 frames, hitbox 8-20, high damage, uses resources. block: passive block_state, reduce incoming damage by 40%, can be broken by heavy attacks. hit_stun: stun frames (5-15), play hit animation, return to idle after. knockdown: 60 frames, play knockdown anim, stand_up timer.",
+      "fighter_base.gd": "CharacterBody2D script: velocity property, max_health, current_health, facing_direction, move_speed (250), jump_force (400), gravity (800), block_active, on_hit signal. Methods: apply_velocity() using move_and_collide, take_damage(damage, knockback_force) reduces health, knockback applies velocity opposite facing, emits on_hit. apply_gravity via velocity.y += gravity * delta. get_hitbox_instance(state) returns active hitbox Area2D for current attack state. flip_sprite() flips Sprite2D when changing direction.",
+      "fighter_state_machine.gd": "Detailed state machine. idle_state: play idle animation, poll input_buffer for queued moves, transition on input. walk_left/walk_right: play walk anim, apply velocity towards direction, return to idle on no input. jump_state: apply gravity, check landed (collision with ground), transition to landing_lag (5 frames). light_attack_state: play light_attack anim, set hitbox active frames 4-8 (via timeline or frame check), apply 10 damage, 5 pixel knockback, return to idle on completion. heavy_attack_state: 20 frames, hitbox active 6-14, 20 damage, 15 knockback. special_state: 30 frames, requires resources (not modeled here but placeholder), 30 damage, 30 knockback. block_state: reduce damage 40%, apply block_stun (1s) on heavy hit. hit_stun_state: stun duration, play hit anim, return to idle. knockdown_state: 60 frames, stand up automatically.",
+      "hitbox_manager.gd": "Node2D script managing active hitboxes. create_hitbox(damage, knockback, active_frames, shape) spawns hitbox.tscn instance. on_hitbox_area_entered detects hurtbox, apply damage to opponent via take_damage(). Prevents multi-hit per attack frame (hit_registry list of hit_targets). Deactivate after lifetime_frames.",
+      "input_buffer.gd": "Node script: buffer_size (5 frames), buffer array, current_index. Methods: push_input(action) appends action to buffer. check_sequence(sequence: [actions]) returns true if last N inputs match sequence (for special moves). Examples: [light, heavy, special] = 3-hit combo input string. detect_on_process() polls Input.is_action_just_pressed every frame.",
+      "round_manager.gd": "Node script: round_number (1-3), round_timer (60s), p1_health, p2_health, round_active flag. Methods: start_round() initializes fighters, begins round_timer countdown. on_timer_tick() updates UI, check_round_complete() if timer_zero or one_fighter_health_zero. end_round() determines winner (higher health or survived timer). transition_to_next() if round < 3, wait 3s, start_round(). on_all_rounds_complete() determine match winner (2+ wins), display victory screen.",
+      "combo_tracker.gd": "Node script: combo_count, last_hit_time, combo_damage, combo_timeout (2s). on_fighter_hit_opponent() combo_count++, reset last_hit_time, combo_damage += damage. _process checks if now - last_hit_time > combo_timeout, reset combo to 0. Emit combo_updated signal with count and damage. On 5-hit, 10-hit milestones, flash combo_counter color yellow or gold.",
+      "audio_manager.gd": "Node script: bgm_player (AudioStreamPlayer), sfx dict {punch_light, punch_heavy, kick_special, block, hit, knockdown, round_start, round_end, victory}, play_sfx(key, pitch_variance ±0.1), play_bgm(stream)"
+    },
+    "assets/": {
+      "sprites/": "fighter_p1_idle.png (80x120), fighter_p1_walk.png (sheet 4 frames), fighter_p1_jump.png, fighter_p1_light_attack.png (sheet 12 frames), fighter_p1_heavy_attack.png (sheet 20 frames), fighter_p1_special.png (sheet 30 frames), fighter_p1_block.png, fighter_p1_hit_stun.png, fighter_p1_knockdown.png (sheet 60 frames). Same for fighter_p2 with mirrored sprites or separate art.",
+      "audio/": "bgm_arena.ogg (loop 90 BPM), sfx_light_hit.wav (quick punch), sfx_heavy_hit.wav (impact with bass), sfx_special_sound.wav (energetic), sfx_block.wav (shield deflect), sfx_knockdown.wav (heavy fall), sfx_round_start.wav (bell ding), sfx_victory.wav (fanfare)",
+      "ui/": "health_bar_bg.png, health_bar_fill_green.png, combo_counter_bg.png, round_icon.png"
+    }
+  },
+  "preBuiltMechanics": [
+    "CharacterBody2D fighters with facing direction (left/right) and position constraints (arena bounds)",
+    "State machine managing idle, walk, jump, crouch, attack (light/heavy/special), block, hit_stun, and knockdown states",
+    "Sprite animation playback per state using AnimationPlayer with frame-by-frame control",
+    "Hitbox/hurtbox Area2D collision detection: hitboxes active only during attack animation frames, hurtboxes on fighter body",
+    "Damage application with knockback: take_damage() reduces health, applies velocity knockback opposite facing direction",
+    "Input buffering for move detection: captures last 5 frames of input, enables special move sequences",
+    "Combo tracking: increments on consecutive hits without timeout, displays damage and hit count",
+    "Health bars above fighters with real-time updates and color feedback (green-yellow-red)",
+    "Round system (best of 3) with 60-second timers and winner determination by health or timeout",
+    "Movement: walk (A/D), jump (Space), crouch (S), attack (Z light, X heavy, C special), block (Shift)",
+    "Animation transitions between states with proper blending and frame-accurate hitbox timing"
+  ],
+  "customizationPoints": [
+    "Create new fighters: duplicate fighter_base.tscn, create new_fighter.gd with custom sprites, adjust move_speed/jump_force, design unique attack animations and combos",
+    "Add new attack types: extend fighter_state_machine.gd with new_attack_state, create multi-hit combos (light > light > heavy chains with frame windows)",
+    "Implement special move inputs: modify input_buffer.gd to detect sequences like [light, heavy, special] triggering 30-frame special attack",
+    "Customize damage scaling: adjust base damage per attack type, apply multipliers based on block status or combo count",
+    "Add character-specific mechanics: charge-up attacks, stance changes, resource system (mana/rage bar for special moves)",
+    "Create AI opponent: implement basic bot_fighter.gd with simple state machine (random moves, react to player attacks, attempt blocks)",
+    "Add visual effects: screen shake on heavy hit, slow-motion on critical damage, particle effects on impacts",
+    "Implement sound effects with pitch variation: light punch (pitch 0.9-1.1) for punch SFX variety",
+    "Add unlockable characters: create character roster, unlock via arcade mode or training"
+  ],
+  "examplePrompts": [
+    "Create two fighters with distinct playstyles: Fighter A (balanced speed/power) and Fighter B (slow/strong heavy attacks with long startup).",
+    "Implement a 3-hit light attack combo: Z > Z > Z chain with 8-frame windows between hits; cancel window allows jump or heavy attack.",
+    "Design a special move activated by inputting [light, heavy, special] in sequence within 20 frames; deals 30 damage and applies knockback.",
+    "Build a block system where holding Shift reduces damage by 40%, but consecutive heavy hits break block and apply stun.",
+    "Create a combo counter that displays hits and total damage; resets after 2 seconds without hitting opponent.",
+    "Implement round transitions: pause 3 seconds between rounds, show round number, fade to black, fade back with fresh fighters.",
+    "Add sound effects with pitch variance: light hits range 0.9-1.1 pitch, heavy hits are lower 0.8-0.95 pitch.",
+    "Design knockdown mechanic: opponent falls for 60 frames, stands up automatically; can crouch to tech recovery faster."
+  ]
+}

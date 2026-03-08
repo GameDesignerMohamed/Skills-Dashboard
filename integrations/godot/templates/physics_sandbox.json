@@ -1,0 +1,76 @@
+{
+  "templateId": "TPL-GODOT-015",
+  "name": "Physics Sandbox Starter",
+  "genre": "sandbox",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Interactive physics playground with spawnable RigidBody2D objects (balls, boxes, triangles). Draw mode to create static/dynamic bodies from mouse strokes. Gravity controls (direction, magnitude). Material properties per object (bounce, friction, density). Joint system (pin, hinge, spring). Object palette with drag-and-drop placement. Full undo/redo. Slow motion control.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project config with PhysicsWorld2D settings (default gravity adjustable)",
+    "scenes/": {
+      "sandbox.tscn": "Root Node2D with PhysicsDirectSpaceState2D, Camera2D (pan+zoom), ObjectSpawner, DrawTool, UI CanvasLayer, GridVisualizer (optional debug grid)",
+      "objects/ball.tscn": "RigidBody2D with CircleShape2D, Sprite2D (circle), physics material (bounce 0.7, friction 0.5)",
+      "objects/box.tscn": "RigidBody2D with RectangleShape2D, Sprite2D (square), physics material (bounce 0.3, friction 0.8)",
+      "objects/triangle.tscn": "RigidBody2D with ConvexPolygonShape2D, Sprite2D (triangle), physics material (bounce 0.5, friction 0.6)",
+      "objects/plank.tscn": "RigidBody2D with RectangleShape2D (long/thin), Sprite2D, physics material, freeze_rotation option",
+      "joints/pin_joint.tscn": "PinJoint2D node connecting two RigidBody2D objects, editable limit distance",
+      "joints/hinge_joint.tscn": "HingeJoint2D (revolute joint) for rotation around anchor point",
+      "joints/spring_joint.tscn": "SpringJoint2D with adjustable stiffness and damping for oscillation",
+      "ui/object_palette.tscn": "CanvasLayer with HBoxContainer of draggable object buttons (Ball/Box/Triangle/Plank)",
+      "ui/property_panel.tscn": "CanvasLayer PanelContainer showing selected object properties: mass, bounce, friction, custom mass override",
+      "ui/toolbar.tscn": "CanvasLayer HBoxContainer with buttons: Play/Pause, Reset (clear scene), Gravity direction selector, Time scale slider (0.1x-2.0x)"
+    },
+    "scripts/": {
+      "spawn_manager.gd": "Handles drag-drop spawning from object_palette. On item_selected in palette, creates ghost preview following mouse. On left_click, instantiates actual RigidBody2D at click position. Stores spawned_objects array. Methods: create_object(type, position) → RigidBody2D instance with physics properties",
+      "draw_tool.gd": "Implements freehand drawing mode. On mouse_down + draw_mode active, starts tracking points. On mouse_move, draws line preview. On mouse_up, converts stroke to CollisionShape2D. Methods: stroke_to_polygon(points) → uses Geometry2D.convex_hull() to create ConvexPolygonShape2D. Creates static body (if holding Shift) or dynamic RigidBody2D (default)",
+      "physics_controller.gd": "Manages global physics settings. Properties: gravity_vector (Vector2), gravity_magnitude (float), time_scale (0.1-2.0). Methods: set_gravity(direction, magnitude) updates PhysicsServer2D.gravity or applies custom gravity per frame via _physics_process(). set_time_scale(scale) applies Engine.time_scale. get_time_scale() returns current",
+      "joint_creator.gd": "Creates joints between selected objects. Methods: create_pin_joint(body1, body2, limit_distance) instantiates PinJoint2D. create_hinge_joint(body1, body2, anchor) creates HingeJoint2D. create_spring_joint(body1, body2, stiffness, damping) creates SpringJoint2D. UI: right-click 2 objects to open joint menu",
+      "object_properties.gd": "Attached to spawned objects. Stores: mass, bounce (restitution), friction. Attached to property_panel UI to display/edit. Methods: set_property(key, value) updates RigidBody2D.mass, PhysicsMaterial.bounce, etc. Signals: property_changed",
+      "undo_manager.gd": "Implements undo/redo system using Godot's UndoRedo. Methods: create_action(name) starts action, add_do_method(obj, method, args), add_undo_method(obj, method, args), commit_action(). Tracks spawn, delete, property_change, joint_creation. Ctrl+Z undoes, Ctrl+Y redoes",
+      "sandbox_state.gd": "Save/load sandbox setups. Methods: save_state(filename) exports scene to .tscn or JSON with all object positions/properties/joints. load_state(filename) reconstructs scene from saved state. Stores state history for quick reset"
+    },
+    "assets/": {
+      "sprites/objects/": "PNG sprites for ball (circle), box (square), triangle, plank (rectangle) with distinct colors",
+      "sprites/ui/": "Icons for buttons (play/pause, reset, gravity arrow, object palette icons)",
+      "sprites/materials/": "Optional texture overrides for object appearance (wood, metal, rubber textures)",
+      "fonts/": "Default and monospace fonts for property labels"
+    }
+  },
+  "preBuiltMechanics": [
+    "RigidBody2D physics with built-in gravity and collision detection",
+    "Drag-drop object spawning from UI palette (Ball, Box, Triangle, Plank)",
+    "Freehand drawing tool converting mouse strokes to convex collision shapes",
+    "Static vs. dynamic body creation (Shift+draw = static, default = dynamic)",
+    "Per-object material properties: mass, bounce (restitution), friction",
+    "Global gravity controls: direction (8-way or slider) and magnitude adjustment",
+    "Joint system: PinJoint2D (distance constraint), HingeJoint2D (rotation), SpringJoint2D (oscillation)",
+    "Time scale slider for slow-motion physics analysis (0.1x to 2.0x)",
+    "Full undo/redo system (Ctrl+Z/Ctrl+Y) for all actions",
+    "Scene save/load for preserving sandbox setups"
+  ],
+  "customizationPoints": [
+    "Add force application tools: push/pull gravity wells, wind zones, vortex",
+    "Implement constraint system: ropes, chains, rigid beams with breaking points",
+    "Create breakable objects that fragment into smaller pieces on impact",
+    "Add visual debugging: velocity vectors, collision normals, center of mass indicators",
+    "Implement particle systems: explosions, smoke clouds, dust trails",
+    "Create preset scenes: pendulum, chain reaction, catapult, Newton's cradle",
+    "Add motor joints with adjustable rotation speed",
+    "Implement ragdoll system with articulated skeleton joints",
+    "Create soft-body simulation using distance constraints",
+    "Add network multiplayer with physics state synchronization"
+  ],
+  "examplePrompts": [
+    "Add a gravity well that pulls nearby objects toward cursor position",
+    "Create a wind force slider that applies constant horizontal force to objects",
+    "Implement rope constraints using multiple pin joints in series",
+    "Add breakable objects that split into fragments on high-impact collisions",
+    "Create a catapult builder with rotating arm (hinge joint) and release mechanism",
+    "Implement particle effects: debris/smoke on collisions, trails following fast objects",
+    "Add a rope cutting tool to sever joints with mouse drag",
+    "Create preset scenes: pendulum, dominoes, lever, pulley system",
+    "Implement soft-body physics using distance constraints instead of rigid shapes",
+    "Add explosion force that pushes nearby objects away from center"
+  ]
+}

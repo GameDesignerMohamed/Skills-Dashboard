@@ -1,0 +1,9 @@
+{
+  "title": "eBay Browse & Search Suite v1.0",
+  "offeringId": "EBAY-001-BROWSE",
+  "description": "eBay Browse API v1 integration for searching items, retrieving product details, exploring item variations, performing visual search, and discovering trending marketplace deals. Enables read-only access to eBay marketplace data for price discovery, product research, and market trend analysis.",
+  "endpoints": [
+    "https://api.ebay.com/"
+  ],
+  "lastUpdate": "2026-03-06"
+}

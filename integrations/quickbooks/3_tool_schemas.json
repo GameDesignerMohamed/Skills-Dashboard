@@ -1,0 +1,178 @@
+[
+  {
+    "toolSlug": "QuickBooks_QueryEntities",
+    "toolPurpose": "Query any QuickBooks entity using QuickBooks SQL-like syntax. Supports SELECT queries for all entity types including Customer, Invoice, Bill, Account, Item, etc.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "QuickBooks SQL-like query string (e.g., 'SELECT * FROM Customer WHERE Active = true MAXRESULTS 100')"
+        },
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        }
+      },
+      "required": ["query", "realmId"]
+    },
+    "inputsSpec": {
+      "required": ["query", "realmId"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "QuickBooks_GetInvoice",
+    "toolPurpose": "Retrieve a specific invoice by ID. Returns complete invoice details including line items, customer info, amounts, and payment status.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "invoiceId": {
+          "type": "string",
+          "description": "QuickBooks Invoice ID"
+        },
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        }
+      },
+      "required": ["invoiceId", "realmId"]
+    },
+    "inputsSpec": {
+      "required": ["invoiceId", "realmId"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "QuickBooks_ListCustomers",
+    "toolPurpose": "Query and list customers from QuickBooks with optional filtering by active status, email, or name patterns.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "activeOnly": {
+          "type": "boolean",
+          "description": "If true, return only active customers (Active = true)"
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of customers to return (default 100, max 1000)",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        },
+        "nameContains": {
+          "type": "string",
+          "description": "Optional filter: return customers whose name contains this string"
+        }
+      },
+      "required": ["realmId"],
+      "optional": ["activeOnly", "maxResults", "nameContains"]
+    },
+    "inputsSpec": {
+      "required": ["realmId"],
+      "optional": ["activeOnly", "maxResults", "nameContains"]
+    }
+  },
+  {
+    "toolSlug": "QuickBooks_GetProfitAndLoss",
+    "toolPurpose": "Generate and retrieve Profit & Loss report for a specified date range. Returns revenue, expenses, and net income.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Report start date in YYYY-MM-DD format"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Report end date in YYYY-MM-DD format"
+        },
+        "accountingMethod": {
+          "type": "string",
+          "description": "Accounting method: 'Accrual' or 'Cash'",
+          "enum": ["Accrual", "Cash"]
+        }
+      },
+      "required": ["realmId", "startDate", "endDate"],
+      "optional": ["accountingMethod"]
+    },
+    "inputsSpec": {
+      "required": ["realmId", "startDate", "endDate"],
+      "optional": ["accountingMethod"]
+    }
+  },
+  {
+    "toolSlug": "QuickBooks_GetBalanceSheet",
+    "toolPurpose": "Generate and retrieve Balance Sheet report as of a specific date. Returns assets, liabilities, and equity.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        },
+        "asOfDate": {
+          "type": "string",
+          "description": "Report date in YYYY-MM-DD format"
+        },
+        "accountingMethod": {
+          "type": "string",
+          "description": "Accounting method: 'Accrual' or 'Cash'",
+          "enum": ["Accrual", "Cash"]
+        }
+      },
+      "required": ["realmId", "asOfDate"],
+      "optional": ["accountingMethod"]
+    },
+    "inputsSpec": {
+      "required": ["realmId", "asOfDate"],
+      "optional": ["accountingMethod"]
+    }
+  },
+  {
+    "toolSlug": "QuickBooks_ListAccounts",
+    "toolPurpose": "Query and list all accounts from the chart of accounts. Returns account IDs, names, types, and balances.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "realmId": {
+          "type": "string",
+          "description": "QuickBooks realm/company ID"
+        },
+        "accountType": {
+          "type": "string",
+          "description": "Filter by account type (e.g., 'Asset', 'Liability', 'Equity', 'Income', 'Expense')"
+        },
+        "activeOnly": {
+          "type": "boolean",
+          "description": "If true, return only active accounts"
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of accounts to return (default 100, max 1000)",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": ["realmId"],
+      "optional": ["accountType", "activeOnly", "maxResults"]
+    },
+    "inputsSpec": {
+      "required": ["realmId"],
+      "optional": ["accountType", "activeOnly", "maxResults"]
+    }
+  }
+]

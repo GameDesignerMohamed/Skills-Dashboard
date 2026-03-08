@@ -1,0 +1,87 @@
+{
+  "skillId": "HSPOT-SKILL-001",
+  "skillArtifactId": "HSPOT-ART-001",
+  "name": "HubSpot_CRM_Navigator",
+  "description": "Provides intelligent read-only access to HubSpot CRM data including contacts, deals, companies, and pipeline information. Bridges the Mind's business intelligence needs to actionable customer relationship data for sales enablement and CRM analysis.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "HubSpot_SearchContacts",
+    "HubSpot_GetContact",
+    "HubSpot_ListDeals",
+    "HubSpot_GetDealPipeline",
+    "HubSpot_SearchCompanies",
+    "HubSpot_GetDeal"
+  ],
+  "compatibility_formula": "(sales_interest * 3.0) + (crm_engagement * 2.5) + (customer_research_need * 2.0)",
+  "progressive_unlock": "Contact and company searching available immediately. Deal pipeline and detailed deal information unlock after Mind has searched contacts at least once to establish CRM familiarity and usage patterns.",
+  "constraints": [
+    "READ-ONLY access: Never attempt to create, update, or delete contacts, deals, or companies",
+    "Respect HubSpot rate limit of 100 requests per 10 seconds for private apps",
+    "Always use property selection parameter to request only necessary fields and reduce bandwidth",
+    "Never expose HubSpot API token in logs, outputs, or error messages",
+    "Pagination: Always respect 'limit' parameter (default 10, max 100) and use 'after' cursor for large result sets",
+    "Cache search results in STREAM.entity for repeated lookups within 60-second window to optimize rate limits",
+    "Validate contact/deal/company IDs before making GET requests to avoid wasted API calls",
+    "For deal pipeline queries, cache pipeline structure in LTM with key 'hubspot_deal_pipeline' (24-hour TTL)",
+    "Return only requested properties to minimize response payload and improve efficiency",
+    "Maintain separate contact, company, and deal caches to support multi-entity queries without redundant API calls"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present, correctly typed, and within acceptable ranges (e.g., limit 1-100).",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve HubSpot Private App token from TENET.apiKey.hubspot. Construct Authorization header as 'Bearer {token}'.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine query intent: contact search (email/name lookup), contact details (full profile), deal listing (pipeline view), deal details (specific deal analysis), company search (company research), or pipeline structure (sales process understanding).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For contact searches: execute HubSpot_SearchContacts with email, name, or property filters. Optimize with minimal required properties (firstname, lastname, email, phone, lifecyclestage). Cache results in STREAM.contact_search_{query_hash}.",
+      "toolCall": "HubSpot_SearchContacts"
+    },
+    {
+      "step": 5,
+      "instruction": "For contact details: verify contact ID in STREAM cache or from previous search. Execute HubSpot_GetContact with associations=['deals', 'companies']. Store contact detail in STREAM.contact_{id} (60-second TTL).",
+      "toolCall": "HubSpot_GetContact"
+    },
+    {
+      "step": 6,
+      "instruction": "For company searches: execute HubSpot_SearchCompanies with domain or name filters. Request properties like 'name', 'domain', 'industry', 'numberofemployees'. Cache in STREAM.company_search_{query_hash}.",
+      "toolCall": "HubSpot_SearchCompanies"
+    },
+    {
+      "step": 7,
+      "instruction": "For deal pipeline structure: check LTM for 'hubspot_deal_pipeline' cache (24-hour TTL). If not present, execute HubSpot_GetDealPipeline to retrieve all pipeline stages and store result in LTM. Use for deal stage context.",
+      "toolCall": "HubSpot_GetDealPipeline"
+    },
+    {
+      "step": 8,
+      "instruction": "For deal listing: execute HubSpot_ListDeals with optional filters on dealstage or dealtype. Request essential properties (dealname, dealstage, closedate, amount, hubspot_owner_id). Implement pagination using 'limit' and 'after' for large result sets.",
+      "toolCall": "HubSpot_ListDeals"
+    },
+    {
+      "step": 9,
+      "instruction": "For deal details: verify deal ID and execute HubSpot_GetDeal with associations=['contacts', 'companies']. Include relevant properties (dealname, dealstage, closedate, amount, description). Store in STREAM.deal_{id} (60-second TTL).",
+      "toolCall": "HubSpot_GetDeal"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile results respecting read-only constraint. Present contact/deal/company data with clear formatting. Include pipeline context when presenting deals. Update STREAM with query metrics (search count, result count) for analytics.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Log query execution in LTM with key 'hubspot_query_{timestamp}' including intent, tool used, result count, and execution time. Track rate limit usage (100 req/10s) to prevent throttling.",
+      "toolCall": null
+    }
+  ]
+}

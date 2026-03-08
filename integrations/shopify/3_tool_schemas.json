@@ -1,0 +1,201 @@
+[
+  {
+    "toolSlug": "Shopify_ListProducts",
+    "toolPurpose": "Retrieve a list of products from the Shopify store with optional filters by title, vendor, and status.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Filter products by title substring (case-insensitive)"
+        },
+        "vendor": {
+          "type": "string",
+          "description": "Filter products by vendor name"
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter products by status: 'active', 'archived', or 'draft'",
+          "enum": ["active", "archived", "draft"]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of products to return (1-250, default 50)",
+          "minimum": 1,
+          "maximum": 250
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific product fields to return (e.g., 'id', 'title', 'vendor', 'status', 'created_at')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["title", "vendor", "status", "limit", "fields"]
+    }
+  },
+  {
+    "toolSlug": "Shopify_GetProduct",
+    "toolPurpose": "Retrieve detailed information for a specific product by ID.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "description": "The unique Shopify product ID"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific product fields to return (e.g., 'id', 'title', 'description', 'vendor', 'variants', 'images', 'status', 'published_scope')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["product_id"]
+    },
+    "inputsSpec": {
+      "required": ["product_id"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Shopify_ListOrders",
+    "toolPurpose": "Retrieve a list of orders from the Shopify store with optional filters by status and date range.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Filter orders by status: 'any', 'cancelled', 'fulfilled', 'paid', 'pending', 'refunded', 'partially_paid', 'partially_refunded', 'restocked', 'unshipped', 'unfullfilled'",
+          "enum": ["any", "cancelled", "fulfilled", "paid", "pending", "refunded", "partially_paid", "partially_refunded", "restocked", "unshipped", "unfulfilled"]
+        },
+        "created_at_min": {
+          "type": "string",
+          "description": "Filter orders created on or after this date (ISO 8601 format, e.g., '2026-01-01T00:00:00Z')"
+        },
+        "created_at_max": {
+          "type": "string",
+          "description": "Filter orders created on or before this date (ISO 8601 format)"
+        },
+        "updated_at_min": {
+          "type": "string",
+          "description": "Filter orders updated on or after this date (ISO 8601 format)"
+        },
+        "updated_at_max": {
+          "type": "string",
+          "description": "Filter orders updated on or before this date (ISO 8601 format)"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of orders to return (1-250, default 50)",
+          "minimum": 1,
+          "maximum": 250
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific order fields to return (e.g., 'id', 'email', 'created_at', 'total_price', 'currency', 'fulfillment_status', 'financial_status')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["status", "created_at_min", "created_at_max", "updated_at_min", "updated_at_max", "limit", "fields"]
+    }
+  },
+  {
+    "toolSlug": "Shopify_GetOrder",
+    "toolPurpose": "Retrieve detailed information for a specific order by ID.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "description": "The unique Shopify order ID"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific order fields to return (e.g., 'id', 'email', 'customer', 'line_items', 'shipping_address', 'billing_address', 'payment_methods', 'fulfillments', 'total_price', 'tax_lines')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["order_id"]
+    },
+    "inputsSpec": {
+      "required": ["order_id"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Shopify_ListCustomers",
+    "toolPurpose": "Search and retrieve customers from the Shopify store with optional search query.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query to filter customers by name, email, phone, or address (e.g., 'email:john@example.com', 'Jane Doe', 'country:USA')"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of customers to return (1-250, default 50)",
+          "minimum": 1,
+          "maximum": 250
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific customer fields to return (e.g., 'id', 'email', 'first_name', 'last_name', 'phone', 'created_at', 'orders_count', 'total_spent')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["query", "limit", "fields"]
+    }
+  },
+  {
+    "toolSlug": "Shopify_GetInventoryLevels",
+    "toolPurpose": "Retrieve inventory levels for products at a specific location.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "location_id": {
+          "type": "string",
+          "description": "The Shopify location ID to get inventory for"
+        },
+        "inventory_item_ids": {
+          "type": "array",
+          "description": "Array of inventory item IDs to filter results (optional, returns all if not specified)",
+          "items": { "type": "string" }
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of inventory levels to return (1-250, default 50)",
+          "minimum": 1,
+          "maximum": 250
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific inventory level fields to return (e.g., 'inventory_item_id', 'location_id', 'available', 'updated_at')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["location_id"]
+    },
+    "inputsSpec": {
+      "required": ["location_id"],
+      "optional": ["inventory_item_ids", "limit", "fields"]
+    }
+  }
+]

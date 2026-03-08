@@ -1,0 +1,21 @@
+{
+  "appName": "SoundCloud_Music_Discovery",
+  "description": "SoundCloud REST API v2.0 integration for music discovery, track search, user profile exploration, and playlist curation.",
+  "domain": "music_streaming",
+  "use_case": "Track and artist discovery, music search and filtering, user profile exploration, playlist browsing, music metadata retrieval, genre-based exploration, and curation analysis.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "SoundCloud_SearchTracks",
+        "SoundCloud_GetTrack",
+        "SoundCloud_GetUser",
+        "SoundCloud_GetUserTracks",
+        "SoundCloud_GetPlaylists"
+      ]
+    }
+  ]
+}

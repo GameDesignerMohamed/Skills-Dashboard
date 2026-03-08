@@ -1,0 +1,9 @@
+{
+  "title": "SendGrid Email Suite v1.0",
+  "offeringId": "SGRID-001-EMAIL",
+  "description": "SendGrid REST API v3 integration for sending transactional and marketing emails, managing contacts, retrieving email templates, and analyzing email performance statistics. Enables a Mind to execute email communications as an external delivery layer with Steward confirmation and template-based branding consistency.",
+  "endpoints": [
+    "https://api.sendgrid.com/v3"
+  ],
+  "lastUpdate": "2026-03-05"
+}

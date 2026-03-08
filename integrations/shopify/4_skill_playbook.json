@@ -1,0 +1,86 @@
+{
+  "skillId": "SHOP-SKILL-001",
+  "skillArtifactId": "SHOP-ART-001",
+  "name": "Shopify_Store_Analyst",
+  "description": "Analyzes store data and inventory as the Mind's read-only analytics layer for ecommerce operations. Retrieves product information, order status, customer insights, and inventory levels to support business intelligence and operational decision-making.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Shopify_ListProducts",
+    "Shopify_GetProduct",
+    "Shopify_ListOrders",
+    "Shopify_GetOrder",
+    "Shopify_ListCustomers",
+    "Shopify_GetInventoryLevels"
+  ],
+  "compatibility_formula": "(ecommerce_volume * 2.0) + (inventory_needs * 1.8) + (order_frequency * 1.5) + analytics_interest",
+  "progressive_unlock": "Product and order listing available immediately. Detailed product and order information unlock after Mind has retrieved the product/order catalog at least once. Inventory analysis unlocks after successful location_id identification.",
+  "constraints": [
+    "READ-ONLY operations only - never modify store data, products, orders, or inventory",
+    "Never expose Shopify API access token in logs or outputs",
+    "Respect Shopify rate limit of 2 requests/second (REST API) with 40 requests per bucket and leak rate",
+    "Do not retrieve sensitive customer PII (credit card data, password hashes) - filter responses to business-relevant fields only",
+    "All timestamps returned in ISO 8601 format, convert to local timezone for display if needed",
+    "For date-range queries, default to last 30 days if no explicit date range provided",
+    "Validate location_id and product_id before executing inventory or product detail queries",
+    "Cache location_id references in STREAM.entity for quick subsequent lookups",
+    "Store high-value insights (top-selling products, customer segments, inventory alerts) in LTM with key: 'shopify_store_analytics_{store_name}_{date}'"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Shopify API token from TENET.apiKey.shopify and store base URL from STREAM.config.shopify_store. Construct X-Shopify-Access-Token header.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: list products/orders/customers (bulk retrieval with filters), get specific product/order details, or analyze inventory.",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For product listing: call Shopify_ListProducts with optional title, vendor, status filters. Apply limit (default 50, max 250). Return key fields: id, title, vendor, status, created_at.",
+      "toolCall": "Shopify_ListProducts"
+    },
+    {
+      "step": 5,
+      "instruction": "For product details: call Shopify_GetProduct with product_id. Return full product record including variants, images, description, pricing, and inventory references.",
+      "toolCall": "Shopify_GetProduct"
+    },
+    {
+      "step": 6,
+      "instruction": "For order listing: call Shopify_ListOrders with optional status and date range filters (created_at_min/max, updated_at_min/max). Default to last 30 days if no dates specified. Return key fields: id, email, created_at, total_price, fulfillment_status, financial_status.",
+      "toolCall": "Shopify_ListOrders"
+    },
+    {
+      "step": 7,
+      "instruction": "For order details: call Shopify_GetOrder with order_id. Return complete order record including customer, line_items, shipping_address, billing_address, fulfillments, and payment details.",
+      "toolCall": "Shopify_GetOrder"
+    },
+    {
+      "step": 8,
+      "instruction": "For customer search: call Shopify_ListCustomers with optional query filter (email, name, phone, or address). Return key fields: id, email, first_name, last_name, phone, created_at, orders_count, total_spent.",
+      "toolCall": "Shopify_ListCustomers"
+    },
+    {
+      "step": 9,
+      "instruction": "For inventory analysis: validate location_id is present in STREAM.entity. Call Shopify_GetInventoryLevels with location_id and optional inventory_item_ids filter. Return available inventory, updated timestamps.",
+      "toolCall": "Shopify_GetInventoryLevels"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile response with relevant business metrics: product counts by vendor/status, order totals by status/date range, customer count and lifetime value distribution, inventory availability by location. Store high-value insights in LTM with key: 'shopify_store_analytics_{store}_{date}'.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Update STREAM.entity with: current_product_count, current_order_count, primary_location_id, top_vendors, high_value_customers. Alert if inventory falls below safety thresholds.",
+      "toolCall": null
+    }
+  ]
+}

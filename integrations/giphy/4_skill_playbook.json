@@ -1,0 +1,79 @@
+{
+  "skillId": "GIPHY-SKILL-001",
+  "skillArtifactId": "GIPHY-ART-001",
+  "name": "Giphy_Media_Discovery",
+  "description": "Discovers, searches, and retrieves GIFs and stickers from Giphy as the Mind's media content layer. Enables trending analysis, keyword-based GIF search, random content generation, and phrase-to-GIF translation for creative and communicative workflows.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Giphy_SearchGifs",
+    "Giphy_GetTrending",
+    "Giphy_GetRandom",
+    "Giphy_TranslateToGif",
+    "Giphy_SearchStickers"
+  ],
+  "compatibility_formula": "(media_interest * 2.0) + (creative_need * 1.8) + (communication_context * 1.5)",
+  "progressive_unlock": "Basic GIF search available immediately. Trending analysis and random GIF generation unlock after Mind has performed at least one search to establish usage patterns. Sticker search unlocks after trending content retrieval.",
+  "constraints": [
+    "Never expose Giphy API key in logs or outputs",
+    "Respect Giphy rate limit of 42 searches per hour and 1000 searches per day (beta key)",
+    "Default to rating 'pg' or 'pg-13' unless explicit rating preference specified by Steward",
+    "Limit search results to 50 maximum per request to optimize API quota usage",
+    "Cache trending GIFs for 1 hour to reduce redundant API calls",
+    "Translate-to-GIF should return exactly one best-match result, not multiple options",
+    "Store popular search queries in STREAM.entity for trend analysis",
+    "Do not return adult-rated content without explicit Steward approval in TENET"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Giphy API key from TENET.apiKey.giphy. Prepare query parameter format as 'api_key={key}'.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: search (keyword-based), trending (popular content), random (serendipitous), translate (phrase-to-GIF), or sticker_search (sticker discovery).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For search: execute Giphy_SearchGifs with keyword, apply rating filter (default 'pg' if not specified). Limit offset to 100 results max. Log search query in STREAM.searches for trend analysis.",
+      "toolCall": "Giphy_SearchGifs"
+    },
+    {
+      "step": 5,
+      "instruction": "For trending: execute Giphy_GetTrending with rating filter. Check STREAM.cache for cached results (1-hour TTL). If cache miss, retrieve and store results with timestamp. Return top 25 results.",
+      "toolCall": "Giphy_GetTrending"
+    },
+    {
+      "step": 6,
+      "instruction": "For random: execute Giphy_GetRandom with optional tag filter. This endpoint is ideal for serendipitous discovery or when Steward requests unexpected content. Can be called multiple times for variety.",
+      "toolCall": "Giphy_GetRandom"
+    },
+    {
+      "step": 7,
+      "instruction": "For translate: execute Giphy_TranslateToGif with the phrase/term. This returns the single best-matching GIF for the input, functioning like autocomplete. Useful for quick visual responses.",
+      "toolCall": "Giphy_TranslateToGif"
+    },
+    {
+      "step": 8,
+      "instruction": "For sticker search: execute Giphy_SearchStickers with keyword. Stickers are separate asset type from GIFs. Apply same rating filters and pagination as GIF search.",
+      "toolCall": "Giphy_SearchStickers"
+    },
+    {
+      "step": 9,
+      "instruction": "Parse API response and extract GIF/sticker metadata: id, url, title, rating, dimensions. Structure results as array with image_url, title, rating, and source fields.",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Compile media discovery summary with search query, result count, rating distribution, and trending indicators. Push media usage logs to LTM with key: 'giphy_discovery_{date}'. Update STREAM with popular GIF IDs for quick reference.",
+      "toolCall": null
+    }
+  ]
+}

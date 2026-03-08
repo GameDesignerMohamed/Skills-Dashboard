@@ -1,0 +1,21 @@
+{
+  "appName": "Tumblr_Microblogging_Suite",
+  "description": "Tumblr API v2 integration for blog discovery, post retrieval, content search, dashboard feed access, and following list management.",
+  "domain": "social_media",
+  "use_case": "Blog exploration and metadata retrieval, post discovery and filtering by content type, tag-based content search, authenticated user dashboard and feed discovery, following list management and blog discovery.",
+  "tier": "verified",
+  "auth_type": "OAuth2",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Tumblr_GetBlogInfo",
+        "Tumblr_GetBlogPosts",
+        "Tumblr_SearchPosts",
+        "Tumblr_GetDashboard",
+        "Tumblr_GetFollowing"
+      ]
+    }
+  ]
+}

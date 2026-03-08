@@ -1,0 +1,9 @@
+{
+  "title": "Bluesky AT Protocol Suite v1.0",
+  "offeringId": "BLUESKY-001-SOCIAL",
+  "description": "Bluesky AT Protocol integration for decentralized social networking. Enables a Mind to read timelines, search posts, retrieve user profiles, fetch notifications, and create posts on the Bluesky network. Bridges cognitive intent from the Mind to decentralized social interactions as an external execution layer for AnimocaMinds/Ethoswarm.",
+  "endpoints": [
+    "https://bsky.social/xrpc/"
+  ],
+  "lastUpdate": "2026-03-06"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Zendesk Support Suite v1.0",
+  "offeringId": "ZD-001-SUPPORT",
+  "description": "Zendesk Support API v2 integration for managing tickets, customer inquiries, and support workflows. Enables a Mind to search, create, update, and comment on tickets as an external execution layer for customer support automation.",
+  "endpoints": [
+    "https://{subdomain}.zendesk.com/api/v2"
+  ],
+  "lastUpdate": "2026-03-05"
+}

@@ -1,0 +1,10 @@
+{
+  "title": "OpenWeather Suite v1.0",
+  "offeringId": "OWEATH-001-WX",
+  "description": "OpenWeather REST API integration for real-time weather data, forecasts, air quality, and historical weather information. Enables weather-aware decision making and environmental monitoring across multiple data streams.",
+  "endpoints": [
+    "https://api.openweathermap.org/data/2.5",
+    "https://api.openweathermap.org/data/3.0"
+  ],
+  "lastUpdate": "2026-03-05"
+}

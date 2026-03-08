@@ -1,0 +1,9 @@
+{
+  "title": "Asana Project Suite v1.0",
+  "offeringId": "ASANA-001-PM",
+  "description": "Asana REST API v1.0 integration for managing projects, tasks, and team workflows. Enables a Mind to create, organize, and track project work as an external execution layer for Steward project management.",
+  "endpoints": [
+    "https://app.asana.com/api/1.0"
+  ],
+  "lastUpdate": "2026-03-05"
+}

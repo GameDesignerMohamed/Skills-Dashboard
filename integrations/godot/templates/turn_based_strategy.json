@@ -1,0 +1,64 @@
+{
+  "templateId": "TPL-GODOT-024",
+  "name": "Turn-Based Strategy Starter",
+  "genre": "turn_based_strategy",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Grid-based tactics game (Fire Emblem / Advance Wars style). Features hex or square TileMap with diverse terrain types affecting movement costs and defense bonuses. Multi-unit system with distinct classes (warrior, archer, mage, healer) possessing class-specific stats and abilities. Turn-based gameplay with move → attack → end phases. Pathfinding and range highlighting systems. Damage formula incorporating terrain bonuses. Unit recruitment, AI opponent with tactical decision-making, and camera system following active units.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with input mappings: select_unit, move_to, attack, wait_turn, cycle_unit, cancel, menu",
+    "scenes/": {
+      "battle_map.tscn": "Node2D with TileMap (grid base layer + terrain decoration layer), camera with zoom/pan controls, turn indicator label, action menu overlay (CanvasLayer)",
+      "units/": {
+        "warrior.tscn": "CharacterBody2D with unit stats: HP=30, ATK=8, DEF=6, MOV=4, RNG=1, melee weapon icon, attack animation",
+        "archer.tscn": "CharacterBody2D with stats: HP=22, ATK=7, DEF=3, MOV=5, RNG=3, bow animation, projectile arc visual",
+        "mage.tscn": "CharacterBody2D with stats: HP=18, ATK=9, DEF=2, MOV=3, RNG=4, staff/spell animation, particle effect on cast",
+        "healer.tscn": "CharacterBody2D with stats: HP=20, ATK=2, DEF=3, MOV=4, RNG=3, healing spell, restore hp to nearby allies"
+      },
+      "ui/": {
+        "unit_info.tscn": "CanvasLayer panel showing selected unit: name, class, HP/max HP, ATK, DEF, MOV remaining, equipped weapon, status effects (poison, weakened, etc.)",
+        "terrain_info.tscn": "CanvasLayer info box showing hovered tile terrain: type name, movement cost multiplier, defense bonus percentage",
+        "turn_banner.tscn": "CanvasLayer animated banner announcing turn phase: 'Player Turn' (green) or 'Enemy Turn' (red), fades in/out",
+        "action_menu.tscn": "CanvasLayer context menu with buttons: Move, Attack, Wait, Item, Skills (if applicable), positioned at unit location",
+        "damage_popup.tscn": "Node2D popup showing damage number (red text, animated upward float, disappears after 0.8 sec), scales based on damage value",
+        "battle_forecast.tscn": "CanvasLayer preview panel: attacker vs defender stats, hit chance %, damage range (min-max), defender counterattack info if applicable"
+      }
+    }
+  },
+  "preBuiltMechanics": [
+    "TileMap grid system: square or hex grid with tile_size=32 or 48 pixels, terrain layer stores terrain_type per tile (plains=0cost, forest=2cost, mountain=4cost, water=impassable), defense_bonus per terrain (plains +0%, forest +10%, mountain +15%)",
+    "Unit class system: 4 base classes (warrior, archer, mage, healer) with fixed stat arrays, class_name property, weapon_type property affecting attack range/damage formula",
+    "Unit stats: HP (current/max), ATK (attack power), DEF (damage reduction), MOV (movement range in tiles), RNG (attack range in tiles), current_position as grid coordinates [x, y]",
+    "Movement system: BFS pathfinding using terrain costs, calculates reachable_tiles set for current MOV value, highlights reachable tiles in blue overlay, player clicks tile to confirm move, animated unit walk along path",
+    "Range highlighting: attack_range calculated based on RNG stat + weapon, highlights tiles in yellow overlay (within RNG), green tiles show guaranteed hit, orange show risky hits based on terrain/stats",
+    "Damage formula: base_damage = attacker_ATK - defender_DEF, applies terrain_bonus (if attacker on high-defense terrain, +terrain_bonus%), randomized ±10% variance, minimum 1 damage, calculates hit_chance = 80 - (distance * 5) - terrain_evasion_bonus",
+    "Turn phases: player_unit.move() → player_unit.attack_or_wait() → end_turn() → cycle to next unit or switch to enemy turn",
+    "Attack system: attacker selects target within RNG tiles, damage_popup shows damage number at target location, plays hit sound/animation, defender takes damage, checks if unit dies (HP ≤ 0), removes unit if dead",
+    "Counterattack: defender within counter_range of attacker deals 50% damage back to attacker if defender is alive after attack",
+    "Unit recruitment: implement shop_scene during prep phase where player spends currency to hire units, add unit to unit_roster",
+    "AI opponent decision making: ai_controller.gd evaluates all units, target_selection logic prioritizes low-defense units or units threatening strongest units, threat_assessment calculates incoming damage per unit, position_evaluation scores tactical positions (high ground, safe flanks)",
+    "AI turn execution: select unit → use pathfinding to approach best target → move to attack_range → execute attack → end AI unit turn → cycle to next AI unit",
+    "Status effects: poison (deals 3 damage per turn), weakness (ATK -3 for 3 turns), sleep (unit skips turn), visualization via icons next to unit health bar",
+    "Camera controller: follows currently active unit, zoom to 1.5x when displaying unit, pan smoothly to new unit on turn switch, reset zoom on action menu open"
+  ],
+  "customizationPoints": [
+    "Expand terrain variety: add desert (movement cost 1.5, low defense), swamp (cost 3, slows unit speed), lava (cost 2 + 5 damage per turn), destructible terrain (wall breaks on hit)",
+    "Skill system: add class-specific skills (warrior: whirlwind attack hit all nearby, archer: piercing shot ignores defense, mage: fireball area effect, healer: group heal)",
+    "Advanced stats: add accuracy stat affecting hit chance, evasion stat, critical hit chance, weight stat affecting attack speed",
+    "Unit promotion: allow units to promote to advanced classes (warrior→knight, archer→sniper) gaining stat boosts and new skills",
+    "Weapon variety: implement weapon durability system, weapon effectiveness triangle (swords > axes, axes > lances, lances > swords), weapon weight affecting speed",
+    "Fog of war: limit player vision to unit_vision_range tiles, hide enemy positions until revealed, implement scout units with extended vision",
+    "Environmental hazards: add moving lava pools, ice patches that reduce movement control, wind that pushes units, dynamically spawn/disappear",
+    "Rescue system: stronger units can carry weaker units to protect them, affects movement speed, allow dropping at destination",
+    "Support system: units adjacent to each other gain support bonus (+10% ATK/DEF), support conversations add story/character development",
+    "Campaign structure: implement multiple battle chapters, story progression, unit experience and leveling between battles, equipment upgrades"
+  ],
+  "examplePrompts": [
+    "Create a TileMap-based grid movement system using BFS pathfinding where terrain types (plains=1 cost, forest=2 cost, mountain=4 cost, water=impassable) affect movement range, highlighting reachable tiles in blue when a unit is selected",
+    "Implement a damage formula where attacker_damage = (attacker_ATK - defender_DEF) * (1 + terrain_defense_bonus) with ±10% variance, minimum 1 damage, and defender takes damage with death check at HP ≤ 0",
+    "Design 4 unit classes with fixed stats: warrior (HP 30, ATK 8, DEF 6, MOV 4, RNG 1), archer (HP 22, ATK 7, DEF 3, MOV 5, RNG 3), mage (HP 18, ATK 9, DEF 2, MOV 3, RNG 4), healer (HP 20, ATK 2, DEF 3, MOV 4, RNG 3)",
+    "Create an AI opponent system that evaluates all units each turn, calculates threat assessment (incoming damage per unit), selects target unit, pathfinds to attack range, executes attack, then cycles to next AI unit",
+    "Implement a turn-based system with phases: player selects active unit → move (BFS pathfinding) → action menu (attack/wait/item) → execute action → end turn → cycle to next player unit or switch to enemy turn"
+  ]
+}

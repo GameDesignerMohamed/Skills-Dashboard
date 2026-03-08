@@ -1,0 +1,83 @@
+{
+  "templateId": "TPL-GODOT-017",
+  "name": "Stealth Game Starter",
+  "genre": "stealth",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Top-down stealth game with vision cones. Player with crouch (reduced visibility) and sneak mechanics (slower movement). Enemy guards with triangular vision cones (Area2D), patrol routes (Path2D), alert states (patrol/suspicious/alert/search). Noise system: running generates radius, throwable objects distract. Line of sight via RayCast2D. Security cameras with rotating vision. Hide spots (lockers, bushes). Alarm triggers reinforcements. Light/shadow affects visibility.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project config with PhysicsWorld2D for RayCast visibility",
+    "scenes/": {
+      "level.tscn": "Root Node2D with TileMap (walls, floor, light sources), Player, Guards array, Cameras array, HideSpots array, Alarms, Doors, UI CanvasLayer, Light2D ambient light",
+      "player.tscn": "CharacterBody2D with Sprite2D (2-direction or top-down), CollisionShape2D, StealthComponent, InputHandler, NoiseEmitter",
+      "guard.tscn": "CharacterBody2D with Sprite2D, CollisionShape2D, VisionCone (Area2D triangle), PatrolRoute (Path2D), AlertState machine, RayCast2D for line of sight",
+      "security_camera.tscn": "Node2D with Sprite2D (camera icon), RayCast2D cast (ray-based vision), RotationController, VisionCone polygon (draws on _draw())",
+      "hide_spot.tscn": "Area2D with Sprite2D (locker/bush), CollisionShape2D, hide_interaction trigger",
+      "distraction_object.tscn": "RigidBody2D or Area2D projectile spawned on player throw, generates noise_radius on landing",
+      "alarm_trigger.tscn": "Area2D with Sprite2D (alarm box), activates on player detection, spawns reinforcement guards",
+      "ui/detection_meter.tscn": "CanvasLayer ProgressBar showing detection level (0-100%), color green→yellow→red as threat increases",
+      "ui/noise_indicator.tscn": "CanvasLayer circular indicator showing noise radius around player, shrinks when idle"
+    },
+    "scripts/": {
+      "player_stealth.gd": "Inherits CharacterBody2D. Properties: is_crouching (bool), is_sneaking (bool), movement_speed (150 default, 75 crouch, 50 sneak), visibility_radius (normal 100, crouch 50, sneak 30). Methods: handle_input() (Shift crouch toggle, Alt sneak toggle, E interact with hide spots, Space throw distraction). _physics_process() applies velocity and collision. Emits noise based on movement speed. Signals: player_detected, player_hidden",
+      "guard_ai.gd": "Inherits CharacterBody2D. Properties: state (patrol/suspicious/alert/search), patrol_path (Path2D), vision_cone (Area2D), current_target_pos. Methods: _physics_process() implements state machine. In patrol: moves along Path2D. On vision_entered(player_area), checks line_of_sight and visibility (player visibility_radius vs distance). If visible, → alert. On suspicious: moves toward last_seen_pos. On alert: attacks or calls for help (activates alarm). On search: checks adjacent areas for player. Signals: guard_alerted, guard_attacking, guard_idle",
+      "vision_cone.gd": "Inherits Area2D (parent: guard). Creates triangular polygon using Polygon2D child. Properties: cone_angle (120°), cone_length (200px). Uses _draw() to render triangle. On area_entered, checks if player, calls parent.guard_ai.check_visible()",
+      "noise_system.gd": "Tracks noise_radius (0-200px based on player speed). On player movement at normal speed, radius = 100px. At walk, radius = 50px. At sneak, radius = 10px. Stationary → radius shrinks 20px/sec. Guards have hearing_distance (150px). If within hearing_distance and noise_radius > 0, guard becomes suspicious",
+      "alert_manager.gd": "Singleton managing global alert state (0-3: calm/suspicious/alert/lockdown). Methods: raise_alert(level) increases state, lower_alert() decreases over 20 seconds if no new detections. On lockdown (level 3): all guards search, reinforcements spawn, doors lock. Signals: alert_level_changed",
+      "camera_rotation.gd": "Attached to security_camera. Rotates camera 360° continuously or oscillates. On player in vision_cone_range, sweeps at increased speed. Emits light/shadow effect using RayCast2D",
+      "hide_system.gd": "Manages hide spots. Methods: start_hide(hide_spot_node) hides player (invisible, no noise, no detection). On player exits (E again), reveals player. If guard enters hide_spot during hide, player is found. Visual feedback: blur effect while hidden",
+      "patrol_route.gd": "Attached to guard or camera. Stores Path2D with waypoints. Methods: get_next_waypoint() returns next point along path, loops at end"
+    },
+    "assets/": {
+      "tilesets/stealth_level.tres": "TileSet with floor, walls, doors (locked/unlocked), vents, windows, obstacles",
+      "sprites/player.png": "32x32 top-down player sprite with idle + running animation frames",
+      "sprites/guard.png": "32x32 guard sprite with idle, patrol, alert (red) animation states",
+      "sprites/camera.png": "16x16 security camera icon",
+      "sprites/hides/": "Locker, bush, crate sprites for hide spots",
+      "sprites/ui/": "Detection meter icons, noise indicator circle, alert level icons",
+      "sfx/": "footstep_quiet.wav, footstep_loud.wav, guard_alert.wav, alarm.wav, distraction_object.wav",
+      "fonts/": "Default font for UI labels"
+    }
+  },
+  "preBuiltMechanics": [
+    "Player movement with crouch and sneak modes (varying speeds and visibility radii)",
+    "Crouch reduces visibility radius from 100px to 50px",
+    "Sneak mode reduces visibility radius to 30px and speed to 50",
+    "Guard vision cone (Area2D triangle, 120° angle, 200px range) with RayCast2D line of sight validation",
+    "Guard patrol routes using Path2D waypoints",
+    "Alert state machine: patrol → suspicious → alert → search",
+    "Noise system: movement speed generates radius, heard by guards within hearing_distance",
+    "Throwable distraction objects that create noise radius on landing",
+    "Line of sight checking via RayCast2D between guard and player",
+    "Hide spots (lockers, bushes, crates) that conceal player when interacted",
+    "Security cameras with rotating vision and detection",
+    "Light/shadow visibility: player less visible in shadows, more visible in light",
+    "Global alert level system affecting guard behavior",
+    "Alarm triggers that spawn reinforcement guards and lock doors"
+  ],
+  "customizationPoints": [
+    "Add stealth takedown mechanic (melee attack from behind while undetected)",
+    "Implement disguise system (guard outfit allows infiltration, removes detection)",
+    "Create environmental interactions: lights to turn off, cameras to disable, vents for crawling",
+    "Add guard patrol randomization with probability of deviating from route",
+    "Implement radio communication between guards (one alert calls nearby guards)",
+    "Create objective system: steal item, plant device, escort NPC, hack terminal",
+    "Add thermal vision goggles (reveals heat signatures through walls)",
+    "Implement social stealth (blending in crowds, following marked routes)",
+    "Create elaborate security systems: keycard doors, motion sensors, pressure plates",
+    "Add permadeath hardcore mode with global guard learning (harder on replays)"
+  ],
+  "examplePrompts": [
+    "Add a stealth takedown mechanic: if player approaches guard from behind while undetected, E triggers silent knockout",
+    "Create a disguise system where wearing guard clothes allows free movement but loses if close to guards for too long",
+    "Implement light switches that player can interact with to turn off lights and reduce visibility",
+    "Add communication between guards: if one is alerted, nearby guards are notified via radio chatter",
+    "Create cameras you can disable by cutting power or hacking control panel",
+    "Implement objectives: steal the diamond from vault, plant listening device on CEO, escort scientist to exit",
+    "Add thermal vision goggles that reveal guards through walls but drain battery",
+    "Create ventilation system accessible from certain areas allowing alternate routes",
+    "Implement keypads and doors requiring specific access levels found on enemy bodies",
+    "Add a reputation system where loud gameplay alerts harder difficulty on replays"
+  ]
+}

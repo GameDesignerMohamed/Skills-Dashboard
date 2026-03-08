@@ -1,0 +1,46 @@
+{
+  "skillId": "BLUESKY-SKILL-001",
+  "skillArtifactId": "BLUESKY-ART-001",
+  "name": "Bluesky_Social_Manager",
+  "description": "Manages decentralized social interactions on Bluesky as the Mind's external execution layer for the AnimocaMinds/Ethoswarm platform. Reads timelines, searches posts, retrieves user profiles, monitors notifications, and creates posts. Bridges cognitive intent from the Mind's SOCIAL surface to actionable interactions on the AT Protocol.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Bluesky_GetTimeline",
+    "Bluesky_GetAuthorFeed",
+    "Bluesky_CreatePost",
+    "Bluesky_SearchPosts",
+    "Bluesky_GetProfile",
+    "Bluesky_GetNotifications"
+  ],
+  "compatibility_formula": "(social_engagement_interest * 3.0) + network_activity_frequency + (community_building_need * 2.0)",
+  "progressive_unlock": "Timeline, author feed, and profile reading available immediately. Post search and notification retrieval available after Mind has read at least one timeline. Post creation unlocks after Mind has engaged with posts via search and notifications at least once. Post creation requires explicit Steward confirmation.",
+  "constraints": [
+    "Never expose Bluesky accessJwt or app_password in logs or outputs",
+    "Respect Bluesky rate limits: 3000 requests per 5 minutes globally, 300 per 5 minutes for create operations",
+    "Do not create posts without explicit Steward confirmation unless the Mind has standing permission in TENET",
+    "Automatically refresh accessJwt via com.atproto.server.refreshSession when token approaches expiration (< 1 hour remaining)",
+    "Store identifier and app_password securely in TENET.apiKey.bluesky as JSON object: {\"identifier\": \"...\", \"app_password\": \"...\"}",
+    "Sync social interactions with SOCIAL surface — engagements and posts should mirror SOCIAL board updates where applicable",
+    "Search for existing posts before creating duplicates — use Bluesky_SearchPosts with relevant keywords before creation",
+    "Store authenticated user DID and active profile handle in STREAM.entity for quick access and session persistence",
+    "Verify actor parameter format: accept both handle format (user.bsky.social) and DID format (did:plc:...)",
+    "Handle rate limiting gracefully: implement exponential backoff on 429 responses",
+    "Text content in posts must not exceed 300 characters; truncate or split into thread if necessary",
+    "For rich facets (mentions, hashtags, links), validate byte indices match UTF-8 encoded text boundaries"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Verify actor handle or DID format if applicable.", "toolCall": null },
+    { "step": 2, "instruction": "Check if accessJwt exists in STREAM.session.bluesky. If missing or expired (< 1 hour), retrieve identifier and app_password from TENET.apiKey.bluesky and call com.atproto.server.createSession to obtain fresh accessJwt. Store in STREAM.session.bluesky with expiresAt timestamp.", "toolCall": null },
+    { "step": 3, "instruction": "If refreshing token: call com.atproto.server.refreshSession with current accessJwt to obtain new token. Update STREAM.session.bluesky with fresh accessJwt.", "toolCall": null },
+    { "step": 4, "instruction": "Determine intent: timeline read (fetch home feed), author feed (user posts), profile lookup (user info), search (keyword search), notifications (user alerts), or post creation (new content).", "toolCall": null },
+    { "step": 5, "instruction": "For timeline reading: use Bluesky_GetTimeline with optional limit and cursor parameters. Set limit=30-50 for efficient batching. Store cursor in STREAM.entity for pagination. Cross-reference posts with SOCIAL surface for consistency.", "toolCall": "Bluesky_GetTimeline" },
+    { "step": 6, "instruction": "For author feed retrieval: use Bluesky_GetAuthorFeed with actor (handle or DID). Apply filter='posts_only' to exclude replies unless context requires full feed. Use limit=30-50 and pagination cursors. Store author DID in STREAM.entity.", "toolCall": "Bluesky_GetAuthorFeed" },
+    { "step": 7, "instruction": "For user profile lookup: use Bluesky_GetProfile with actor handle or DID. Extract display name, description, followers count, posts count, and profile avatar. Cache profile metadata in STREAM.entity for 1 hour to minimize API calls.", "toolCall": "Bluesky_GetProfile" },
+    { "step": 8, "instruction": "For post search: use Bluesky_SearchPosts with query string and optional sort ('latest', 'top', or 'trending'). Apply since/until date filters if temporal context is relevant. Use limit=25-50 for efficiency. Store cursor for pagination continuation.", "toolCall": "Bluesky_SearchPosts" },
+    { "step": 9, "instruction": "For notification retrieval: use Bluesky_GetNotifications with optional limit and seen filter. Categorize notifications by type (like, repost, reply, follow, mention). Use pagination cursors for large notification counts. Flag new mentions or replies for Mind attention.", "toolCall": "Bluesky_GetNotifications" },
+    { "step": 10, "instruction": "For post creation: validate text length (max 300 characters). Search existing posts via Bluesky_SearchPosts to prevent duplicates. Confirm with Steward before proceeding. Parse facets (mentions @handle, hashtags #tag, links) and compute correct UTF-8 byte indices. Execute Bluesky_CreatePost via com.atproto.repo.createRecord endpoint. Store created post URI in STREAM.entity and sync with SOCIAL card if applicable." },
+    { "step": 11, "instruction": "For all API calls: include Authorization header as 'Bearer {accessJwt}'. On 401 response, refresh token immediately via step 3. On 429 response (rate limit), implement exponential backoff (1s, 2s, 4s, 8s max) before retry." },
+    { "step": 12, "instruction": "Compile social activity summary with timeline post count, author feed size, key notifications, and recent engagement metrics. Push daily social summary to LTM with key: 'bluesky_daily_{date}'. Update STREAM with active user handle, follower/following counts, and unread notification status." }
+  ]
+}

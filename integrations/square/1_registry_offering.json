@@ -1,0 +1,9 @@
+{
+  "title": "Square Payments Suite v1.0",
+  "offeringId": "SQ-001-PAY",
+  "description": "Square Payments API v2 integration for managing payments, orders, customers, catalog items, and business locations. Enables a Mind to access and analyze financial transaction data, customer information, and inventory management as an external business intelligence layer.",
+  "endpoints": [
+    "https://connect.squareup.com/v2"
+  ],
+  "lastUpdate": "2026-03-05"
+}

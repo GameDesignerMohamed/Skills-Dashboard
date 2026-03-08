@@ -1,0 +1,91 @@
+{
+  "skillId": "ETSY-SKILL-001",
+  "skillArtifactId": "ETSY-ART-001",
+  "name": "Etsy_Marketplace_Analytics",
+  "description": "Monitors and analyzes marketplace data from Etsy. Retrieves active listings, shop information, listing images, and marketplace metrics. Bridges ecommerce data from Etsy to the Mind's research and competitive analysis layers. READ-ONLY operations only.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Etsy_SearchListings",
+    "Etsy_GetListing",
+    "Etsy_GetListingImages",
+    "Etsy_GetShop",
+    "Etsy_SearchShops"
+  ],
+  "compatibility_formula": "(ecommerce_interest * 3.0) + (marketplace_research_need * 2.5) + product_discovery_scope",
+  "progressive_unlock": "Listing search available immediately. Detailed listing retrieval available after Mind has successfully searched at least once. Shop queries unlock after listing retrieval confirms Etsy API connectivity. Listing images available after successful listing detail query.",
+  "constraints": [
+    "READ-ONLY operations only — Etsy API v3 endpoints accessed are public read-only. Never attempt write operations.",
+    "Etsy rate limits: 10,000 requests per day per API key. Implement request batching and caching strategies.",
+    "Respect Etsy's Terms of Service — data accessed is for research and analytics only. Do not scrape for resale.",
+    "All listing prices are in the shop's local currency. Always include currency code in financial summaries.",
+    "Listing availability status must be checked — some listings may be inactive or delisted despite appearing in search results.",
+    "Do not expose API keys in logs, STREAM data, or outputs. Credentials stored only in TENET.apiKey.etsy.",
+    "Shop IDs and listing IDs are integers. Always validate input before API calls.",
+    "Etsy API responses include pagination metadata — use offset/limit for large result sets. Never auto-fetch all pages without user permission.",
+    "Images are served via Etsy's CDN. Cache image URLs in STREAM.etsy_images_{listing_id} during session.",
+    "All timestamps from Etsy API are Unix epoch. Convert to ISO 8601 for human-readable output."
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. For search operations, confirm keywords or shop_name parameters are present and non-empty. For detail operations, validate listing_id and shop_id are valid integers.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Etsy API key from TENET.apiKey.etsy. Construct x-api-key header with the API key value. Verify API key format matches expected pattern to prevent malformed requests.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: product discovery (search listings by keyword/category), listing analysis (get specific listing details), shop research (get shop info), or seller monitoring (search and analyze specific shops).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For product discovery: Call Etsy_SearchListings with keywords and optional taxonomy_id, sort_on, sort_order filters. Store retrieved listing IDs and basic info in STREAM.etsy_search_results. Check response limit/offset to assess pagination needs.",
+      "toolCall": "Etsy_SearchListings"
+    },
+    {
+      "step": 5,
+      "instruction": "For listing analysis: Call Etsy_GetListing with listing_id to retrieve comprehensive details including title, description, price, currency, quantity available, shop_id, creation date, and materials. Store listing data in STREAM.etsy_listing_{listing_id}.",
+      "toolCall": "Etsy_GetListing"
+    },
+    {
+      "step": 6,
+      "instruction": "For listing images: Call Etsy_GetListingImages with listing_id to retrieve all associated images. Images are returned in display order. Cache full image URLs in STREAM.etsy_images_{listing_id} for rapid reference in subsequent queries.",
+      "toolCall": "Etsy_GetListingImages"
+    },
+    {
+      "step": 7,
+      "instruction": "For shop research: Call Etsy_GetShop with shop_id to retrieve comprehensive shop information including shop name, description, shop URL, icon URL, listing count, and review/sales metrics. Store shop profile in STREAM.etsy_shop_{shop_id}.",
+      "toolCall": "Etsy_GetShop"
+    },
+    {
+      "step": 8,
+      "instruction": "For seller monitoring: Call Etsy_SearchShops with shop_name to locate sellers. Partial name matching is supported. Use results to retrieve shop_id, then call Etsy_GetShop for comprehensive seller profile analysis. Track shop metrics in STREAM for trend monitoring.",
+      "toolCall": "Etsy_SearchShops"
+    },
+    {
+      "step": 9,
+      "instruction": "Handle pagination for large result sets: Check response metadata for limit, offset, and total_results. If total_results > limit, provide pagination guidance to user. Use offset parameter for subsequent page fetches. Build pagination cache in STREAM.etsy_pagination_{query_type}.",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Convert all monetary amounts to consistent format with currency code (e.g., USD $19.99, EUR €15.50). Ensure price comparisons account for currency differences. Flag currency conversions as approximate if performing cross-currency analysis.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Convert all timestamps from Unix epoch to ISO 8601 (YYYY-MM-DDTHH:MM:SSZ) for readability. For marketplace trend analysis, identify listing creation patterns and correlate with shop activity timelines.",
+      "toolCall": null
+    },
+    {
+      "step": 12,
+      "instruction": "Compile marketplace insights: trending products by search volume and recency, top-performing shops by listing count and review metrics, category distribution, pricing ranges by category, and competitive positioning. Push weekly marketplace report to LTM with key 'etsy_marketplace_report_{date}'. Update STREAM with competitive intelligence for decision-making.",
+      "toolCall": null
+    }
+  ]
+}

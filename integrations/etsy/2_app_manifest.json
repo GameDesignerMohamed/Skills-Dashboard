@@ -1,0 +1,21 @@
+{
+  "appName": "Etsy_Marketplace",
+  "description": "Etsy Open API v3 integration for marketplace research, listing analytics, shop monitoring, and product discovery. Read-only access to active listings, shop information, images, and marketplace data.",
+  "domain": "ecommerce",
+  "use_case": "Product listing search and discovery, shop information retrieval, listing image access, marketplace trends analysis, seller profile monitoring, and competitive research.",
+  "tier": "verified",
+  "auth_type": "APIKey",
+  "header_key": "x-api-key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Etsy_SearchListings",
+        "Etsy_GetListing",
+        "Etsy_GetListingImages",
+        "Etsy_GetShop",
+        "Etsy_SearchShops"
+      ]
+    }
+  ]
+}

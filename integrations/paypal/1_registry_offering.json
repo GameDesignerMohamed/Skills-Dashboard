@@ -1,0 +1,10 @@
+{
+  "title": "PayPal Payment Integration Suite v1.0",
+  "offeringId": "PAYPAL-001-PROD",
+  "description": "PayPal REST API v2 integration for monitoring payments, transactions, orders, disputes, and payouts. Enables a Mind to query financial transaction data and account information as an external execution layer for financial oversight.",
+  "endpoints": [
+    "https://api.paypal.com/v2/",
+    "https://api-m.sandbox.paypal.com/v2/"
+  ],
+  "lastUpdate": "2026-03-05"
+}

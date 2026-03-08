@@ -1,0 +1,80 @@
+{
+  "templateId": "TPL-GODOT-006",
+  "name": "Tower Defense Starter",
+  "genre": "tower_defense",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Path-based tower defense with tower placement grid, multiple tower types with distinct mechanics (splash, slow, sniper), enemy wave progression, economy system with gold and upgrades, and tower targeting logic.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with physics set to 2D, default scene: res://scenes/level.tscn, TileMap layer: path (red lines), placement_grid (grid overlay for valid zones)",
+    "scenes/": {
+      "map.tscn": "Node2D root with TileMap (base terrain), TileMap (path layer with Path2D visualized), TileMap (placement_grid overlay, semi-transparent), CanvasLayer (grid_visual)",
+      "tower_base.tscn": "Node2D with Sprite2D, Area2D (range circle, Range property), CollisionShape2D (tower footprint), range_indicator (Circle2D visual, shows on hover), health_value (100 HP), upgrade_level (0-3), last_shot_time (for cooldown tracking)",
+      "tower_basic.tscn": "Instance of tower_base.tscn with Sprite2D (blue square, 32x32), range (150), fire_rate (0.8s), damage (10), cost (100 gold), upgrade_cost_per_level (50), description: 'Balanced tower with steady DPS'",
+      "tower_splash.tscn": "Instance of tower_base.tscn with Sprite2D (green square), range (120), fire_rate (1.2s), damage (15), splash_radius (60), cost (200 gold), description: 'Hits enemies in area, deals reduced splash damage'",
+      "tower_slow.tscn": "Instance of tower_base.tscn with Sprite2D (cyan square), range (140), fire_rate (1.0s), damage (5), slow_duration (3s), slow_factor (0.5), cost (150 gold), description: 'Slows enemies; low damage'",
+      "tower_sniper.tscn": "Instance of tower_base.tscn with Sprite2D (purple square), range (200), fire_rate (1.8s), damage (30), cost (250 gold), description: 'Long range, high damage, slow fire rate'",
+      "enemy_path.tscn": "Path2D node with curve defined by waypoints; child PathFollow2D with playback_enabled, loop_enabled false",
+      "enemy_basic.tscn": "CharacterBody2D with Sprite2D (red circle, 16x16), CollisionShape2D, health (20 HP), speed (100), bounty (10 gold), path_follow_reference property",
+      "enemy_fast.tscn": "CharacterBody2D variant with Sprite2D (orange), health (10 HP), speed (180), bounty (5 gold)",
+      "enemy_tank.tscn": "CharacterBody2D variant with Sprite2D (brown large), health (50 HP), speed (60), bounty (30 gold)",
+      "projectile.tscn": "Area2D with Sprite2D (small circle, gray), velocity property, target_reference, damage_value, on_body_entered signal for hit detection, lifetime (10s)",
+      "ui/build_menu.tscn": "CanvasLayer with Panel (build panel), Button (tower_basic: 100g), Button (tower_splash: 200g), Button (tower_slow: 150g), Button (tower_sniper: 250g), selected_tower_label (shows cost and description on hover)",
+      "ui/hud.tscn": "CanvasLayer with Label (gold: 200), Label (lives: 20), Label (wave: 1/5), Label (enemies_remaining: 0/10), TextureProgressBar (lives visual), Button (start_wave, active when wave not running)",
+      "ui/wave_info.tscn": "CanvasLayer with Label (wave_title: 'Wave 1'), Timer (next_wave_countdown), enemy_count_display, auto_hide after wave completes",
+      "game_over.tscn": "CanvasLayer with ColorRect (black), Label (Victory / Defeat), Label (Final Gold), Label (Waves Completed), Button (restart), Button (main_menu)"
+    },
+    "scripts/": {
+      "tower_base.gd": "Node2D script: cost, range, fire_rate, damage, health, upgrade_level, upgrade_cost. Methods: _ready() initializes range_indicator, _process handles targeting (Area2D.get_overlapping_bodies() to find enemies in range), shoot(target) spawns projectile towards closest enemy, upgrade() increases level and range/damage by 20%, on_hit(damage) decrements health. Signals: on_destroyed, on_upgraded. Range_indicator drawn as Circle2D shape.",
+      "tower_splash.gd": "Extends tower_base.gd. Override shoot() method: spawn projectile to enemy position, on projectile_hit emit splash_explosion signal, query Area2D in splash_radius and apply 50% damage to all enemies in zone",
+      "tower_slow.gd": "Extends tower_base.gd. Override shoot() method: spawn projectile, on hit apply slow effect to target (speed *= slow_factor) for slow_duration seconds using Tween",
+      "tower_sniper.gd": "Extends tower_base.gd. Override targeting: ignores closest enemy, targets highest-health or furthest-along-path enemy (min distance to goal). Single target priority.",
+      "enemy_base.gd": "CharacterBody2D script: max_health, current_health, speed, bounty, path_follow (PathFollow2D reference). _process moves along path using path_follow.progress += speed * delta. on_hit(damage) reduces health, on_death emits enemy_defeated(bounty) signal, spawns gold_display floating text, queues_free. slow_active tracks active slow effects.",
+      "enemy_ai.gd": "Extends enemy_base.gd. Custom pathfinding using NavigationAgent2D if no Path2D. Recalculates path every 2s if player places tower in path.",
+      "wave_manager.gd": "Node script: current_wave, total_waves, wave_config list [{wave_num, enemy_list: [{type, count, spawn_interval}], gold_reward, intermission_time}]. Methods: start_wave() instantiates enemies in sequence, _on_enemy_defeated() tracks killed count, on_wave_complete() grants gold_reward, start intermission_timer. Emits: wave_started, wave_completed, all_waves_completed.",
+      "economy.gd": "Node script: current_gold (200 initial), income_per_wave, on_tower_purchased(cost) subtracts cost, on_enemy_defeated(bounty) adds bounty, on_wave_complete(bonus) adds bonus. Signals: gold_changed. Methods: can_afford(cost), spend_gold(cost), add_gold(amount).",
+      "build_system.gd": "Node2D script: selected_tower_type, selected_tower_instance (preview), placement_valid flag. _input handles mouse clicks on build_menu buttons (tower_basic/splash/slow/sniper). _process moves selected_tower_instance with mouse, checks placement validity (grid_overlay collision check). on_mouse_click: if placement_valid and economy.can_afford(cost), instantiate tower, deduct gold, clear_selection.",
+      "audio_manager.gd": "Node script: bgm_player (AudioStreamPlayer), sfx dict {place_tower, shoot, hit, sell_tower, wave_start, wave_complete}, play_sfx(key) and play_bgm(stream) methods"
+    },
+    "assets/": {
+      "sprites/": "tower_basic.png (32x32 blue square), tower_splash.png (32x32 green square), tower_slow.png (32x32 cyan square), tower_sniper.png (32x32 purple square), enemy_basic.png (16x16 red circle), enemy_fast.png (16x16 orange), enemy_tank.png (24x24 brown), projectile.png (6x6 gray circle), range_indicator_ring.png (ring shape)",
+      "audio/": "bgm_level.ogg (loop), sfx_place_tower.wav, sfx_shoot.wav (laser), sfx_hit.wav (impact), sfx_sell.wav (reverse sound), sfx_wave_start.wav (ding), sfx_victory.wav",
+      "ui/": "tower_basic_icon.png, tower_splash_icon.png, tower_slow_icon.png, tower_sniper_icon.png, gold_icon.png, lives_icon.png"
+    }
+  },
+  "preBuiltMechanics": [
+    "Path2D-based enemy movement with PathFollow2D for smooth waypoint following",
+    "Tower placement system with grid validation and cost checking via economy system",
+    "Multiple tower types with distinct mechanics: basic (DPS), splash (AoE damage), slow (movement reduction), sniper (high single-target damage)",
+    "Targeting system using Area2D to detect enemies in range, prioritize by distance or health",
+    "Projectile spawning and trajectory towards target position",
+    "Wave progression system with configurable enemy counts, types, and spawn intervals",
+    "Gold economy: initial gold, kill bounties, wave completion bonuses, tower costs, upgrade costs",
+    "Tower upgrade system with 3 levels: each level increases range and damage by 20%, costs gold",
+    "Enemy health system with death detection and bounty rewards",
+    "Lives/hearts system with game over on threshold",
+    "Wave intermission timer (5-10s) between waves"
+  ],
+  "customizationPoints": [
+    "Define custom wave_config in wave_manager.gd: adjust enemy counts, spawn intervals, introduce new enemy types per wave",
+    "Create new tower types: duplicate tower_basic.tscn, create new_tower.gd extending tower_base.gd, add unique mechanics (piercing shots, chain lightning, poison area, etc.)",
+    "Modify tower_base.gd targeting logic: implement priority system (closest, furthest, lowest-health, highest-health)",
+    "Adjust economy: initial_gold, bounce_values, upgrade_costs, tower_costs, difficulty scaling (increase costs in later waves)",
+    "Customize enemy types: duplicate enemy_basic.tscn, adjust health/speed/bounty, add special behaviors (spawn_on_death, cloak, regen)",
+    "Add tower abilities: long cooldown special attacks (execute on key press or auto-trigger), resets on kill",
+    "Implement tower selling: refund 75% of tower cost, remove tower from grid",
+    "Add visual feedback: range_indicator circle shows on tower hover, place_preview shows ghost tower before confirmation",
+    "Create map variants: different path layouts, multiple paths, path intersections"
+  ],
+  "examplePrompts": [
+    "Create a 5-wave tower defense with progressively harder enemies: wave 1 has basic slow enemies, wave 5 has fast tanks mixed with cannon-fodder.",
+    "Implement a tower upgrade system where each level (1-3) increases range by 20 pixels, damage by 5 points, and costs 50 gold.",
+    "Design a splash tower that hits enemies in a 60-pixel radius with 50% damage to all enemies in the splash zone.",
+    "Add a slow tower that reduces enemy speed to 50% for 3 seconds, with visual feedback (blue tint overlay on slowed enemies).",
+    "Create an economy system where placing a tower costs gold, kills grant bounties, and wave completion bonuses accumulate.",
+    "Implement a grid-based placement system with valid/invalid zones; show red overlay on invalid placement, green on valid.",
+    "Build a wave info UI that shows current wave number, remaining enemies, time until next wave, and gold earned this wave.",
+    "Add a tower selling mechanic that refunds 75% of the tower's cost and removes it from the map."
+  ]
+}

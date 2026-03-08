@@ -1,0 +1,139 @@
+[
+  {
+    "toolSlug": "Tumblr_GetBlogInfo",
+    "toolPurpose": "Retrieve blog metadata including title, description, post count, followers, and avatar for a specified blog identifier.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "blog_identifier": {
+          "type": "string",
+          "description": "Blog identifier - can be blog name (e.g., 'staff') or hostname (e.g., 'staff.tumblr.com')"
+        }
+      },
+      "required": ["blog_identifier"]
+    },
+    "inputsSpec": {
+      "required": ["blog_identifier"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Tumblr_GetBlogPosts",
+    "toolPurpose": "List blog posts with optional filtering by content type and pagination support. Returns posts in NPF (Neue Post Format) with support for multiple post types.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "blog_identifier": {
+          "type": "string",
+          "description": "Blog identifier - can be blog name (e.g., 'staff') or hostname (e.g., 'staff.tumblr.com')"
+        },
+        "type": {
+          "type": "string",
+          "description": "Filter by post type (text, photo, quote, link, chat, audio, video)",
+          "enum": ["text", "photo", "quote", "link", "chat", "audio", "video"]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of posts to retrieve per request (default: 20, max: 50)",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for fetching additional posts (default: 0)"
+        }
+      },
+      "required": ["blog_identifier"]
+    },
+    "inputsSpec": {
+      "required": ["blog_identifier"],
+      "optional": ["type", "limit", "offset"]
+    }
+  },
+  {
+    "toolSlug": "Tumblr_SearchPosts",
+    "toolPurpose": "Search for posts across Tumblr network by tag with pagination support. Returns tagged posts from all blogs.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "description": "Tag to search for (e.g., 'photography', 'design', 'animation')"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of posts to retrieve per request (default: 20, max: 50)",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "before": {
+          "type": "integer",
+          "description": "Unix timestamp to retrieve posts before this time for pagination"
+        }
+      },
+      "required": ["tag"]
+    },
+    "inputsSpec": {
+      "required": ["tag"],
+      "optional": ["limit", "before"]
+    }
+  },
+  {
+    "toolSlug": "Tumblr_GetDashboard",
+    "toolPurpose": "Retrieve authenticated user's dashboard feed showing posts from followed blogs with optional filtering by content type and pagination.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of posts to retrieve per request (default: 20, max: 50)",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for fetching additional posts (default: 0)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Filter by post type (text, photo, quote, link, chat, audio, video)",
+          "enum": ["text", "photo", "quote", "link", "chat", "audio", "video"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "offset", "type"]
+    }
+  },
+  {
+    "toolSlug": "Tumblr_GetFollowing",
+    "toolPurpose": "List blogs followed by the authenticated user with pagination support and optional filter for blog information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of blogs to retrieve per request (default: 20, max: 50)",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for fetching additional blogs (default: 0)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "offset"]
+    }
+  }
+]

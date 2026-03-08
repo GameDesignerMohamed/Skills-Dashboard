@@ -1,0 +1,312 @@
+{
+  "tools": [
+    {
+      "toolSlug": "Medium_GetUser",
+      "toolName": "Get Authenticated User Profile",
+      "toolPurpose": "Retrieve the authenticated user's profile information including id, username, name, and profile URL",
+      "created_by": "human",
+      "httpMethod": "GET",
+      "endpoint": "/v1/me",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "inputsSpec": {
+        "auth": "Bearer Token"
+      },
+      "outputsSpec": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique Medium user ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "User's username on Medium"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full display name"
+          },
+          "url": {
+            "type": "string",
+            "description": "User's profile URL on Medium"
+          }
+        }
+      }
+    },
+    {
+      "toolSlug": "Medium_GetPublications",
+      "toolName": "List User Publications",
+      "toolPurpose": "List all publications that the authenticated user contributes to or administers",
+      "created_by": "human",
+      "httpMethod": "GET",
+      "endpoint": "/v1/users/{userId}/publications",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The user ID to fetch publications for"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "inputsSpec": {
+        "auth": "Bearer Token",
+        "pathParameters": [
+          "userId"
+        ]
+      },
+      "outputsSpec": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Publication ID"
+            },
+            "name": {
+              "type": "string",
+              "description": "Publication name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Publication description"
+            },
+            "imageUrl": {
+              "type": "string",
+              "description": "Publication cover image URL"
+            }
+          }
+        }
+      }
+    },
+    {
+      "toolSlug": "Medium_CreatePost",
+      "toolName": "Create New Post",
+      "toolPurpose": "Publish a new post under the authenticated user's profile with specified title, content, and metadata",
+      "created_by": "human",
+      "httpMethod": "POST",
+      "endpoint": "/v1/users/{userId}/posts",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The authenticated user's ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Post title",
+            "minLength": 1,
+            "maxLength": 250
+          },
+          "content": {
+            "type": "string",
+            "description": "Post content in HTML or Markdown format"
+          },
+          "contentFormat": {
+            "type": "string",
+            "enum": [
+              "html",
+              "markdown"
+            ],
+            "description": "Format of the content field"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of topic tags for the post"
+          },
+          "publishStatus": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "public",
+              "unlisted"
+            ],
+            "description": "Publication status of the post"
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original source URL if republishing content"
+          }
+        },
+        "required": [
+          "userId",
+          "title",
+          "content",
+          "contentFormat",
+          "publishStatus"
+        ]
+      },
+      "inputsSpec": {
+        "auth": "Bearer Token",
+        "pathParameters": [
+          "userId"
+        ],
+        "bodyParameters": [
+          "title",
+          "content",
+          "contentFormat",
+          "tags",
+          "publishStatus",
+          "canonicalUrl"
+        ]
+      },
+      "outputsSpec": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Newly created post ID"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL of the published post"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "public",
+              "unlisted"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "toolSlug": "Medium_CreatePostInPublication",
+      "toolName": "Create Post in Publication",
+      "toolPurpose": "Publish a new post under a specific publication that the user administers or contributes to",
+      "created_by": "human",
+      "httpMethod": "POST",
+      "endpoint": "/v1/publications/{publicationId}/posts",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "description": "The publication ID where the post will be published"
+          },
+          "title": {
+            "type": "string",
+            "description": "Post title",
+            "minLength": 1,
+            "maxLength": 250
+          },
+          "content": {
+            "type": "string",
+            "description": "Post content in HTML or Markdown format"
+          },
+          "contentFormat": {
+            "type": "string",
+            "enum": [
+              "html",
+              "markdown"
+            ],
+            "description": "Format of the content field"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of topic tags for the post"
+          },
+          "publishStatus": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "public",
+              "unlisted"
+            ],
+            "description": "Publication status of the post"
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original source URL if republishing content"
+          }
+        },
+        "required": [
+          "publicationId",
+          "title",
+          "content",
+          "contentFormat",
+          "publishStatus"
+        ]
+      },
+      "inputsSpec": {
+        "auth": "Bearer Token",
+        "pathParameters": [
+          "publicationId"
+        ],
+        "bodyParameters": [
+          "title",
+          "content",
+          "contentFormat",
+          "tags",
+          "publishStatus",
+          "canonicalUrl"
+        ]
+      },
+      "outputsSpec": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Newly created post ID"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL of the published post"
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "public",
+              "unlisted"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

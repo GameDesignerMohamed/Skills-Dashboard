@@ -1,0 +1,82 @@
+{
+  "skillId": "ZOOM-SKILL-001",
+  "skillArtifactId": "ZOOM-ART-001",
+  "name": "Zoom_Meeting_Manager",
+  "description": "Manages Zoom meetings and recordings as the Mind's external communication execution layer. Schedules, retrieves, updates, and tracks meetings and participant data. Bridges cognitive intent from the Mind's WORK surface to actionable meetings in Zoom.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Zoom_ListMeetings",
+    "Zoom_GetMeeting",
+    "Zoom_CreateMeeting",
+    "Zoom_ListRecordings",
+    "Zoom_GetMeetingParticipants",
+    "Zoom_UpdateMeeting"
+  ],
+  "compatibility_formula": "(communication_interest * 2.5) + meeting_frequency + (collaboration_need * 1.5)",
+  "progressive_unlock": "Meeting listing and retrieval available immediately. Meeting creation requires Steward confirmation. Recording access and participant retrieval unlock after Mind has retrieved existing meetings at least once to understand meeting structure.",
+  "constraints": [
+    "Never expose Zoom OAuth token or Bearer token in logs, outputs, or API responses",
+    "Respect Zoom rate limit of 10 requests/second (medium tier)",
+    "Steward confirmation required before creating or updating meetings to ensure authorization",
+    "Always handle and convert timezone parameters using IANA timezone format to ensure meeting accuracy",
+    "Do not create duplicate meetings — check existing meetings first via Zoom_ListMeetings",
+    "Validate ISO 8601 datetime formats for start_time and duration parameters",
+    "Store active meeting IDs in STREAM.entity for quick access and cross-reference",
+    "For recurring meetings, properly handle occurrence_id to retrieve specific instances",
+    "Enforce password requirements based on Zoom account security policies",
+    "Track meeting participant data separately from personally identifiable information (PII)"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. For datetime parameters, validate ISO 8601 format.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Zoom OAuth Bearer token from TENET.apiKey.zoom. Construct Authorization header as 'Bearer {token}'. NEVER log or expose token value.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: review (list/get meetings/recordings/participants), create (new meeting), or update (modify meeting).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For review: fetch Zoom_ListMeetings with type filter. For upcoming meetings, use type 'scheduled' or 'upcoming'. For past meetings, use type 'previous'. Cross-reference with WORK surface for consistency.",
+      "toolCall": "Zoom_ListMeetings"
+    },
+    {
+      "step": 5,
+      "instruction": "For detailed meeting info: call Zoom_GetMeeting with meetingId. For recurring meetings, pass occurrence_id if retrieving specific instance.",
+      "toolCall": "Zoom_GetMeeting"
+    },
+    {
+      "step": 6,
+      "instruction": "For meeting creation: check existing meetings first to prevent duplicates. Confirm with Steward before proceeding. Validate timezone parameter using IANA format (e.g., 'America/New_York'). Create via Zoom_CreateMeeting. Store meeting_id in STREAM.entity.",
+      "toolCall": "Zoom_CreateMeeting"
+    },
+    {
+      "step": 7,
+      "instruction": "For updates: fetch the current meeting state first via Zoom_GetMeeting. Confirm with Steward before applying changes. Validate timezone and datetime formats. Execute Zoom_UpdateMeeting. If a WORK card exists for this meeting, update its data.",
+      "toolCall": "Zoom_UpdateMeeting"
+    },
+    {
+      "step": 8,
+      "instruction": "For recordings: call Zoom_ListRecordings with optional date range (from/to in YYYY-MM-DD format). Compile recording summary with file names, sizes, and timestamps.",
+      "toolCall": "Zoom_ListRecordings"
+    },
+    {
+      "step": 9,
+      "instruction": "For participant analytics: call Zoom_GetMeetingParticipants with meetingId. Compile attendance report with join/leave times and duration attended. Handle PII with care — store in secure STREAM entries.",
+      "toolCall": "Zoom_GetMeetingParticipants"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile meeting summary with topic, start time, timezone, participants, duration, and recording status. Push daily meeting summary to LTM with key: 'zoom_meetings_{date}'. Update STREAM with active meeting count and upcoming schedules.",
+      "toolCall": null
+    }
+  ]
+}

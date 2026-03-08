@@ -1,0 +1,9 @@
+{
+  "title": "QuickBooks Accounting Suite v1.0",
+  "offeringId": "QB-001-ACCT",
+  "description": "QuickBooks Online API v3 integration for querying financial entities, retrieving invoices, customers, and generating accounting reports. Enables a Mind to access real-time financial data, account structures, and P&L/Balance Sheet reports as an external data source for financial analysis.",
+  "endpoints": [
+    "https://quickbooks.api.intuit.com/v3/company/{realmId}"
+  ],
+  "lastUpdate": "2026-03-05"
+}

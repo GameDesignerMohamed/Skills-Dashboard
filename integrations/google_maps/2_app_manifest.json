@@ -1,0 +1,21 @@
+{
+  "appName": "Google_Maps_Suite",
+  "description": "Google Maps Platform API integration for location services, geographic information, place discovery, and route planning.",
+  "domain": "location",
+  "use_case": "Address geocoding, reverse geocoding, place search and discovery, place details retrieval, route planning, and spatial intelligence for location-based applications.",
+  "tier": "verified",
+  "auth_type": "APIKey",
+  "header_key": "query:key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "GMaps_Geocode",
+        "GMaps_ReverseGeocode",
+        "GMaps_PlaceSearch",
+        "GMaps_PlaceDetails",
+        "GMaps_Directions"
+      ]
+    }
+  ]
+}

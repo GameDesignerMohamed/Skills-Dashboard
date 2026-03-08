@@ -1,0 +1,9 @@
+{
+  "title": "Pinterest Visual Suite v1.0",
+  "offeringId": "PIN-001-SOCIAL",
+  "description": "Pinterest API v5 integration for visual content curation and management. Enables a Mind to discover, create, and organize pins as an external visual execution layer for Steward content strategy.",
+  "endpoints": [
+    "https://api.pinterest.com/v5"
+  ],
+  "lastUpdate": "2026-03-05"
+}

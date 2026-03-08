@@ -1,0 +1,76 @@
+{
+  "templateId": "TPL-GODOT-008",
+  "name": "Top-Down Racing Starter",
+  "genre": "racing",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Top-down racing game with realistic steering mechanics, drift system, checkpoint-based lap tracking, AI opponents, minimap, and position display. Features acceleration, braking, friction, and collision with track walls.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with physics set to 2D, default scene: res://scenes/track_01.tscn, input_map: ui_accelerate (W), ui_brake (S), ui_steer_left (A), ui_steer_right (D), ui_drift (Space)",
+    "scenes/": {
+      "car_player.tscn": "CharacterBody2D with: Sprite2D (car top-down view, 32x48), CollisionShape2D (rectangle), velocity property, rotation for heading, max_speed (400), acceleration (800), braking (1200), friction (300), drift_factor (1.5), speed_current, steering_input, on_drift flag, drift_timer (tracks drift duration for boost)",
+      "car_ai.tscn": "CharacterBody2D variant inheriting car_player behavior, with path_follower (Path2D reference), ai_speed_offset (variation ±10%), lookahead_distance, target_position for path following, behavior_state (following_path, obstacle_avoid)",
+      "track_01.tscn": "Node2D root with: TileMap (track surface, white/gray), TileMap (wall_collision layer, collision group 'walls'), TileMap (grass_slow layer, friction_multiplier 0.6), Path2D (racing_line for AI, smooth waypoints around track), checkpoint instances (Area2D at positions), finish_line instance, car_player instance (spawn_pos), car_ai_1/2/3 instances (start_pos staggered), CanvasLayer (ui/hud)",
+      "checkpoint.tscn": "Area2D with Sprite2D (invisible or checkered flag, 64x16), CollisionShape2D (rectangle, flat across track), order_number property, activated_by_players array, on_checkpoint_hit signal",
+      "finish_line.tscn": "Area2D (checkpoint variant) with cross-track rectangle, large collision area, order_number (max), lap_trigger flag",
+      "ui/speedometer.tscn": "CanvasLayer with: Label (Speed: 0 km/h), TextureProgressBar (speedometer needle, 0-400 scale), color gradient red at high speed",
+      "ui/minimap.tscn": "CanvasLayer with: TextureRect (minimap background, bird's-eye track), small rect indicators for car_player (blue), car_ai x3 (red), checkpoint icons, lap counter overlay",
+      "ui/position_display.tscn": "CanvasLayer with: Label (Position: 1st / 4), Label (Lap: 1/3), Label (Time: 02:45), gap_to_first_label, gap_to_last_label",
+      "ui/race_results.tscn": "CanvasLayer with: ColorRect (black background), Label (Race Complete!), list of driver_results [{name, position, lap_count, time}], Button (restart), Button (menu)"
+    },
+    "scripts/": {
+      "car_physics.gd": "CharacterBody2D script implementing realistic steering. Properties: velocity (Vector2), current_speed, max_speed (400), acceleration (800), braking (1200), friction (300), steering_angle, max_steering_angle (45deg), angular_velocity, drift_active, drift_factor (1.5 for turning multiplier), speed_current. Methods: _physics_process applies Ackermann steering model: steering_angle = clamp(steering_input * max_steering_angle, -max_steering_angle, max_steering_angle). current_speed += acceleration * delta on forward input, -= braking * delta on brake. velocity heading updates by angular_velocity = (current_speed / wheel_base) * sin(steering_angle). If drift_active, steering response increases by drift_factor but friction increases 40%. collision detection vs walls bounces velocity. Land on grass reduces speed 40%. Update sprite rotation to match heading.",
+      "car_ai.gd": "Extends car_physics.gd. _process: get_closest_path_point(path_follow) returns target position on track path, lookahead_distance 80 pixels ahead. Calculate steering towards target. Maintain ai_speed_offset (e.g., +5% faster than normal). on_wall_collision apply avoidance by steering away. checkpoint_detection: order tracking ensures AI passes checkpoints in sequence.",
+      "race_manager.gd": "Node script: race_active flag, lap_count (3), total_laps, race_timer (seconds), player_lap, player_checkpoints_passed, ai_lap_counts array, ai_checkpoint_counts array. Methods: start_race() initializes all cars, begins race_timer. on_checkpoint_hit(car_ref, checkpoint_order) increments car's checkpoint_count, if checkpoint_order == total_checkpoints + 1, increment lap count. on_finish_line_hit() check lap_count == total_laps, set race_complete, determine finishing order by time and lap. get_position_ranking() returns position (1-4) of each car. Emits: race_started, lap_completed, race_finished.",
+      "checkpoint_system.gd": "Node script: checkpoint_list (array of checkpoint.tscn instances), finish_line reference, total_checkpoints. on_area_entered(body) checks body in [car_player, car_ai_1/2/3], emits checkpoint_hit(car, order). validate order: only trigger if car passed previous checkpoints in sequence (prevent skipping).",
+      "minimap.gd": "CanvasLayer script: track_rect (track bounds), minimap_rect (UI rect), scale_factor (track / minimap size ratio). _process updates each car indicator position: map_pos = (car_pos - track_min) * scale_factor. Draw blue dot for player, red for AI. Draw checkpoint icons in minimap space. Update lap display.",
+      "audio_manager.gd": "Node script: engine_sound (AudioStreamPlayer, pitch scales with speed 0.7-1.3), drift_sound (triggered on drift_active), checkpoint_ding (Area2D callback), finish_fanfare (on race_complete), bgm_player (looping track music)"
+    },
+    "assets/": {
+      "sprites/": "car_player_topdown.png (32x48 blue car), car_ai_topdown.png (32x48 red car), checkpoint_flag.png (64x16 checkered), finish_line_marker.png (128x16 cross), minimap_track.png (256x256 top-down track overview), speedometer_needle.png (thin line), speedometer_bg.png (circular gauge)"
+    },
+    "audio/": {
+      "engine_loop.ogg": "Looping engine sound at idle pitch, scaled pitch based on current_speed",
+      "drift_sound.wav": "Tire squeal on drift activation",
+      "checkpoint_ding.wav": "Bell sound on checkpoint pass",
+      "finish_fanfare.ogg": "Upbeat victory music on race complete",
+      "bgm_race.ogg": "Background track music looping"
+    }
+  },
+  "preBuiltMechanics": [
+    "CharacterBody2D car with realistic steering: acceleration, braking, friction, angular velocity for rotation",
+    "Ackermann steering model: steering angle affects heading rate proportional to speed",
+    "Drift mechanic: Space activates drift (friction +40%, steering response +50%) for 3s or until brake; no speed loss",
+    "Collision with track walls: velocity bounces off, speed reduced 20%",
+    "Friction modifier: grass areas reduce acceleration and max_speed by 40%",
+    "Checkpoint system: Area2D-based detection ensures cars pass checkpoints in sequence for lap counting",
+    "Lap tracking: increment lap count on finish_line hit after all checkpoints passed",
+    "AI opponents: Path2D following with lookahead (80px), speed variation (±10%), wall avoidance",
+    "Race timer: total race time tracking, lap time tracking, position determination",
+    "Position/ranking display: shows current position (1-4), gap to leader/follower, current lap",
+    "Minimap: bird's-eye view with car positions, checkpoint icons, lap indicator",
+    "Speedometer: real-time speed display with visual gauge, color feedback"
+  ],
+  "customizationPoints": [
+    "Adjust car physics: modify max_speed (300-500), acceleration (600-1200), braking strength, friction coefficient",
+    "Create multiple track variants: duplicate track_01.tscn, modify TileMap layout, define new checkpoint positions and finish_line",
+    "Customize AI difficulty: adjust ai_speed_offset (easy -5%, normal 0%, hard +10%), modify lookahead_distance (shorter = harder)",
+    "Add weather effects: rain increases friction or decreases max_speed; ice reduces friction and steering control",
+    "Implement power-up pickups: Area2D nodes on track grant temporary speed boost (1.2x), tighter turning, or invincibility (can break through cars)",
+    "Create multiple race modes: single race, championship (3 races, accumulate points), time trial (1 lap, compare times)",
+    "Add vehicle customization: upgrade acceleration, max_speed, handling; modify car color and decals",
+    "Implement leaderboard: save race times per track, show fastest lap and best position",
+    "Add sound engineering: engine pitch scales with RPM (speed), tire squeal on drift, collision impacts vary by impact force"
+  ],
+  "examplePrompts": [
+    "Create a top-down racing game with 3 laps around a figure-8 track with 8 checkpoints and a finish line.",
+    "Implement a drift mechanic triggered by Space: maintains speed but allows tighter turning with tire squeal SFX; expires after 3 seconds or on brake.",
+    "Design a realistic steering model where turning rate depends on speed; high speed requires early steering inputs, low speed allows tight turns.",
+    "Add three AI opponents that follow a Path2D racing line with ±10% speed variation; they avoid walls and pass checkpoints in order.",
+    "Build a minimap showing the track overview, player position (blue), AI positions (red), and checkpoint icons; updates in real-time.",
+    "Implement lap tracking: increment lap counter when car passes all checkpoints then crosses finish_line; race complete at 3 laps.",
+    "Create a speedometer UI displaying current speed (0-400 km/h) with needle gauge and color feedback (green-yellow-red).",
+    "Add position display showing current rank (1st-4th), gap to leader in seconds, and current lap number with countdown timer."
+  ]
+}

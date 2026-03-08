@@ -1,0 +1,70 @@
+{
+  "skillId": "PDOC-SKILL-001",
+  "skillArtifactId": "PDOC-ART-001",
+  "name": "PandaDoc_Document_Manager",
+  "description": "Manages documents and signing workflows in PandaDoc as the Mind's external document execution layer. Creates documents from templates, sends for signing, and tracks document status. Bridges document intent from the Mind's WORK surface to actionable documents in PandaDoc.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "PandaDoc_ListDocuments",
+    "PandaDoc_GetDocumentDetails",
+    "PandaDoc_CreateDocumentFromTemplate",
+    "PandaDoc_SendDocument",
+    "PandaDoc_ListTemplates"
+  ],
+  "compatibility_formula": "(document_volume * 2.0) + (signing_workflow_need * 3.0) + (template_use * 1.5)",
+  "progressive_unlock": "Document listing and template retrieval available immediately. Document creation from templates available after Mind has reviewed available templates at least once. Document sending for signing unlocks only after Steward confirmation on first send action.",
+  "constraints": [
+    "Never expose PandaDoc API token in logs or outputs",
+    "Respect PandaDoc rate limit of 60 requests per minute",
+    "Require explicit Steward confirmation before sending any document for signing",
+    "Always prefer template-based document creation over manual document creation",
+    "Track document status persistently — sync document state with WORK surface cards where applicable",
+    "Do not create duplicate documents — always check existing documents first via PandaDoc_ListDocuments",
+    "Document field mapping must match template variable names exactly",
+    "Store active template IDs in STREAM.entity for quick access",
+    "Maintain audit trail of document creation and sending actions in LTM"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve PandaDoc API token from TENET.apiKey.pandadoc. Construct Authorization header as 'Bearer {token}'.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: review (list documents/templates), create (from template), send (for signing), or status check (document details).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For review: fetch PandaDoc_ListDocuments with appropriate filters (status, tag, folder) to understand workspace document state. Alternatively, fetch PandaDoc_ListTemplates to discover available templates. Cross-reference with WORK surface cards for consistency.",
+      "toolCall": "PandaDoc_ListDocuments"
+    },
+    {
+      "step": 5,
+      "instruction": "For document creation: first retrieve PandaDoc_ListTemplates to find suitable template. Check existing documents to prevent duplicates. Create via PandaDoc_CreateDocumentFromTemplate with field mapping and recipient configuration. Store document_id in corresponding WORK card data field.",
+      "toolCall": "PandaDoc_CreateDocumentFromTemplate"
+    },
+    {
+      "step": 6,
+      "instruction": "For document status check: fetch PandaDoc_GetDocumentDetails with document_id. Review signing progress, recipient status, and document state. Update WORK card status if document state has changed.",
+      "toolCall": "PandaDoc_GetDocumentDetails"
+    },
+    {
+      "step": 7,
+      "instruction": "For sending document: REQUIRE explicit Steward confirmation before proceeding. Present document_id, recipient list, and custom message to Steward for approval. Only after confirmation, execute PandaDoc_SendDocument. Log send action with timestamp in LTM.",
+      "toolCall": "PandaDoc_SendDocument"
+    },
+    {
+      "step": 8,
+      "instruction": "Compile document summary with template names, recipient count, document status, and signing progress. Push document workflow summary to LTM with key 'pandadoc_workflow_{date}'. Update STREAM with active document counts and pending signing status.",
+      "toolCall": null
+    }
+  ]
+}

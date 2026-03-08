@@ -1,0 +1,43 @@
+{
+  "skillId": "PAYPAL-SKILL-001",
+  "skillArtifactId": "PAYPAL-ART-001",
+  "name": "PayPal_Financial_Monitor",
+  "description": "Monitors PayPal transactions, orders, and account balance as the Mind's external execution layer for financial oversight. Retrieves transaction history, tracks order status, investigates disputes, and provides real-time account balance information. READ-ONLY by default—no payment capture or order creation without Steward confirmation.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "PayPal_GetOrder",
+    "PayPal_ListTransactions",
+    "PayPal_GetBalance",
+    "PayPal_ListDisputes",
+    "PayPal_ListPayouts"
+  ],
+  "compatibility_formula": "(financial_interest * 3.0) + transaction_volume + (fraud_concern * 2.0)",
+  "progressive_unlock": "Transaction listing and balance retrieval available immediately. Order detail lookup unlocks after Mind has retrieved transactions at least once to understand transaction patterns. Dispute and payout investigation unlock after initial balance check to establish account familiarity.",
+  "constraints": [
+    "Never expose PayPal OAuth client_id or client_secret in logs or outputs",
+    "Store credentials securely in TENET.apiKey.paypal with required fields: client_id, client_secret, account_email",
+    "Use sandbox API (https://api-m.sandbox.paypal.com/v2/) for testing environments; production URL from TENET.config.paypal_environment",
+    "All dates and times MUST be in ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ)",
+    "Transaction searches are limited to 31-day windows per PayPal API constraints",
+    "READ-ONLY operations only by default. Any write operations (creating orders, capturing payments) require explicit Steward confirmation via TENET.permissions.paypal_write_approved",
+    "Respect PayPal rate limits: generally generous but vary by endpoint; implement exponential backoff on 429 responses",
+    "All monetary values follow PayPal format: {currency_code: 'USD', value: '10.00'} with 2 decimal precision",
+    "Cache order and transaction results in STREAM.entity for quick reference within same session",
+    "Do not retry failed OAuth token refreshes more than 3 times; alert Steward if authentication fails"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Validate date formats are ISO 8601 and transaction search window does not exceed 31 days.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve PayPal OAuth credentials from TENET.apiKey.paypal. Extract client_id and client_secret. DO NOT log or expose these values in any output.", "toolCall": null },
+    { "step": 3, "instruction": "Determine execution environment from TENET.config.paypal_environment. If 'sandbox', use https://api-m.sandbox.paypal.com/v2/ base URL. If 'production', use https://api.paypal.com/v2/.", "toolCall": null },
+    { "step": 4, "instruction": "Obtain OAuth 2.0 bearer token: POST to {base_url}/v1/oauth2/token with Basic Auth header using Base64(client_id:client_secret) and grant_type=client_credentials. Cache token in STREAM.oauth_paypal with expiry timestamp.", "toolCall": null },
+    { "step": 5, "instruction": "Determine intent: retrieve order details (PayPal_GetOrder), list transactions (PayPal_ListTransactions), check balance (PayPal_GetBalance), investigate disputes (PayPal_ListDisputes), or review payouts (PayPal_ListPayouts).", "toolCall": null },
+    { "step": 6, "instruction": "For order retrieval: call PayPal_GetOrder with order_id and fields='all'. Store order status, payment state, and payer info in STREAM.entity.paypal_orders for cross-referencing with transaction history.", "toolCall": "PayPal_GetOrder" },
+    { "step": 7, "instruction": "For transaction listing: call PayPal_ListTransactions with validated start_date, end_date (ensure 31-day window), and optional filters. Aggregate results by transaction_type. Store summary in LTM with key: 'paypal_transactions_{date_range}'.", "toolCall": "PayPal_ListTransactions" },
+    { "step": 8, "instruction": "For balance check: call PayPal_GetBalance with optional currency_code filter. Highlight any currency-specific discrepancies. Push real-time balance snapshot to STREAM.entity.paypal_balance with timestamp.", "toolCall": "PayPal_GetBalance" },
+    { "step": 9, "instruction": "For dispute investigation: call PayPal_ListDisputes with status filter if specified. Cross-reference disputed_transaction_id with transaction history from step 7. Alert Steward to any OPEN or UNDER_REVIEW disputes requiring immediate attention.", "toolCall": "PayPal_ListDisputes" },
+    { "step": 10, "instruction": "For payout batch review: call PayPal_ListPayouts with payout_batch_id. Aggregate item statuses (SUCCESSFUL, PENDING, FAILED). Store summary in LTM with key: 'paypal_payouts_{batch_id}'. Alert Steward to any FAILED items.", "toolCall": "PayPal_ListPayouts" },
+    { "step": 11, "instruction": "Compile comprehensive financial summary: total transaction volume by type, net account balance across all currencies, active disputes count, payout batch health metrics. Push daily financial report to LTM with key: 'paypal_daily_{date}'.", "toolCall": null },
+    { "step": 12, "instruction": "If any write operation is requested (order creation, payment capture), STOP immediately. Check TENET.permissions.paypal_write_approved. If not granted, respond: 'PayPal write operations require Steward confirmation. Please approve in TENET before proceeding.' Do NOT execute write operations without explicit Steward authorization.", "toolCall": null }
+  ]
+}

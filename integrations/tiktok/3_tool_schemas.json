@@ -1,0 +1,229 @@
+[
+  {
+    "toolSlug": "TikTok_GetUserInfo",
+    "toolPurpose": "Retrieve authenticated user profile information including display name, follower count, video count, total likes, and account verification status.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/user/info/",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "description": "Fields to retrieve (display_name, follower_count, video_count, likes_count, avatar_large_url, avatar_medium_url, avatar_small_url, is_verified, bio_description, region)",
+          "items": { "type": "string" },
+          "enum": [
+            "display_name",
+            "follower_count",
+            "video_count",
+            "likes_count",
+            "avatar_large_url",
+            "avatar_medium_url",
+            "avatar_small_url",
+            "is_verified",
+            "bio_description",
+            "region"
+          ]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "TikTok_ListVideos",
+    "toolPurpose": "Retrieve paginated list of authenticated user's published videos with metadata including video ID, title, view count, like count, comment count, and share count.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/video/list/",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "max_count": {
+          "type": "integer",
+          "description": "Maximum number of videos to return per request (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from previous response for fetching next batch of videos"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Fields to retrieve for each video",
+          "items": { "type": "string" },
+          "enum": [
+            "id",
+            "create_time",
+            "video_description",
+            "duration",
+            "height",
+            "width",
+            "title",
+            "cover_image_url",
+            "share_url",
+            "view_count",
+            "like_count",
+            "comment_count",
+            "share_count"
+          ]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["max_count", "cursor", "fields"]
+    }
+  },
+  {
+    "toolSlug": "TikTok_QueryVideos",
+    "toolPurpose": "Query specific TikTok videos by their IDs to retrieve detailed metadata and engagement metrics. Returns video details, statistics, and content information.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/video/query/",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "video_ids": {
+          "type": "array",
+          "description": "Array of video IDs to query (maximum 20 IDs per request)",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific fields to retrieve for each video",
+          "items": { "type": "string" },
+          "enum": [
+            "id",
+            "create_time",
+            "video_description",
+            "duration",
+            "height",
+            "width",
+            "title",
+            "cover_image_url",
+            "share_url",
+            "view_count",
+            "like_count",
+            "comment_count",
+            "share_count",
+            "transcribe_status",
+            "transcription_text"
+          ]
+        }
+      },
+      "required": ["video_ids"]
+    },
+    "inputsSpec": {
+      "required": ["video_ids"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "TikTok_SearchVideos",
+    "toolPurpose": "Search public TikTok videos by keyword using the Research API. Returns matching videos with engagement metrics and metadata. Requires special research approval.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/research/video/query/",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search keyword or phrase to query public videos"
+        },
+        "max_count": {
+          "type": "integer",
+          "description": "Maximum number of results to return per request (1-100, default 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor for fetching subsequent result pages"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Fields to retrieve for each video result",
+          "items": { "type": "string" },
+          "enum": [
+            "id",
+            "create_time",
+            "username",
+            "user_id",
+            "video_description",
+            "duration",
+            "height",
+            "width",
+            "title",
+            "cover_image_url",
+            "share_url",
+            "view_count",
+            "like_count",
+            "comment_count",
+            "share_count",
+            "hashtag_names"
+          ]
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["max_count", "cursor", "fields"]
+    }
+  },
+  {
+    "toolSlug": "TikTok_GetVideoComments",
+    "toolPurpose": "Retrieve comments on a specific TikTok video using the Research API. Returns paginated comment data including user info, comment text, and engagement metrics.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/research/video/comment/list/",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "video_id": {
+          "type": "string",
+          "description": "The TikTok video ID to retrieve comments from"
+        },
+        "max_count": {
+          "type": "integer",
+          "description": "Maximum number of comments to return per request (1-100, default 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor for fetching next batch of comments"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Fields to retrieve for each comment",
+          "items": { "type": "string" },
+          "enum": [
+            "id",
+            "create_time",
+            "text",
+            "like_count",
+            "parent_comment_id",
+            "user_id",
+            "username",
+            "user_avatar_url"
+          ]
+        }
+      },
+      "required": ["video_id"]
+    },
+    "inputsSpec": {
+      "required": ["video_id"],
+      "optional": ["max_count", "cursor", "fields"]
+    }
+  }
+]

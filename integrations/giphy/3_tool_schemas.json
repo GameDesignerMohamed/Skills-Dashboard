@@ -1,0 +1,167 @@
+[
+  {
+    "toolSlug": "Giphy_SearchGifs",
+    "toolPurpose": "Search for GIFs by keyword with optional rating filters, language, and pagination support.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query keyword or phrase (e.g., 'cat', 'celebration', 'reaction')"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of results to return (1-100, default 25)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for results (default 0)",
+          "minimum": 0,
+          "default": 0
+        },
+        "rating": {
+          "type": "string",
+          "description": "Filter by content rating (g, pg, pg-13, r)",
+          "enum": ["g", "pg", "pg-13", "r"]
+        },
+        "lang": {
+          "type": "string",
+          "description": "Language code for results (e.g., 'en', 'es', 'fr', 'de')",
+          "default": "en"
+        }
+      },
+      "required": ["q"]
+    },
+    "inputsSpec": {
+      "required": ["q"],
+      "optional": ["limit", "offset", "rating", "lang"]
+    }
+  },
+  {
+    "toolSlug": "Giphy_GetTrending",
+    "toolPurpose": "Retrieve trending GIFs currently popular on Giphy platform.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of trending GIFs to return (1-100, default 25)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for trending results (default 0)",
+          "minimum": 0,
+          "default": 0
+        },
+        "rating": {
+          "type": "string",
+          "description": "Filter trending GIFs by content rating (g, pg, pg-13, r)",
+          "enum": ["g", "pg", "pg-13", "r"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "offset", "rating"]
+    }
+  },
+  {
+    "toolSlug": "Giphy_GetRandom",
+    "toolPurpose": "Get a single random GIF, optionally filtered by tag or rating.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "description": "Optional tag to filter random GIFs (e.g., 'funny', 'cats', 'dance')"
+        },
+        "rating": {
+          "type": "string",
+          "description": "Filter random GIF by content rating (g, pg, pg-13, r)",
+          "enum": ["g", "pg", "pg-13", "r"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["tag", "rating"]
+    }
+  },
+  {
+    "toolSlug": "Giphy_TranslateToGif",
+    "toolPurpose": "Translate a word or phrase into a single GIF (autocomplete-style matching). Returns the best matching GIF for the input term.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "s": {
+          "type": "string",
+          "description": "Word or phrase to translate into a GIF (e.g., 'happy', 'thumbs up', 'wow')"
+        },
+        "rating": {
+          "type": "string",
+          "description": "Filter translated GIF by content rating (g, pg, pg-13, r)",
+          "enum": ["g", "pg", "pg-13", "r"]
+        }
+      },
+      "required": ["s"]
+    },
+    "inputsSpec": {
+      "required": ["s"],
+      "optional": ["rating"]
+    }
+  },
+  {
+    "toolSlug": "Giphy_SearchStickers",
+    "toolPurpose": "Search for stickers by keyword with optional rating filters and pagination.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query keyword or phrase for stickers (e.g., 'funny', 'cute', 'party')"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of sticker results to return (1-100, default 25)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for sticker results (default 0)",
+          "minimum": 0,
+          "default": 0
+        },
+        "rating": {
+          "type": "string",
+          "description": "Filter stickers by content rating (g, pg, pg-13, r)",
+          "enum": ["g", "pg", "pg-13", "r"]
+        },
+        "lang": {
+          "type": "string",
+          "description": "Language code for sticker search results (e.g., 'en', 'es', 'fr')",
+          "default": "en"
+        }
+      },
+      "required": ["q"]
+    },
+    "inputsSpec": {
+      "required": ["q"],
+      "optional": ["limit", "offset", "rating", "lang"]
+    }
+  }
+]

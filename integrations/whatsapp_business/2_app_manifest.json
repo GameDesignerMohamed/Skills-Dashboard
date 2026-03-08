@@ -1,0 +1,21 @@
+{
+  "appName": "WhatsApp_Business_Suite",
+  "description": "WhatsApp Business Cloud API integration for messaging, templates, and media sharing.",
+  "domain": "communication",
+  "use_case": "Direct messaging with Stewards and contacts via WhatsApp, template-based notifications, media sharing, and message status tracking.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "WhatsApp_SendTextMessage",
+        "WhatsApp_SendTemplateMessage",
+        "WhatsApp_SendMedia",
+        "WhatsApp_GetMessageStatus",
+        "WhatsApp_GetTemplates"
+      ]
+    }
+  ]
+}

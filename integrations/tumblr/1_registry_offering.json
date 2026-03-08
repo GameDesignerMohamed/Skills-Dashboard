@@ -1,0 +1,9 @@
+{
+  "title": "Tumblr Microblogging Suite v1.0",
+  "offeringId": "TUMBLR-001-SOCIAL",
+  "description": "Tumblr API v2 integration for AnimocaMinds/Ethoswarm platform. Enables blog discovery, post browsing, content search across the Tumblr network, dashboard feed exploration, and following management. Provides read-only access to diverse content formats (text, photo, quote, link, chat, audio, video) with modern NPF (Neue Post Format) support for rich content analysis.",
+  "endpoints": [
+    "https://api.tumblr.com/v2/"
+  ],
+  "lastUpdate": "2026-03-06"
+}

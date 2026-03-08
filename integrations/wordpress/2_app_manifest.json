@@ -1,0 +1,22 @@
+{
+  "appName": "WordPress_Suite",
+  "description": "WordPress.com REST API v1.1 integration for content management, post organization, and site analytics.",
+  "domain": "content",
+  "use_case": "Post creation and management, content organization, category and tag management, site statistics tracking, and publication workflow.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "WordPress_ListPosts",
+        "WordPress_GetPost",
+        "WordPress_CreatePost",
+        "WordPress_UpdatePost",
+        "WordPress_ListCategories",
+        "WordPress_GetStats"
+      ]
+    }
+  ]
+}

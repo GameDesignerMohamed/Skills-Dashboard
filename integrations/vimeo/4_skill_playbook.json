@@ -1,0 +1,36 @@
+{
+  "skillId": "VIME-SKILL-001",
+  "skillArtifactId": "VIME-ART-001",
+  "name": "Vimeo_Video_Explorer",
+  "description": "Manages Vimeo video discovery and exploration as a comprehensive video research tool — searching video libraries, retrieving detailed video information, accessing personal video collections, exploring channel content, and curating multimedia discoveries within Vimeo's ecosystem.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Vimeo_SearchVideos",
+    "Vimeo_GetVideo",
+    "Vimeo_GetMyVideos",
+    "Vimeo_GetChannel",
+    "Vimeo_GetChannelVideos"
+  ],
+  "compatibility_formula": "(media_interest * 2.5) + (content_research_frequency * 1.5) + (channel_exploration_count)",
+  "progressive_unlock": "Advanced search filtering and channel exploration unlock after Mind demonstrates 5+ successful video discovery queries.",
+  "constraints": [
+    "Never expose Vimeo integration token in logs or outputs",
+    "Respect Vimeo API rate limit of 500 requests per minute",
+    "All operations are read-only — no video uploads, modifications, or deletions permitted",
+    "Authenticated user queries (GetMyVideos) require valid OAuth 2.0 bearer token",
+    "Maximum pagination per_page value is 100; enforce upper bound on all paginated requests",
+    "Store frequently accessed video IDs and channel information in STREAM.entity for quick retrieval",
+    "Cache video metadata for 5 minutes to minimize redundant API calls"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Validate pagination values (page >= 1, per_page <= 100).", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Vimeo integration token from TENET.apiKey.vimeo. Construct Authorization header as 'Bearer {token}'. Prepare base URL https://api.vimeo.com/.", "toolCall": null },
+    { "step": 3, "instruction": "Determine operation type: search, get_video, get_user_videos, get_channel, or get_channel_videos. Route to appropriate Vimeo API endpoint.", "toolCall": null },
+    { "step": 4, "instruction": "For search operations: execute Vimeo_SearchVideos with query and optional filters (sort, direction, pagination). Parse results to extract video IDs, titles, descriptions, thumbnails, view counts, and duration. Format as structured list.", "toolCall": "Vimeo_SearchVideos" },
+    { "step": 5, "instruction": "For single video operations: execute Vimeo_GetVideo with video_id. Extract comprehensive metadata including title, description, duration, view count, likes, comments, upload date, thumbnail URL, and embedded playback URL.", "toolCall": "Vimeo_GetVideo" },
+    { "step": 6, "instruction": "For user library operations: execute Vimeo_GetMyVideos with optional sort and pagination parameters. Return authenticated user's video collection with metadata for each video. Store user video IDs in STREAM.entity.", "toolCall": "Vimeo_GetMyVideos" },
+    { "step": 7, "instruction": "For channel operations: first execute Vimeo_GetChannel with channel_id to retrieve channel metadata (name, description, subscriber count, channel URL). Then execute Vimeo_GetChannelVideos to retrieve all videos in that channel with pagination.", "toolCall": "Vimeo_GetChannel" },
+    { "step": 8, "instruction": "Format results for Steward consumption. For video lists, apply pagination summary showing total count and current page. For detailed videos, highlight key metadata (duration, view count, upload date). Push important video discoveries to LTM if content relevance warrants persistence." }
+  ]
+}

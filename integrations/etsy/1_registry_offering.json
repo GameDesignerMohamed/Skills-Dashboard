@@ -1,0 +1,9 @@
+{
+  "title": "Etsy Marketplace Suite v1.0",
+  "offeringId": "ETSY-001-MRKT",
+  "description": "Etsy Open API v3 integration for querying product listings, shop information, and marketplace data. Enables read-only access to active listings, shop details, and marketplace analytics for ecommerce research, seller monitoring, and product discovery.",
+  "endpoints": [
+    "https://openapi.etsy.com/v3/"
+  ],
+  "lastUpdate": "2026-03-06"
+}

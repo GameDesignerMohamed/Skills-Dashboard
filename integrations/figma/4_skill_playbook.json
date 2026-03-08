@@ -1,0 +1,39 @@
+{
+  "skillId": "FIGMA-SKILL-001",
+  "skillArtifactId": "FIGMA-ART-001",
+  "name": "Figma_Design_Inspector",
+  "description": "Inspects and analyzes design files in Figma as the Mind's external design interface. Retrieves file structures, component libraries, design tokens, and feedback. Bridges design system understanding from the Mind's DESIGN surface to actionable design insights and asset exports.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Figma_GetFile",
+    "Figma_GetFileNodes",
+    "Figma_GetComments",
+    "Figma_GetImages",
+    "Figma_ListProjects"
+  ],
+  "compatibility_formula": "(design_interest * 3.0) + (component_usage * 2.0) + (collaboration_need * 1.5)",
+  "progressive_unlock": "File reading and comment retrieval available immediately. Image export functionality unlocks after Mind has successfully retrieved at least one file structure to understand component hierarchy. Project listing requires team_id configuration.",
+  "constraints": [
+    "Never expose Figma Personal Access Token in logs or outputs",
+    "Respect Figma rate limit of 30 requests per minute per token",
+    "Read-only access only — do not attempt create, update, or delete operations on design files",
+    "Validate file_key and node IDs before API requests to prevent 404 errors",
+    "Cache file structures in STREAM.entity for quick reference across multiple tool calls",
+    "Store component library snapshots in LTM with key: 'figma_components_{file_key}_{version}'",
+    "When exporting images, prioritize PNG for raster elements and SVG for vector components",
+    "Respect file access permissions — only retrieve projects and files the authenticated user has access to",
+    "Use pagination cursors for large comment or project lists to avoid timeout errors"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed (file_key, ids, team_id as applicable).", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Figma Personal Access Token from TENET.apiKey.figma. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: inspect (get file/nodes), review feedback (get comments), export assets (get images), or navigate (list projects).", "toolCall": null },
+    { "step": 4, "instruction": "For file inspection: fetch Figma_GetFile with file_key and appropriate depth. Parse file structure to identify pages, frames, components, and design tokens. Store component metadata in STREAM.entity for reference.", "toolCall": "Figma_GetFile" },
+    { "step": 5, "instruction": "For node inspection: use Figma_GetFileNodes with specific node IDs to retrieve detailed properties (dimensions, colors, typography, constraints). Useful for analyzing individual components or design system elements.", "toolCall": "Figma_GetFileNodes" },
+    { "step": 6, "instruction": "For feedback review: fetch Figma_GetComments to retrieve design feedback and review threads. Filter by resolved status if needed. Summarize unresolved feedback for Steward visibility.", "toolCall": "Figma_GetComments" },
+    { "step": 7, "instruction": "For asset export: call Figma_GetImages with node IDs and desired format (PNG for raster, SVG for vector). Include scale parameter for high-DPI exports if needed. Return download URLs to Steward.", "toolCall": "Figma_GetImages" },
+    { "step": 8, "instruction": "For project navigation: use Figma_ListProjects with team_id to discover available projects. Implement pagination for teams with many projects. Store project mapping in STREAM.entity with project_id -> name reference.", "toolCall": "Figma_ListProjects" },
+    { "step": 9, "instruction": "Compile design analysis summary including file metadata, component count, pending feedback count, and recently modified dates. Push design system snapshot to LTM with timestamp. Update STREAM with active file keys and component library versions.", "toolCall": null }
+  ]
+}

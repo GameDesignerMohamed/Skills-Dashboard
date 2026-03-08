@@ -1,0 +1,9 @@
+{
+  "title": "Eventbrite Events Suite v1.0",
+  "offeringId": "EB-001-EVENTS",
+  "description": "Eventbrite REST API v3 integration for searching, managing, and tracking events. Enables a Mind to discover public events, manage user events, retrieve attendee information, and access venue details as an external execution layer for event discovery and coordination.",
+  "endpoints": [
+    "https://www.eventbriteapi.com/v3"
+  ],
+  "lastUpdate": "2026-03-05"
+}

@@ -1,0 +1,21 @@
+{
+  "appName": "Eventbrite_Suite",
+  "description": "Eventbrite REST API v3 integration for event discovery, management, attendee tracking, and venue information.",
+  "domain": "events",
+  "use_case": "Event searching and discovery, user event management, attendee list retrieval, event details lookup, and venue information access.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Eventbrite_SearchEvents",
+        "Eventbrite_GetEvent",
+        "Eventbrite_ListUserEvents",
+        "Eventbrite_GetEventAttendees",
+        "Eventbrite_GetVenue"
+      ]
+    }
+  ]
+}

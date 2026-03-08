@@ -1,0 +1,43 @@
+{
+  "skillId": "TWITCH-SKILL-001",
+  "skillArtifactId": "TWITCH-ART-001",
+  "name": "Twitch_Stream_Explorer",
+  "description": "Explores Twitch streams, games, channels, and clips as the Mind's content discovery and gaming insights layer. Retrieves live stream data, discovers trending content, researches channels, and curates gaming information. Bridges content curation intent from the Mind to Twitch's live streaming ecosystem.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Twitch_SearchChannels",
+    "Twitch_GetStreams",
+    "Twitch_GetUsers",
+    "Twitch_GetTopGames",
+    "Twitch_GetChannelInfo",
+    "Twitch_GetClips"
+  ],
+  "compatibility_formula": "(gaming_interest * 2.0) + (content_curation_need * 1.8) + stream_discovery_frequency",
+  "progressive_unlock": "Channel search and stream browsing available immediately. Top games and stream data retrieval unlock after Mind has completed at least one successful channel search to verify API connectivity.",
+  "constraints": [
+    "READ-ONLY operations only — no stream modifications, chat posting, or channel updates",
+    "Never expose Twitch OAuth token or Client-ID in logs or outputs",
+    "Respect Twitch rate limit of 800 points per minute (most endpoints cost 1 point)",
+    "All API requests require both Bearer token AND Client-ID header",
+    "User IDs are numeric strings, never use display names directly in API calls",
+    "Always resolve usernames to numeric IDs via Twitch_GetUsers before making broadcaster_id API calls",
+    "Use cursor-based pagination with 'after' parameter, not page numbers",
+    "Store access_token and client_id separately in TENET.apiKey.twitch",
+    "Cache retrieved channel/game/user data in STREAM.entity for 5-minute validity to reduce API calls",
+    "Do not make duplicate API calls within 30 seconds for the same query"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Twitch API credentials from TENET.apiKey.twitch. Construct Authorization header as 'Bearer {access_token}' and Client-Id header with {client_id}. Both headers are required on every request.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: search (channels), discover (streams/games), lookup (users/channel info), or review (clips).", "toolCall": null },
+    { "step": 4, "instruction": "For channel search: execute Twitch_SearchChannels with query. Return paginated results with cursor for additional pages.", "toolCall": "Twitch_SearchChannels" },
+    { "step": 5, "instruction": "For stream discovery: execute Twitch_GetStreams. If filtering by game, use game_id (numeric). If filtering by broadcaster, use user_id (numeric). Cache results in STREAM.entity with timestamp.", "toolCall": "Twitch_GetStreams" },
+    { "step": 6, "instruction": "For username resolution: When user provides display name, call Twitch_GetUsers with login array parameter to resolve to numeric user_id before making broadcaster_id-dependent API calls.", "toolCall": "Twitch_GetUsers" },
+    { "step": 7, "instruction": "For game exploration: execute Twitch_GetTopGames to discover trending games sorted by viewer count. Store game_id mappings in STREAM.entity.", "toolCall": "Twitch_GetTopGames" },
+    { "step": 8, "instruction": "For channel info: execute Twitch_GetChannelInfo with broadcaster_id (resolved to numeric ID). Return channel name, category, description, and language metadata.", "toolCall": "Twitch_GetChannelInfo" },
+    { "step": 9, "instruction": "For clip discovery: execute Twitch_GetClips with broadcaster_id. Support optional date range filtering via started_at and ended_at. Use pagination for large clip sets.", "toolCall": "Twitch_GetClips" },
+    { "step": 10, "instruction": "Check API rate limit via response headers. If approaching 800-point limit, queue remaining requests. Log rate limit status to LTM with key: 'twitch_rate_limit_{timestamp}'.", "toolCall": null },
+    { "step": 11, "instruction": "Compile discovery summary with channel names, live stream titles, viewer counts, trending games, and clip metadata. Push content curation insights to LTM with key: 'twitch_discovery_{date}'. Update STREAM with cached data.", "toolCall": null }
+  ]
+}

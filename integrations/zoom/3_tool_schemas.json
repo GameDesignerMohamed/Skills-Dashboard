@@ -1,0 +1,316 @@
+[
+  {
+    "toolSlug": "Zoom_ListMeetings",
+    "toolPurpose": "Retrieve all scheduled meetings for a specific user, with optional pagination and status filtering.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/users/{userId}/meetings",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user ID for which to list meetings (typically 'me' for authenticated user)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Meeting type filter: 'scheduled', 'live', 'upcoming', or 'previous'",
+          "enum": ["scheduled", "live", "upcoming", "previous"]
+        },
+        "page_size": {
+          "type": "integer",
+          "description": "Number of meetings to return (default: 30, max: 300)",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 30
+        },
+        "page_number": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "required": ["userId"]
+    },
+    "inputsSpec": {
+      "required": ["userId"],
+      "optional": ["type", "page_size", "page_number"]
+    }
+  },
+  {
+    "toolSlug": "Zoom_GetMeeting",
+    "toolPurpose": "Retrieve detailed information about a specific meeting by its ID.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/meetings/{meetingId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "meetingId": {
+          "type": "string",
+          "description": "The unique meeting ID (numeric or UUID format)"
+        },
+        "occurrence_id": {
+          "type": "string",
+          "description": "For recurring meetings, the occurrence ID to retrieve a specific instance"
+        }
+      },
+      "required": ["meetingId"]
+    },
+    "inputsSpec": {
+      "required": ["meetingId"],
+      "optional": ["occurrence_id"]
+    }
+  },
+  {
+    "toolSlug": "Zoom_CreateMeeting",
+    "toolPurpose": "Schedule a new meeting for a user with topic, start time, duration, and meeting settings.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/users/{userId}/meetings",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user ID for which to create the meeting (typically 'me' for authenticated user)"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Meeting title/topic"
+        },
+        "type": {
+          "type": "integer",
+          "description": "Meeting type: 1 (instant), 2 (scheduled), 3 (recurring without fixed repeat), 8 (recurring with fixed repeat)",
+          "enum": [1, 2, 3, 8]
+        },
+        "start_time": {
+          "type": "string",
+          "description": "Meeting start time in ISO 8601 format (YYYY-MM-DDTHH:MM:SS or YYYY-MM-DDTHH:MM:SSZ)"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Meeting duration in minutes"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone for the meeting (IANA timezone format, e.g., 'America/New_York')"
+        },
+        "password": {
+          "type": "string",
+          "description": "Meeting password for security"
+        },
+        "agenda": {
+          "type": "string",
+          "description": "Meeting agenda/description"
+        },
+        "settings": {
+          "type": "object",
+          "description": "Meeting settings (host_video, participant_video, join_before_host, mute_upon_entry, waiting_room, auto_recording, etc.)",
+          "properties": {
+            "host_video": {
+              "type": "boolean",
+              "description": "Whether host video is on"
+            },
+            "participant_video": {
+              "type": "boolean",
+              "description": "Whether participants can have video on"
+            },
+            "join_before_host": {
+              "type": "boolean",
+              "description": "Whether participants can join before host"
+            },
+            "mute_upon_entry": {
+              "type": "boolean",
+              "description": "Whether participants are muted upon entry"
+            },
+            "waiting_room": {
+              "type": "boolean",
+              "description": "Whether waiting room is enabled"
+            },
+            "auto_recording": {
+              "type": "string",
+              "description": "Auto-record setting: 'none', 'local', or 'cloud'",
+              "enum": ["none", "local", "cloud"]
+            }
+          }
+        },
+        "recurrence": {
+          "type": "object",
+          "description": "Recurrence pattern for recurring meetings",
+          "properties": {
+            "type": {
+              "type": "integer",
+              "description": "Recurrence type: 1 (daily), 2 (weekly), 3 (monthly)",
+              "enum": [1, 2, 3]
+            },
+            "repeat_interval": {
+              "type": "integer",
+              "description": "Repeat interval"
+            },
+            "end_times": {
+              "type": "integer",
+              "description": "Number of occurrences"
+            },
+            "end_date_time": {
+              "type": "string",
+              "description": "End date/time for recurrence in ISO 8601 format"
+            }
+          }
+        }
+      },
+      "required": ["userId", "topic", "type"]
+    },
+    "inputsSpec": {
+      "required": ["userId", "topic", "type"],
+      "optional": ["start_time", "duration", "timezone", "password", "agenda", "settings", "recurrence"]
+    }
+  },
+  {
+    "toolSlug": "Zoom_ListRecordings",
+    "toolPurpose": "Retrieve all cloud recordings for a user with pagination and filtering options.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/users/{userId}/recordings",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user ID for which to list recordings (typically 'me' for authenticated user)"
+        },
+        "page_size": {
+          "type": "integer",
+          "description": "Number of recordings to return (default: 30, max: 300)",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 30
+        },
+        "page_number": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1,
+          "default": 1
+        },
+        "from": {
+          "type": "string",
+          "description": "Start date in YYYY-MM-DD format to filter recordings"
+        },
+        "to": {
+          "type": "string",
+          "description": "End date in YYYY-MM-DD format to filter recordings"
+        }
+      },
+      "required": ["userId"]
+    },
+    "inputsSpec": {
+      "required": ["userId"],
+      "optional": ["page_size", "page_number", "from", "to"]
+    }
+  },
+  {
+    "toolSlug": "Zoom_GetMeetingParticipants",
+    "toolPurpose": "Retrieve list of participants who attended a past meeting, including duration and join/leave times.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/past_meetings/{meetingId}/participants",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "meetingId": {
+          "type": "string",
+          "description": "The unique meeting ID"
+        },
+        "page_size": {
+          "type": "integer",
+          "description": "Number of participants to return (default: 30, max: 300)",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 30
+        },
+        "page_number": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "required": ["meetingId"]
+    },
+    "inputsSpec": {
+      "required": ["meetingId"],
+      "optional": ["page_size", "page_number"]
+    }
+  },
+  {
+    "toolSlug": "Zoom_UpdateMeeting",
+    "toolPurpose": "Update an existing meeting's topic, time, duration, settings, or other properties.",
+    "created_by": "human",
+    "httpMethod": "PATCH",
+    "endpoint": "/meetings/{meetingId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "meetingId": {
+          "type": "string",
+          "description": "The unique meeting ID to update"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Updated meeting title/topic"
+        },
+        "start_time": {
+          "type": "string",
+          "description": "Updated meeting start time in ISO 8601 format"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Updated meeting duration in minutes"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Updated timezone for the meeting"
+        },
+        "password": {
+          "type": "string",
+          "description": "Updated meeting password"
+        },
+        "agenda": {
+          "type": "string",
+          "description": "Updated meeting agenda/description"
+        },
+        "settings": {
+          "type": "object",
+          "description": "Updated meeting settings",
+          "properties": {
+            "host_video": {
+              "type": "boolean"
+            },
+            "participant_video": {
+              "type": "boolean"
+            },
+            "join_before_host": {
+              "type": "boolean"
+            },
+            "mute_upon_entry": {
+              "type": "boolean"
+            },
+            "waiting_room": {
+              "type": "boolean"
+            },
+            "auto_recording": {
+              "type": "string",
+              "enum": ["none", "local", "cloud"]
+            }
+          }
+        }
+      },
+      "required": ["meetingId"]
+    },
+    "inputsSpec": {
+      "required": ["meetingId"],
+      "optional": ["topic", "start_time", "duration", "timezone", "password", "agenda", "settings"]
+    }
+  }
+]

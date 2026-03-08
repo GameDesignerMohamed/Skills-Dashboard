@@ -1,0 +1,41 @@
+{
+  "skillId": "XERO-SKILL-001",
+  "skillArtifactId": "XERO-ART-001",
+  "name": "Xero_Financial_Analyst",
+  "description": "Manages financial operations and analysis in Xero as the Mind's external accounting layer. Retrieves invoices, analyzes financial reports, manages contacts, and maintains chart of accounts. Bridges financial intent from the Mind's analysis engine to actionable accounting operations in Xero.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Xero_ListInvoices",
+    "Xero_GetInvoice",
+    "Xero_ListContacts",
+    "Xero_GetProfitAndLoss",
+    "Xero_GetBalanceSheet",
+    "Xero_ListAccounts"
+  ],
+  "compatibility_formula": "(financial_interest * 2.8) + accounting_volume + (reporting_need * 1.6)",
+  "progressive_unlock": "Invoice and contact retrieval available immediately. Financial report access unlocks after Mind has retrieved invoices at least once to establish financial context. Account structure understanding enabled after balance sheet review.",
+  "constraints": [
+    "Never expose Xero API token or OAuth credentials in logs or outputs",
+    "Respect Xero rate limit of 60 requests per minute per tenant",
+    "Always include Xero-Tenant-Id header for multi-organization environments",
+    "Validate invoices against contact records before generating payment recommendations",
+    "Do not modify account structures without explicit Steward confirmation",
+    "Ensure all date filters use ISO 8601 format (YYYY-MM-DD) for consistency",
+    "Cache P&L and balance sheet reports for 1 hour to avoid redundant API calls",
+    "Store active tenant ID in STREAM.entity for quick multi-org access",
+    "Maintain audit trail of all financial data retrievals in LTM"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Ensure date parameters follow ISO 8601 format.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Xero OAuth token from TENET.apiKey.xero and Xero-Tenant-Id from TENET.xero.tenantId. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine financial intent: invoice review (list/get invoices), contact management (list contacts), financial reporting (P&L/balance sheet), or chart of accounts review.", "toolCall": null },
+    { "step": 4, "instruction": "For invoice analysis: fetch Xero_ListInvoices with appropriate status and date filters. For overdue review, filter Status='SUBMITTED' and DateTo < today. For revenue analysis, use Type='ACCREC' with DateFrom and DateTo.", "toolCall": "Xero_ListInvoices" },
+    { "step": 5, "instruction": "For detailed invoice inspection: retrieve specific invoice via Xero_GetInvoice using InvoiceID. Extract line items, amounts, payment terms, and contact information for reconciliation.", "toolCall": "Xero_GetInvoice" },
+    { "step": 6, "instruction": "For financial reporting: execute Xero_GetProfitAndLoss with specified date range. Compare periods if requested for trend analysis. Extract revenue, expense, and net profit figures.", "toolCall": "Xero_GetProfitAndLoss" },
+    { "step": 7, "instruction": "For balance sheet analysis: execute Xero_GetBalanceSheet with specified date. Extract assets, liabilities, and equity totals. Validate balance sheet equation (Assets = Liabilities + Equity).", "toolCall": "Xero_GetBalanceSheet" },
+    { "step": 8, "instruction": "For contact management: retrieve Xero_ListContacts with optional name/status filters. Cross-reference with recent invoices to identify key revenue sources or payment issues.", "toolCall": "Xero_ListContacts" },
+    { "step": 9, "instruction": "For account structure review: list Xero_ListAccounts with optional type filters. Build account mapping for expense/revenue categorization. Store mapping in STREAM for quick reference.", "toolCall": "Xero_ListAccounts" },
+    { "step": 10, "instruction": "Compile financial summary: aggregate invoice totals, report key metrics (revenue, expenses, net profit, current ratio). Push financial analysis to LTM with key: 'xero_financial_summary_{date}'. Flag overdue invoices or unusual account balances for Steward attention." }
+  ]
+}

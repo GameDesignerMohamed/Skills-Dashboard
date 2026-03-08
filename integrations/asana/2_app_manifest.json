@@ -1,0 +1,22 @@
+{
+  "appName": "Asana_Suite",
+  "description": "Asana REST API v1.0 integration for project management, task organization, and team workflow coordination.",
+  "domain": "project_management",
+  "use_case": "Task creation and management, project organization, team collaboration, due date tracking, task assignment, and workspace management.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Asana_ListTasks",
+        "Asana_GetTask",
+        "Asana_CreateTask",
+        "Asana_UpdateTask",
+        "Asana_ListProjects",
+        "Asana_SearchTasks"
+      ]
+    }
+  ]
+}

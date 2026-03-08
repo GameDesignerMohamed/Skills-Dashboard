@@ -1,0 +1,143 @@
+[
+  {
+    "toolSlug": "Salesforce_Query",
+    "toolPurpose": "Execute a SOQL (Salesforce Object Query Language) query to retrieve records from Salesforce objects with filtering, sorting, and field selection.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "SOQL query string (e.g., 'SELECT Id, Name, Phone FROM Account WHERE Industry = \"Technology\" ORDER BY CreatedDate DESC LIMIT 100')"
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Salesforce_GetRecord",
+    "toolPurpose": "Retrieve a specific Salesforce record by its ID and sObject type, returning all standard and custom fields.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sObjectType": {
+          "type": "string",
+          "description": "Salesforce object type (e.g., 'Account', 'Contact', 'Opportunity', 'Case', 'Lead')"
+        },
+        "recordId": {
+          "type": "string",
+          "description": "18-character Salesforce record ID"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Optional array of specific fields to retrieve. If omitted, returns all accessible fields.",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["sObjectType", "recordId"]
+    },
+    "inputsSpec": {
+      "required": ["sObjectType", "recordId"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Salesforce_SearchRecords",
+    "toolPurpose": "Execute a SOSL (Salesforce Object Search Language) full-text search across multiple sObjects simultaneously.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "searchTerm": {
+          "type": "string",
+          "description": "Search term or phrase (e.g., 'Acme Corp', 'John Smith')"
+        },
+        "sObjectTypes": {
+          "type": "array",
+          "description": "Array of sObject types to search across (e.g., ['Account', 'Contact', 'Lead']). If omitted, searches all searchable objects.",
+          "items": { "type": "string" }
+        },
+        "fields": {
+          "type": "array",
+          "description": "Optional array of specific fields to return in results",
+          "items": { "type": "string" }
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return per sObject (default: 20, max: 200)",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "required": ["searchTerm"]
+    },
+    "inputsSpec": {
+      "required": ["searchTerm"],
+      "optional": ["sObjectTypes", "fields", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Salesforce_ListObjects",
+    "toolPurpose": "List all available sObjects (standard and custom objects) in the Salesforce organization with basic metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Optional substring to filter object names (e.g., 'Account' returns Account, AccountContactRole, etc.)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["query"]
+    }
+  },
+  {
+    "toolSlug": "Salesforce_DescribeObject",
+    "toolPurpose": "Retrieve detailed metadata for a specific sObject, including field definitions, relationships, permissions, and API access details.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sObjectType": {
+          "type": "string",
+          "description": "Salesforce object type (e.g., 'Account', 'Contact', 'Opportunity')"
+        }
+      },
+      "required": ["sObjectType"]
+    },
+    "inputsSpec": {
+      "required": ["sObjectType"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Salesforce_GetRecentItems",
+    "toolPurpose": "Retrieve recently viewed Salesforce records across all object types, useful for quick access to frequently accessed items.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of recent items to retrieve (default: 10, max: 200)",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit"]
+    }
+  }
+]

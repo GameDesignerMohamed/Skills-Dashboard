@@ -1,0 +1,9 @@
+{
+  "title": "Salesforce CRM Suite v1.0",
+  "offeringId": "SF-001-CRM",
+  "description": "Salesforce REST API v59.0 integration for querying, retrieving, and searching CRM records. Enables a Mind to interact with Accounts, Contacts, Opportunities, Cases, and other sObjects for data aggregation and business process automation.",
+  "endpoints": [
+    "https://{instance}.salesforce.com/services/data/v59.0"
+  ],
+  "lastUpdate": "2026-03-05"
+}

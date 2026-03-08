@@ -1,0 +1,9 @@
+{
+  "title": "SoundCloud Music Exploration Suite v1.0",
+  "offeringId": "SOUNDCLOUD-001-MUSIC",
+  "description": "SoundCloud REST API v2.0 integration for discovering, searching, and exploring music content. Enables a Mind to retrieve track metadata, user profiles, and playlist information as a read-only music discovery and curation layer for the Ethoswarm platform.",
+  "endpoints": [
+    "https://api.soundcloud.com"
+  ],
+  "lastUpdate": "2026-03-06"
+}

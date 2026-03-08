@@ -1,0 +1,86 @@
+{
+  "skillId": "TUMBLR-SKILL-001",
+  "skillArtifactId": "TUMBLR-ART-001",
+  "name": "Tumblr_Content_Explorer",
+  "description": "Manages content discovery and exploration across the Tumblr network as the Mind's microblogging exploration layer. Retrieves blog metadata, browses diverse post types, searches trending tags, explores dashboard feeds from followed blogs, and manages following lists. Bridges content curation interests from the Mind to rich microblogging content discovery in Tumblr's diverse creative ecosystem.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Tumblr_GetBlogInfo",
+    "Tumblr_GetBlogPosts",
+    "Tumblr_SearchPosts",
+    "Tumblr_GetDashboard",
+    "Tumblr_GetFollowing"
+  ],
+  "compatibility_formula": "(content_discovery_interest * 2.5) + (microblogging_preference * 2.0) + (community_interest * 1.5) + (visual_content_interest * 1.0)",
+  "progressive_unlock": "Blog info and post retrieval available immediately for any blog. Tag search and dashboard access unlock after Mind authenticates with Tumblr OAuth token. Following list management unlocks after first dashboard retrieval to establish user context.",
+  "constraints": [
+    "Never expose Tumblr OAuth 2.0 access token in logs, outputs, or debug information. Store securely in TENET.apiKey.tumblr",
+    "Respect Tumblr API rate limits: 1000 requests per hour per token, 5000 requests per day maximum",
+    "Blog identifier format: accept both short form (e.g., 'staff') and full hostname form (e.g., 'staff.tumblr.com'). Normalize both to blog name for API calls",
+    "Construct all API endpoints as https://api.tumblr.com/v2/ with appropriate resource paths",
+    "Authorization header format: 'Bearer {access_token}' — ensure proper OAuth 2.0 token formatting",
+    "Post types are mutually exclusive: text, photo, quote, link, chat, audio, video. Validate filter parameters before API call",
+    "NPF (Neue Post Format) is the modern Tumblr content standard — parse and extract content blocks appropriately",
+    "Pagination: use offset-based pagination for blog posts and dashboard; use before timestamp for tag search",
+    "Limit parameters enforce API maximums: hard cap at 50 posts per request. Respect default values if not specified",
+    "Dashboard access requires authenticated user (bearer token) — will return error without valid OAuth token",
+    "Read-only access: no post creation, editing, deletion, or reblogging operations without explicit Steward confirmation and separate write permissions",
+    "Store frequently accessed blog identifiers and metadata in STREAM.entity for performance optimization and reduce redundant API calls",
+    "Monitor rate limit response headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset) from all API responses",
+    "Implement exponential backoff strategy for 429 (Too Many Requests) responses. Notify Steward if approaching rate limits",
+    "Tag search results may include sensitive content — flag adult content tags and respect user preference for content filtering"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed (blog_identifier format, post types, limit ranges).",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Tumblr OAuth 2.0 access token from TENET.apiKey.tumblr. Construct Authorization header as 'Bearer {access_token}'. Verify token existence for operations requiring authentication (GetDashboard, GetFollowing).",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine operation intent: blog exploration (GetBlogInfo, GetBlogPosts), content discovery (SearchPosts), feed consumption (GetDashboard), or social discovery (GetFollowing). Route to appropriate tool.",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For blog metadata retrieval (GetBlogInfo): normalize blog_identifier to blog name format. Execute API call to /blog/{blog-identifier}/info. Extract and format: blog title, description, post count, follower count, avatar URL, updated timestamp.",
+      "toolCall": "Tumblr_GetBlogInfo"
+    },
+    {
+      "step": 5,
+      "instruction": "For blog post retrieval (GetBlogPosts): normalize blog_identifier. Execute API call to /blog/{blog-identifier}/posts with optional type filter and pagination (limit, offset). Parse NPF content blocks for each post type. Extract: post ID, date, content blocks, tags, note count, reblog count, source attribution.",
+      "toolCall": "Tumblr_GetBlogPosts"
+    },
+    {
+      "step": 6,
+      "instruction": "For tag-based search (SearchPosts): execute API call to /tagged?tag={tag}&limit={limit}&before={timestamp}. Parse response array of posts across all blogs tagged with query. Extract: post ID, blog name, author, content preview, full content in NPF, engagement metrics, timestamp. Cache search results in STREAM.cache for related queries.",
+      "toolCall": "Tumblr_SearchPosts"
+    },
+    {
+      "step": 7,
+      "instruction": "For dashboard feed retrieval (GetDashboard): REQUIRES authenticated user. Execute API call to /user/dashboard?limit={limit}&offset={offset}&type={type}. Parse response array of posts from followed blogs. Extract: blog source, author, content, engagement metrics, timestamp, followed-blog indicator.",
+      "toolCall": "Tumblr_GetDashboard"
+    },
+    {
+      "step": 8,
+      "instruction": "For following list retrieval (GetFollowing): REQUIRES authenticated user. Execute API call to /user/following?limit={limit}&offset={offset}. Parse response array of blog objects. Extract: blog name, blog URL, avatar, description, post count, follower count. Store followed blog list in STREAM.entity for quick reference.",
+      "toolCall": "Tumblr_GetFollowing"
+    },
+    {
+      "step": 9,
+      "instruction": "Format all results for Steward consumption. For blog posts, group by content type and apply semantic compression to extract themes, trending topics, and high-engagement content. For search results, rank by relevance and recency. For dashboard, highlight posts from top-followed blogs and trending topics. Push interesting content discoveries to LTM with key 'tumblr_discovery_{date}' if salience warrants persistence.",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Monitor rate limit headers from all responses (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset). Track cumulative request count against daily limit. If remaining requests fall below 100 for hour or 500 for day, implement exponential backoff and notify Steward. Handle 429 responses with retry logic and reset timestamp from header.",
+      "toolCall": null
+    }
+  ]
+}

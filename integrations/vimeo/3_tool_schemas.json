@@ -1,0 +1,161 @@
+[
+  {
+    "toolSlug": "Vimeo_SearchVideos",
+    "toolPurpose": "Search across all public and accessible Vimeo videos by query string with flexible sorting and pagination options.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query to find videos by title, description, tags, or user"
+        },
+        "sort": {
+          "type": "string",
+          "description": "Sort results by relevance, date, duration, or popularity",
+          "enum": ["relevance", "date", "duration", "popularity"]
+        },
+        "direction": {
+          "type": "string",
+          "description": "Sort direction for results",
+          "enum": ["asc", "desc"]
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of videos to return per page",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1
+        },
+        "filter": {
+          "type": "string",
+          "description": "Filter videos by license type",
+          "enum": ["creative_commons", "public_domain"]
+        }
+      },
+      "required": ["query"],
+      "additionalProperties": false
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["sort", "direction", "per_page", "page", "filter"]
+    }
+  },
+  {
+    "toolSlug": "Vimeo_GetVideo",
+    "toolPurpose": "Retrieve detailed information about a specific Vimeo video by its ID, including metadata, duration, view count, and URLs.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "video_id": {
+          "type": "string",
+          "description": "The unique identifier of the Vimeo video (numeric ID)"
+        }
+      },
+      "required": ["video_id"],
+      "additionalProperties": false
+    },
+    "inputsSpec": {
+      "required": ["video_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Vimeo_GetMyVideos",
+    "toolPurpose": "Retrieve the authenticated user's personal video library with sorting, filtering, and pagination support.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sort": {
+          "type": "string",
+          "description": "Sort user's videos by name, date, or popularity",
+          "enum": ["name", "date", "popularity"]
+        },
+        "direction": {
+          "type": "string",
+          "description": "Sort direction for user videos",
+          "enum": ["asc", "desc"]
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of videos to return per page",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["sort", "direction", "per_page", "page"]
+    }
+  },
+  {
+    "toolSlug": "Vimeo_GetChannel",
+    "toolPurpose": "Retrieve comprehensive details about a specific Vimeo channel by its ID, including description, subscriber count, and metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "description": "The unique identifier of the Vimeo channel (numeric or slug format)"
+        }
+      },
+      "required": ["channel_id"],
+      "additionalProperties": false
+    },
+    "inputsSpec": {
+      "required": ["channel_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Vimeo_GetChannelVideos",
+    "toolPurpose": "Retrieve videos from a specific Vimeo channel with sorting and pagination support for browsing channel content.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "description": "The unique identifier of the Vimeo channel"
+        },
+        "sort": {
+          "type": "string",
+          "description": "Sort channel videos by name, date, or popularity",
+          "enum": ["name", "date", "popularity"]
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of videos to return per page",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "minimum": 1
+        }
+      },
+      "required": ["channel_id"],
+      "additionalProperties": false
+    },
+    "inputsSpec": {
+      "required": ["channel_id"],
+      "optional": ["sort", "per_page", "page"]
+    }
+  }
+]

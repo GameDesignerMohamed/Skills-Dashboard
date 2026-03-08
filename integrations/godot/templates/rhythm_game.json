@@ -1,0 +1,78 @@
+{
+  "templateId": "TPL-GODOT-013",
+  "name": "Rhythm Game Starter",
+  "genre": "rhythm",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Falling notes rhythm game (Guitar Hero / Friday Night Funkin' style). 4 input lanes with note receptors at bottom. Notes fall from top at BPM-synced speed. Hit detection with timing windows (Perfect/Great/Good/Miss). Combo counter with multiplier. Health/accuracy bar. Song beatmaps in JSON format with timestamp+lane data. Score calculated from accuracy and combo. Audio sync using AudioStreamPlayer.get_playback_position().",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project config with AudioBus for music/sfx, AutoLoad Conductor singleton",
+    "scenes/": {
+      "gameplay.tscn": "Root Node2D with AudioStreamPlayer (music), 4 Lane nodes, NoteSpawner, UI CanvasLayer",
+      "note.tscn": "Area2D with Sprite2D (colored rectangle), CollisionShape2D (rect), script reference (note.gd)",
+      "receptor.tscn": "Control node positioned at bottom of lane with Sprite2D (target ring), input detection zone (ColorRect)",
+      "lane.tscn": "Node2D container for 1 lane. Contains: receptor child, visual line guide. Lane index property (0-3)",
+      "ui/combo_display.tscn": "CanvasLayer with Label showing 'Combo: X' and multiplier (x1.0-x4.0), color changes on miss",
+      "ui/score_display.tscn": "CanvasLayer with Label for total score, accuracy percentage, and popup damage numbers on misses",
+      "ui/accuracy_bar.tscn": "CanvasLayer ProgressBar showing health (0-100), color gradient green→red, damage on misses",
+      "ui/results_screen.tscn": "PopupPanel with stats: final score, accuracy %, max combo, letter grade (F-S), replay/menu buttons",
+      "song_select.tscn": "CanvasLayer ItemList with available songs, displays beatmap metadata (BPM, difficulty, preview)"
+    },
+    "scripts/": {
+      "conductor.gd": "AutoLoad. Tracks BPM, beat_position, current_beat (derived from playback_position). Syncs all timing. Methods: get_note_spawn_y() calculates screen Y based on beat timing, get_current_beat() returns float. Exposes bpm property",
+      "note_spawner.gd": "Attached to Node2D. References beatmap JSON. On _ready(), parses beatmap and schedules note spawning at correct beats. Spawns Note instances in correct lanes at scheduled times. Uses Conductor to determine spawn height. Despawns notes after they exit screen or are hit",
+      "note.gd": "Inherits Area2D. Properties: lane_index (0-3), hit_timestamp (beat when note should be hit). On _process(), moves down screen at Conductor-synced velocity. Detects area_entered(receptor) to trigger hit. Emits signals: note_hit(lane, accuracy), note_missed()",
+      "receptor.gd": "Inherits Control (positioned at lane bottom). Detects input per lane (KEY_D/F/J/K for lanes 0-3). On input, checks nearby notes for hits using get_tree().get_nodes_in_group(\"notes_lane_X\"). Emits hit_detected(note, timing_error). Plays hit SFX (perfect/great/good/miss sounds)",
+      "score_manager.gd": "Tracks score, accuracy_percentage, hit_counts (perfect/great/good/miss). Methods: add_hit(accuracy_type, combo_multiplier) increases score by base_points * accuracy_multiplier * combo_multiplier. Updates accuracy % = (perfect*100 + great*80 + good*50) / total_hits. Signals: score_changed",
+      "combo_manager.gd": "Tracks current_combo (int), max_combo (int), combo_multiplier (1.0 to 4.0, increases per 10 combo). On hit, increments combo. On miss, resets to 0. Signals: combo_changed, multiplier_changed. Emits visual feedback popup",
+      "beatmap_parser.gd": "Static class. Method: parse_beatmap(json_path) -> Array[Note_data] where Note_data = {timestamp: float, lane: int}. Reads JSON structure: {\"bpm\": 120, \"notes\": [{\"timestamp\": 0.5, \"lane\": 0}, ...]}",
+      "song_manager.gd": "Manages song list and selection. Stores SONGS dict {song_id → {name, artist, bpm, beatmap_path, difficulty}}. Methods: load_song(song_id) returns song metadata, start_song() triggers Conductor initialization and music playback"
+    },
+    "assets/": {
+      "beatmaps/": "JSON files with format {\"bpm\": INT, \"notes\": [{\"timestamp\": FLOAT_SECONDS, \"lane\": INT_0_3}, ...]}",
+      "music/": "OGG or MP3 audio files for each song",
+      "sprites/notes.png": "Spritesheet with 4 colored note squares (red, blue, green, yellow for lanes 0-3)",
+      "sprites/receptors.png": "32x32 target ring sprites per lane color",
+      "sprites/judgement.png": "Spritesheet with text sprites (Perfect, Great, Good, Miss) for popup feedback",
+      "sfx/": "hit_perfect.wav, hit_great.wav, hit_good.wav, hit_miss.wav, combo_milestone.wav",
+      "fonts/": "Large bold font for score/combo display"
+    }
+  },
+  "preBuiltMechanics": [
+    "BPM-synchronized note falling at variable speeds (calculated from Conductor.get_note_spawn_y())",
+    "4-lane input system with keyboard mapping (D/F/J/K or arrow keys)",
+    "Timing window hit detection (Perfect: ±50ms, Great: ±100ms, Good: ±200ms, Miss: >200ms)",
+    "Accuracy-based scoring with combo multiplier (1x to 4x multiplier per 10 combo)",
+    "Combo counter with reset on miss",
+    "Health bar that decreases on misses, increases slightly on perfect hits",
+    "Audio sync using AudioStreamPlayer.get_playback_position() for frame-perfect timing",
+    "Note despawning after miss or when exiting screen",
+    "Visual feedback: judgement text popups, lane highlight on hit, combo multiplier display",
+    "Results screen with final stats (score, accuracy %, grade, max combo)"
+  ],
+  "customizationPoints": [
+    "Add difficulty levels (Easy/Normal/Hard) with different beatmap note densities",
+    "Implement hold notes (sustained key presses for duration)",
+    "Add slide notes (swipe from one lane to another)",
+    "Create visual themes/skins for different aesthetic styles",
+    "Implement multi-song playlists with cumulative scoring",
+    "Add background video support synced to music",
+    "Create practice mode with slow-motion and looping sections",
+    "Add leaderboard system with local/online score tracking",
+    "Implement sound effects volume sliders and audio offset calibration",
+    "Create custom beatmap editor for user-generated content"
+  ],
+  "examplePrompts": [
+    "Add hold notes that require sustaining key press for a duration shown by vertical bars",
+    "Create a 'perfect chain' bonus that grants 2x multiplier for 5 consecutive perfects",
+    "Implement difficulty selection (Easy/Normal/Hard) with different note densities",
+    "Add background video rendering synced to music playback",
+    "Create a practice mode with slow-motion (0.5x-1.0x speed) and loop sections",
+    "Add a 'miss recovery' mechanic where one miss is forgiven per song",
+    "Implement dynamic difficulty that adjusts note speed based on accuracy",
+    "Create combo milestone sound effects at 50/100/250/500 combo thresholds",
+    "Add a hand position guide showing optimal finger placement",
+    "Implement a training mode that shows timing windows visually on screen"
+  ]
+}

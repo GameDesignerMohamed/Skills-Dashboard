@@ -1,0 +1,21 @@
+{
+  "appName": "Yelp_Suite",
+  "description": "Yelp Fusion API integration for business discovery, local search, and reviews retrieval.",
+  "domain": "local",
+  "use_case": "Business search by location and category, detailed business information retrieval, customer review discovery, phone-based business lookup, and autocomplete suggestions for location-aware queries.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Yelp_SearchBusinesses",
+        "Yelp_GetBusiness",
+        "Yelp_GetReviews",
+        "Yelp_SearchByPhone",
+        "Yelp_Autocomplete"
+      ]
+    }
+  ]
+}

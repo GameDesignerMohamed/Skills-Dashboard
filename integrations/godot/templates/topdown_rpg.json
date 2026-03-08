@@ -1,0 +1,61 @@
+{
+  "templateId": "TPL-GODOT-002",
+  "name": "Top-Down RPG Starter",
+  "genre": "rpg",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "A top-down RPG framework with 8-directional player movement, tile-based world map, NPC dialogue system, inventory management, and basic combat. Includes a CharacterBody2D player with directional sprites, TileMap world with collision layers, interactive NPCs, and a dialogue UI.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project configuration — display: 1280x720, pixel art rendering (nearest filter, integer scaling), input map with move_up/down/left/right/interact/attack actions",
+    "scenes/": {
+      "main.tscn": "Root scene — manages world loading and transitions",
+      "player.tscn": "CharacterBody2D with Sprite2D (directional spritesheet), CollisionShape2D (circle), Area2D interaction zone, AnimationPlayer (walk_up/down/left/right, idle variants)",
+      "world/overworld.tscn": "Node2D — TileMap with ground layer, obstacle layer, decoration layer. Marker2D nodes for NPC spawn points and doorways",
+      "world/interior_house.tscn": "Node2D — interior TileMap, transition zones back to overworld",
+      "npcs/npc_base.tscn": "CharacterBody2D — Sprite2D, CollisionShape2D, Area2D for interaction range, dialogue trigger",
+      "ui/dialogue_box.tscn": "CanvasLayer — NinePatchRect background, RichTextLabel for text with typewriter effect, name Label, portrait TextureRect, choice buttons VBoxContainer",
+      "ui/inventory.tscn": "CanvasLayer — GridContainer of inventory slots, item description panel, equip/use buttons",
+      "ui/hud.tscn": "CanvasLayer — health hearts, mana bar, minimap TextureRect, current quest label"
+    },
+    "scripts/": {
+      "player.gd": "extends CharacterBody2D — SPEED=150, 8-directional movement with animation direction tracking, interaction raycast, _input handles interact key to trigger nearby NPC dialogue",
+      "npc_base.gd": "extends CharacterBody2D — dialogue_lines array, current_line index, can_interact flag, face_player() rotates sprite toward player, start_dialogue() emits signal to dialogue manager",
+      "dialogue_manager.gd": "extends Node (autoload) — manages dialogue flow, typewriter text effect, choice branching, tracks conversation state per NPC",
+      "inventory_manager.gd": "extends Node (autoload) — items dictionary, add_item/remove_item/has_item functions, signals for UI updates, save/load support",
+      "game_state.gd": "extends Node (autoload) — quest flags, NPC states, world state persistence, save/load to JSON"
+    },
+    "assets/": {
+      "placeholder_player.png": "32x48 character spritesheet (4 directions × 4 frames each)",
+      "placeholder_tiles.png": "16x16 RPG tileset (grass, dirt, water, walls, doors, decorations)",
+      "placeholder_npc.png": "32x48 NPC spritesheet (4 directions × 2 frames idle)",
+      "placeholder_portrait.png": "64x64 NPC dialogue portrait"
+    }
+  },
+  "preBuiltMechanics": [
+    "8-directional movement with directional animation",
+    "NPC interaction system with proximity detection",
+    "Typewriter dialogue box with character portraits",
+    "Choice-based dialogue branching",
+    "Basic inventory system with grid UI",
+    "World transition between scenes (doors/portals)",
+    "Game state persistence (quest flags, NPC states)",
+    "Tile-based world with multiple collision layers"
+  ],
+  "customizationPoints": [
+    "World layout via TileMap editing",
+    "NPC placement, dialogue content, and portraits",
+    "Add quests by extending game_state quest flags",
+    "Add items by populating inventory_manager",
+    "Combat system (extend player.gd with attack states)",
+    "Add new areas by creating world scenes with transition zones",
+    "Shop system by combining NPC dialogue with inventory",
+    "Sprite assets (swap placeholders for pixel art)"
+  ],
+  "examplePrompts": [
+    "Make a Zelda-style adventure game",
+    "Create an RPG where I explore a village and talk to people",
+    "Build a top-down game with quests and inventory",
+    "Design a pixel art RPG with NPCs and a shop"
+  ]
+}

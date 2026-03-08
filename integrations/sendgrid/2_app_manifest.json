@@ -1,0 +1,21 @@
+{
+  "appName": "SendGrid_Suite",
+  "description": "SendGrid REST API v3 integration for email communication, contact management, template administration, and performance analytics.",
+  "domain": "communication",
+  "use_case": "Email delivery, contact list management, template-based messaging, email statistics and performance tracking, bulk marketing campaigns.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "SendGrid_SendEmail",
+        "SendGrid_GetStats",
+        "SendGrid_ListContacts",
+        "SendGrid_SearchContacts",
+        "SendGrid_GetTemplates"
+      ]
+    }
+  ]
+}

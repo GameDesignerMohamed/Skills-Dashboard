@@ -1,0 +1,91 @@
+{
+  "skillId": "SGRID-SKILL-001",
+  "skillArtifactId": "SGRID-ART-001",
+  "name": "SendGrid_Email_Manager",
+  "description": "Manages email communications via SendGrid as the Mind's external delivery layer. Sends transactional and marketing emails, manages contact lists, retrieves templates for branding consistency, and tracks email performance metrics. Bridges cognitive intent from the Mind to actionable email campaigns with Steward safety confirmation.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "SendGrid_SendEmail",
+    "SendGrid_GetStats",
+    "SendGrid_ListContacts",
+    "SendGrid_SearchContacts",
+    "SendGrid_GetTemplates"
+  ],
+  "compatibility_formula": "(communication_need * 3.0) + (email_volume * 1.5) + (contact_management * 2.0) + (analytics_interest * 1.2)",
+  "progressive_unlock": "Email template retrieval available immediately. Contact listing and searching unlock after retrieving templates at least once. Email sending requires explicit Steward confirmation for each email. Statistics retrieval available after first successful email send.",
+  "constraints": [
+    "Never expose SendGrid API key in logs, outputs, or error messages",
+    "Respect SendGrid rate limits (varies by plan; typically 5000 requests per day for standard plans)",
+    "Require Steward confirmation before sending ANY email — display recipient, subject, and email preview (first 50 characters of body or template variables)",
+    "Validate email addresses using standard RFC 5322 format before attempting send",
+    "Use template IDs (from SendGrid_GetTemplates) for consistent branding — avoid plain HTML content where templates exist",
+    "Do not send emails to unsubscribed contacts — check subscription status via SendGrid_ListContacts or SearchContacts first",
+    "Store template IDs in STREAM.entity for quick access and reusability",
+    "Do not expose sender API key during authentication — use secure header injection only",
+    "Log email send events in LTM with key 'sendgrid_email_{timestamp}' including recipient, template used, and delivery status",
+    "Implement exponential backoff for failed sends (1s, 2s, 4s, 8s max)"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. For SendGrid_SendEmail, ensure to_email and from_email are present.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve SendGrid API key from TENET.apiKey.sendgrid. Construct Authorization header as 'Bearer {apiKey}'.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: retrieve (list templates, contacts, or stats), search (find contacts), or send (email).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For template retrieval: call SendGrid_GetTemplates with optional name filter. Store returned template IDs in STREAM.entity.sendgrid_templates for fast lookup.",
+      "toolCall": "SendGrid_GetTemplates"
+    },
+    {
+      "step": 5,
+      "instruction": "For contact listing: call SendGrid_ListContacts with status and list_id filters if provided. Compile contact summary with email addresses, subscription status, and list membership.",
+      "toolCall": "SendGrid_ListContacts"
+    },
+    {
+      "step": 6,
+      "instruction": "For contact searching: validate email format or custom field name. Call SendGrid_SearchContacts with appropriate parameters. Return matched contacts with subscription status.",
+      "toolCall": "SendGrid_SearchContacts"
+    },
+    {
+      "step": 7,
+      "instruction": "For statistics retrieval: validate date format (YYYY-MM-DD). Call SendGrid_GetStats with start_date, end_date, and optional aggregation level. Return metrics: delivered, bounced, opened, clicked, unsubscribed.",
+      "toolCall": "SendGrid_GetStats"
+    },
+    {
+      "step": 8,
+      "instruction": "For email sending: CRITICAL — validate recipient email format (RFC 5322). If using template_id, verify template exists via STREAM.entity.sendgrid_templates or fetch fresh. If using plain content, construct HTML/plain_text.",
+      "toolCall": null
+    },
+    {
+      "step": 9,
+      "instruction": "STEWARD CONFIRMATION REQUIRED: Display to Steward: (a) Recipient email and name, (b) Subject line, (c) Email preview (first 50 chars of body or list of template variables), (d) Sending timestamp. Ask: 'Confirm sending this email?' Wait for explicit 'yes' response.",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Upon Steward confirmation, execute SendGrid_SendEmail with validated parameters. Include categories for tracking if applicable. Handle response: status 202 = accepted for delivery, 400 = validation error, 401 = auth failure, 429 = rate limit.",
+      "toolCall": "SendGrid_SendEmail"
+    },
+    {
+      "step": 11,
+      "instruction": "Log email send event to LTM with key 'sendgrid_email_{timestamp}' containing: recipient, template_id (if used), subject, categories, delivery_status, and confirmation_time.",
+      "toolCall": null
+    },
+    {
+      "step": 12,
+      "instruction": "Provide Steward with send confirmation: email address, delivery status (accepted/failed), message ID (from response), and estimated delivery time (typically 1-2 minutes). For failures, provide error details and recovery instructions.",
+      "toolCall": null
+    }
+  ]
+}

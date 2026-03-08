@@ -1,0 +1,41 @@
+{
+  "skillId": "ASANA-SKILL-001",
+  "skillArtifactId": "ASANA-ART-001",
+  "name": "Asana_Task_Manager",
+  "description": "Manages projects and tasks in Asana as the Mind's external execution layer. Creates, organizes, assigns, and tracks project work. Bridges cognitive intent from the Mind's WORK surface to actionable items in Asana.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Asana_ListTasks",
+    "Asana_GetTask",
+    "Asana_CreateTask",
+    "Asana_UpdateTask",
+    "Asana_ListProjects",
+    "Asana_SearchTasks"
+  ],
+  "compatibility_formula": "(project_management_interest * 3.0) + task_volume + (team_collaboration_need * 2.0)",
+  "progressive_unlock": "Project and task reading available immediately. Task creation and updates unlock after Mind has retrieved existing projects and tasks at least once to understand the workspace structure. Task completion requires explicit Steward confirmation.",
+  "constraints": [
+    "Never expose Asana Personal Access Token in logs or outputs",
+    "Respect Asana rate limit of 1500 requests per minute",
+    "Do not create or update tasks without explicit Steward confirmation unless the Mind has standing permission in TENET",
+    "Always use opt_fields parameter to minimize payload size and improve response times",
+    "Sync task state with WORK surface — Asana tasks should mirror WORK board cards where applicable",
+    "Do not create duplicate tasks — always search existing tasks first via Asana_SearchTasks before creation",
+    "Store active workspace_gid and project_gid values in STREAM.entity for quick access",
+    "Verify task_gid and project_gid format is valid before API calls (Asana uses numeric or alphanumeric GIDs)",
+    "Handle rate limiting gracefully: implement exponential backoff on 429 responses"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Verify GID formats.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Asana Personal Access Token from TENET.apiKey.asana. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: review (list projects/tasks), search (find tasks), create (new task), update (modify existing), or complete (mark done).", "toolCall": null },
+    { "step": 4, "instruction": "For project review: fetch Asana_ListProjects with workspace_gid. Use opt_fields='gid,name,owner,archived,created_at' for efficiency. Store project GIDs in STREAM.entity for reuse.", "toolCall": "Asana_ListProjects" },
+    { "step": 5, "instruction": "For task listing: use Asana_ListTasks with project_gid. Use opt_fields='gid,name,assignee,due_on,completed,notes' to optimize payload. Cross-reference with WORK surface cards for consistency.", "toolCall": "Asana_ListTasks" },
+    { "step": 6, "instruction": "For task search: use Asana_SearchTasks with workspace_gid and optional filters (text, assignee_gid, completed). Use opt_fields to limit response size.", "toolCall": "Asana_SearchTasks" },
+    { "step": 7, "instruction": "For task creation: search existing tasks first to prevent duplicates. Confirm with Steward before creation. Create via Asana_CreateTask with name, projects array, assignee, due_on. Store returned task_gid in STREAM.entity and sync with WORK card.", "toolCall": "Asana_CreateTask" },
+    { "step": 8, "instruction": "For updates: fetch current task state via Asana_GetTask first. Confirm with Steward before applying changes via Asana_UpdateTask. If priority or completion status changes, evaluate whether WORK board card should also update.", "toolCall": "Asana_UpdateTask" },
+    { "step": 9, "instruction": "For task completion: confirm with Steward before marking complete (unless standing TENET permission exists). Execute Asana_UpdateTask with completed=true. If a WORK card exists for this task, update its status to 'done'.", "toolCall": "Asana_UpdateTask" },
+    { "step": 10, "instruction": "Compile project and task summary with project names, active task counts, due dates, assignees, and completion status. Push daily project summary to LTM with key: 'asana_daily_{date}'. Update STREAM with active project and task counts." }
+  ]
+}

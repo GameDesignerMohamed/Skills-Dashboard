@@ -1,0 +1,22 @@
+{
+  "appName": "Instagram_Suite",
+  "description": "Instagram Graph API v19.0 integration for content management, publishing, and analytics on Business/Creator accounts.",
+  "domain": "social_media",
+  "use_case": "Media content creation and publishing, performance analytics, audience engagement tracking, insight generation, and social strategy execution.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Instagram_GetProfile",
+        "Instagram_GetMedia",
+        "Instagram_GetMediaDetails",
+        "Instagram_GetComments",
+        "Instagram_PublishMedia",
+        "Instagram_GetInsights"
+      ]
+    }
+  ]
+}

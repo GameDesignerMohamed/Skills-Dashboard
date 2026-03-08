@@ -1,0 +1,22 @@
+{
+  "appName": "Airtable_Suite",
+  "description": "Airtable REST API v0 integration for database management, record CRUD operations, and schema discovery. Enables structured data storage, retrieval, and organization with formula-based filtering and field selection.",
+  "domain": "productivity",
+  "use_case": "Database record creation and management, structured data organization, schema discovery, advanced filtering with Airtable formulas, and multi-table data coordination.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Airtable_ListRecords",
+        "Airtable_GetRecord",
+        "Airtable_CreateRecord",
+        "Airtable_UpdateRecord",
+        "Airtable_ListBases",
+        "Airtable_GetBaseSchema"
+      ]
+    }
+  ]
+}

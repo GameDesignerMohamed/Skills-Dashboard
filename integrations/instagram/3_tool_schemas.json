@@ -1,0 +1,193 @@
+[
+  {
+    "toolSlug": "Instagram_GetProfile",
+    "toolPurpose": "Retrieve authenticated user's Instagram Business/Creator profile information including follower counts, biography, and media metrics.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/{user-id}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Instagram Business Account ID or Creator Account ID"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated fields to retrieve",
+          "default": "id,username,media_count,followers_count,follows_count,biography"
+        }
+      },
+      "required": ["user_id"]
+    },
+    "inputsSpec": {
+      "required": ["user_id"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Instagram_GetMedia",
+    "toolPurpose": "List all media posts for a user's Instagram Business/Creator account with pagination support.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/{user-id}/media",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Instagram Business Account ID or Creator Account ID"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated fields to retrieve per media item",
+          "default": "id,caption,media_type,media_url,timestamp,like_count,comments_count"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of media items to retrieve per request (default: 25, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Pagination cursor for fetching next set of results"
+        }
+      },
+      "required": ["user_id"]
+    },
+    "inputsSpec": {
+      "required": ["user_id"],
+      "optional": ["fields", "limit", "after"]
+    }
+  },
+  {
+    "toolSlug": "Instagram_GetMediaDetails",
+    "toolPurpose": "Get detailed information for a specific Instagram media post including engagement metrics and permalink.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/{media-id}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "media_id": {
+          "type": "string",
+          "description": "Instagram media ID (post/image/video/carousel)"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated fields to retrieve",
+          "default": "id,caption,media_type,media_url,timestamp,like_count,comments_count,permalink"
+        }
+      },
+      "required": ["media_id"]
+    },
+    "inputsSpec": {
+      "required": ["media_id"],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Instagram_GetComments",
+    "toolPurpose": "Retrieve comments on a specific Instagram media post with user information and timestamps.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/{media-id}/comments",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "media_id": {
+          "type": "string",
+          "description": "Instagram media ID to fetch comments from"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated fields to retrieve per comment",
+          "default": "id,text,username,timestamp"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of comments to retrieve per request (default: 25, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["media_id"]
+    },
+    "inputsSpec": {
+      "required": ["media_id"],
+      "optional": ["fields", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Instagram_PublishMedia",
+    "toolPurpose": "Create and publish media to Instagram Business/Creator account using two-step process: create media container, then publish.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/{user-id}/media",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Instagram Business Account ID or Creator Account ID"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL of the image/video to publish (must be HTTPS)"
+        },
+        "caption": {
+          "type": "string",
+          "description": "Caption text for the media post (supports hashtags and mentions)"
+        },
+        "media_type": {
+          "type": "string",
+          "description": "Type of media being published",
+          "enum": ["IMAGE", "VIDEO", "CAROUSEL"]
+        },
+        "publish": {
+          "type": "boolean",
+          "description": "Whether to immediately publish after creation (default: false, requires explicit Steward confirmation)",
+          "default": false
+        }
+      },
+      "required": ["user_id", "image_url", "media_type"]
+    },
+    "inputsSpec": {
+      "required": ["user_id", "image_url", "media_type"],
+      "optional": ["caption", "publish"]
+    }
+  },
+  {
+    "toolSlug": "Instagram_GetInsights",
+    "toolPurpose": "Retrieve analytics and performance insights for Instagram Business/Creator account including impressions, reach, and profile views.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/{user-id}/insights",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Instagram Business Account ID or Creator Account ID"
+        },
+        "metric": {
+          "type": "string",
+          "description": "Comma-separated metric names to retrieve",
+          "default": "impressions,reach,profile_views"
+        },
+        "period": {
+          "type": "string",
+          "description": "Time period for insights aggregation",
+          "enum": ["day", "week", "month", "lifetime"],
+          "default": "day"
+        }
+      },
+      "required": ["user_id"]
+    },
+    "inputsSpec": {
+      "required": ["user_id"],
+      "optional": ["metric", "period"]
+    }
+  }
+]

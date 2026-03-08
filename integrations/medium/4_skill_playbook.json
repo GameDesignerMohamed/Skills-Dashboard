@@ -1,0 +1,218 @@
+{
+  "skillId": "MEDM-SKILL-001",
+  "name": "Medium_Content_Publisher",
+  "version": "1.0.0",
+  "description": "Comprehensive skill for publishing and managing content on Medium with safety guardrails and approval workflows",
+  "created": "2026-03-05",
+  "integrationRef": "MEDM-001-CONT",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "name": "Authenticate",
+      "description": "Verify authentication credentials with Medium API",
+      "tool": "system:authenticate",
+      "params": {
+        "authType": "Bearer Token",
+        "source": "TENET.apiKey.medium"
+      },
+      "errorHandling": "fail_immediately"
+    },
+    {
+      "stepNumber": 2,
+      "name": "Retrieve User Profile",
+      "description": "Fetch authenticated user's profile information",
+      "tool": "Medium_GetUser",
+      "params": {},
+      "errorHandling": "fail_with_message"
+    },
+    {
+      "stepNumber": 3,
+      "name": "List Available Publications",
+      "description": "Retrieve all publications the user contributes to",
+      "tool": "Medium_GetPublications",
+      "params": {
+        "userId": "{{step2.id}}"
+      },
+      "errorHandling": "continue_with_empty_list"
+    },
+    {
+      "stepNumber": 4,
+      "name": "Validate Content",
+      "description": "Ensure post content meets Medium's guidelines and Steward policies",
+      "tool": "system:validate_content",
+      "params": {
+        "minLength": 100,
+        "maxLength": 5000,
+        "checkMalware": true,
+        "checkCopyright": true
+      },
+      "errorHandling": "fail_with_message"
+    },
+    {
+      "stepNumber": 5,
+      "name": "Determine Publication Target",
+      "description": "Identify whether post should be published to user profile or specific publication",
+      "tool": "system:conditional_router",
+      "params": {
+        "variable": "{{input.publicationId}}",
+        "onNull": "user_profile",
+        "onValue": "publication"
+      }
+    },
+    {
+      "stepNumber": 6,
+      "name": "Request Steward Approval for Public Posts",
+      "description": "Always confirm with Steward before publishing posts with public status",
+      "tool": "system:require_approval",
+      "params": {
+        "condition": "{{input.publishStatus}} == 'public'",
+        "approverRole": "Steward",
+        "message": "Publishing public post: '{{input.title}}' to {{input.publicationId || 'user profile'}}. Approve to continue."
+      },
+      "errorHandling": "require_explicit_approval"
+    },
+    {
+      "stepNumber": 7,
+      "name": "Create and Publish Post",
+      "description": "Submit post to Medium API using appropriate endpoint",
+      "tool": "{{step5.result == 'publication' ? 'Medium_CreatePostInPublication' : 'Medium_CreatePost'}}",
+      "params": {
+        "userId": "{{step2.id}}",
+        "publicationId": "{{input.publicationId}}",
+        "title": "{{input.title}}",
+        "content": "{{input.content}}",
+        "contentFormat": "{{input.contentFormat || 'markdown'}}",
+        "tags": "{{input.tags}}",
+        "publishStatus": "{{input.publishStatus}}",
+        "canonicalUrl": "{{input.canonicalUrl}}"
+      },
+      "errorHandling": "fail_with_message"
+    },
+    {
+      "stepNumber": 8,
+      "name": "Return Post Details",
+      "description": "Return newly created post information to caller",
+      "tool": "system:format_response",
+      "params": {
+        "postId": "{{step7.id}}",
+        "title": "{{step7.title}}",
+        "url": "{{step7.url}}",
+        "status": "{{step7.status}}",
+        "createdAt": "{{step7.createdAt}}"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "type": "safety",
+      "rule": "always_confirm_public",
+      "description": "Always require explicit Steward confirmation before publishing any post with public status"
+    },
+    {
+      "type": "authentication",
+      "rule": "require_api_key",
+      "source": "TENET.apiKey.medium",
+      "description": "Medium API key must be present and valid"
+    },
+    {
+      "type": "rateLimit",
+      "requests": 300,
+      "window": "per_hour",
+      "description": "Medium API rate limit: 300 requests per hour"
+    },
+    {
+      "type": "rateLimit",
+      "requests": 50,
+      "window": "per_minute",
+      "description": "Medium API rate limit: 50 requests per minute"
+    },
+    {
+      "type": "contentPolicy",
+      "rule": "no_duplicate_content",
+      "description": "Do not publish identical content multiple times within 24 hours"
+    },
+    {
+      "type": "userPolicy",
+      "rule": "user_must_own_publication",
+      "description": "User must be admin or contributor of target publication"
+    }
+  ],
+  "inputs": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "Post title",
+        "required": true
+      },
+      "content": {
+        "type": "string",
+        "description": "Post content in HTML or Markdown",
+        "required": true
+      },
+      "contentFormat": {
+        "type": "string",
+        "enum": [
+          "html",
+          "markdown"
+        ],
+        "default": "markdown"
+      },
+      "publishStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "public",
+          "unlisted"
+        ],
+        "description": "Publication status; 'public' requires Steward approval",
+        "required": true
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Array of topic tags (optional)"
+      },
+      "canonicalUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "Original content URL if republishing"
+      },
+      "publicationId": {
+        "type": "string",
+        "description": "Target publication ID; omit to publish to user profile"
+      }
+    }
+  },
+  "outputs": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether post creation succeeded"
+      },
+      "postId": {
+        "type": "string",
+        "description": "ID of newly created post"
+      },
+      "url": {
+        "type": "string",
+        "description": "Direct URL to published post"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "public",
+          "unlisted"
+        ]
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  }
+}

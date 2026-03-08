@@ -1,0 +1,234 @@
+[
+  {
+    "toolSlug": "Zendesk_SearchTickets",
+    "toolPurpose": "Search tickets using Zendesk Query Language (ZQL) with support for complex filters on status, assignee, requester, priority, and custom fields.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "ZQL query string for searching tickets (e.g., 'status:open assignee:me', 'priority:high created>2026-03-01', 'subject:urgent')"
+        },
+        "sort_by": {
+          "type": "string",
+          "description": "Field to sort by (default: 'created_at')",
+          "enum": ["created_at", "updated_at", "status", "priority"]
+        },
+        "sort_order": {
+          "type": "string",
+          "description": "Sort order direction",
+          "enum": ["asc", "desc"]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 25, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["sort_by", "sort_order", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Zendesk_GetTicket",
+    "toolPurpose": "Retrieve detailed information about a specific ticket by ID, including all comments, custom fields, and ticket metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "ID of the ticket to retrieve"
+        },
+        "include_comments": {
+          "type": "boolean",
+          "description": "Include ticket comments and activity history (default: true)"
+        }
+      },
+      "required": ["ticket_id"]
+    },
+    "inputsSpec": {
+      "required": ["ticket_id"],
+      "optional": ["include_comments"]
+    }
+  },
+  {
+    "toolSlug": "Zendesk_ListTickets",
+    "toolPurpose": "List tickets with support for filtering by status, assignee, requester, or organization. Useful for retrieving ticket collections without complex query strings.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Filter by ticket status",
+          "enum": ["new", "open", "pending", "hold", "solved", "closed"]
+        },
+        "assignee_id": {
+          "type": "string",
+          "description": "Filter by assignee user ID"
+        },
+        "requester_id": {
+          "type": "string",
+          "description": "Filter by requester user ID"
+        },
+        "organization_id": {
+          "type": "string",
+          "description": "Filter by organization ID"
+        },
+        "sort_by": {
+          "type": "string",
+          "description": "Field to sort by (default: 'created_at')",
+          "enum": ["created_at", "updated_at", "status", "priority"]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 25, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["status", "assignee_id", "requester_id", "organization_id", "sort_by", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Zendesk_CreateTicket",
+    "toolPurpose": "Create a new support ticket with subject, description, priority, tags, and optional custom fields.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string",
+          "description": "Ticket subject/title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Ticket description/body content"
+        },
+        "priority": {
+          "type": "string",
+          "description": "Ticket priority level",
+          "enum": ["low", "normal", "high", "urgent"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Ticket type",
+          "enum": ["problem", "incident", "question", "task"]
+        },
+        "requester_email": {
+          "type": "string",
+          "description": "Email address of the requester (customer)"
+        },
+        "requester_id": {
+          "type": "string",
+          "description": "User ID of the requester (if already exists in Zendesk)"
+        },
+        "assignee_id": {
+          "type": "string",
+          "description": "User ID of the assignee (agent to handle the ticket)"
+        },
+        "organization_id": {
+          "type": "string",
+          "description": "Organization ID for the ticket"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Array of tags to attach to the ticket",
+          "items": { "type": "string" }
+        },
+        "custom_fields": {
+          "type": "object",
+          "description": "Custom field key-value pairs for the ticket"
+        }
+      },
+      "required": ["subject", "description"]
+    },
+    "inputsSpec": {
+      "required": ["subject", "description"],
+      "optional": ["priority", "type", "requester_email", "requester_id", "assignee_id", "organization_id", "tags", "custom_fields"]
+    }
+  },
+  {
+    "toolSlug": "Zendesk_UpdateTicket",
+    "toolPurpose": "Update an existing ticket's status, priority, assignee, tags, or custom fields.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "ID of the ticket to update"
+        },
+        "status": {
+          "type": "string",
+          "description": "New ticket status",
+          "enum": ["new", "open", "pending", "hold", "solved", "closed"]
+        },
+        "priority": {
+          "type": "string",
+          "description": "New priority level",
+          "enum": ["low", "normal", "high", "urgent"]
+        },
+        "assignee_id": {
+          "type": "string",
+          "description": "New assignee user ID"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Updated tag list (replaces existing tags)",
+          "items": { "type": "string" }
+        },
+        "custom_fields": {
+          "type": "object",
+          "description": "Custom field updates"
+        }
+      },
+      "required": ["ticket_id"]
+    },
+    "inputsSpec": {
+      "required": ["ticket_id"],
+      "optional": ["status", "priority", "assignee_id", "tags", "custom_fields"]
+    }
+  },
+  {
+    "toolSlug": "Zendesk_AddComment",
+    "toolPurpose": "Add a public or private comment to an existing ticket. Public comments are visible to the requester, private comments are internal only.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "ID of the ticket to add the comment to"
+        },
+        "body": {
+          "type": "string",
+          "description": "Comment text content (supports Markdown)"
+        },
+        "public": {
+          "type": "boolean",
+          "description": "Whether the comment is visible to the requester (true=public, false=private/internal)"
+        },
+        "author_id": {
+          "type": "string",
+          "description": "User ID of the comment author (defaults to authenticated user)"
+        }
+      },
+      "required": ["ticket_id", "body"]
+    },
+    "inputsSpec": {
+      "required": ["ticket_id", "body"],
+      "optional": ["public", "author_id"]
+    }
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "title": "Instagram Social Suite v1.0",
+  "offeringId": "INSTA-001-SOCIAL",
+  "description": "Instagram Graph API v19.0 integration for managing content, insights, and engagement. Enables AnimocaMinds/Ethoswarm to create, publish, and analyze Instagram Business/Creator content as an external social layer for Steward brand presence.",
+  "endpoints": [
+    "https://graph.facebook.com/v19.0"
+  ],
+  "lastUpdate": "2026-03-05"
+}

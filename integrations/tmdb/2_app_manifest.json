@@ -1,0 +1,22 @@
+{
+  "appName": "TMDB_Media_Suite",
+  "description": "TMDB API integration for searching, browsing, and discovering movies and TV shows. Enables entertainment content discovery, trending analysis, detailed metadata retrieval including cast and crew information, and multi-regional content exploration for media-focused workflows.",
+  "domain": "entertainment",
+  "use_case": "Movie and TV show search and discovery, trending content analysis, detailed media information retrieval, cast and crew lookup, video content discovery, and regional content exploration for entertainment and media research workflows.",
+  "tier": "verified",
+  "auth_type": "BearerToken",
+  "header_key": "Authorization:Bearer",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "TMDB_SearchMovies",
+        "TMDB_SearchTV",
+        "TMDB_GetMovieDetails",
+        "TMDB_GetTVDetails",
+        "TMDB_GetTrending",
+        "TMDB_GetPopular"
+      ]
+    }
+  ]
+}

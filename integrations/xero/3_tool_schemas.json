@@ -1,0 +1,184 @@
+[
+  {
+    "toolSlug": "Xero_ListInvoices",
+    "toolPurpose": "Retrieve invoices from Xero with optional filters by status, invoice type, and date range for invoice tracking and financial analysis.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Filter by invoice status (e.g., 'DRAFT', 'SUBMITTED', 'AUTHORISED', 'PAID')"
+        },
+        "Type": {
+          "type": "string",
+          "description": "Filter by invoice type (e.g., 'ACCREC' for accounts receivable, 'ACCPAY' for accounts payable)"
+        },
+        "ContactName": {
+          "type": "string",
+          "description": "Filter by contact/customer name"
+        },
+        "InvoiceNumber": {
+          "type": "string",
+          "description": "Filter by specific invoice number"
+        },
+        "DateFrom": {
+          "type": "string",
+          "description": "Filter invoices from this date (ISO 8601 format: YYYY-MM-DD)"
+        },
+        "DateTo": {
+          "type": "string",
+          "description": "Filter invoices up to this date (ISO 8601 format: YYYY-MM-DD)"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (defaults to 1)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["Status", "Type", "ContactName", "InvoiceNumber", "DateFrom", "DateTo", "page"]
+    }
+  },
+  {
+    "toolSlug": "Xero_GetInvoice",
+    "toolPurpose": "Retrieve detailed information for a specific invoice including line items, amounts, payment status, and contact information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "InvoiceID": {
+          "type": "string",
+          "description": "UUID of the invoice to retrieve"
+        }
+      },
+      "required": ["InvoiceID"]
+    },
+    "inputsSpec": {
+      "required": ["InvoiceID"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Xero_ListContacts",
+    "toolPurpose": "Retrieve list of contacts (customers and suppliers) from Xero with optional filtering by status and search terms.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Filter by contact status (e.g., 'ACTIVE', 'ARCHIVED')"
+        },
+        "Name": {
+          "type": "string",
+          "description": "Search contacts by name or partial name match"
+        },
+        "ContactNumber": {
+          "type": "string",
+          "description": "Filter by contact reference number"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (defaults to 1)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["Status", "Name", "ContactNumber", "page"]
+    }
+  },
+  {
+    "toolSlug": "Xero_GetProfitAndLoss",
+    "toolPurpose": "Retrieve Profit & Loss (income statement) report for a specified date range to analyze revenue, expenses, and net profit/loss.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fromDate": {
+          "type": "string",
+          "description": "Report start date (ISO 8601 format: YYYY-MM-DD)"
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Report end date (ISO 8601 format: YYYY-MM-DD)"
+        },
+        "periods": {
+          "type": "integer",
+          "description": "Number of periods to compare (defaults to 1). Use for year-over-year or monthly comparisons."
+        },
+        "standardLayout": {
+          "type": "boolean",
+          "description": "Format report in standard accounting layout (defaults to true)"
+        }
+      },
+      "required": ["fromDate", "toDate"]
+    },
+    "inputsSpec": {
+      "required": ["fromDate", "toDate"],
+      "optional": ["periods", "standardLayout"]
+    }
+  },
+  {
+    "toolSlug": "Xero_GetBalanceSheet",
+    "toolPurpose": "Retrieve Balance Sheet report for a specific date showing assets, liabilities, and equity positions.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "Report date for balance sheet snapshot (ISO 8601 format: YYYY-MM-DD)"
+        },
+        "periods": {
+          "type": "integer",
+          "description": "Number of periods to compare (defaults to 1). Use for trend analysis."
+        },
+        "standardLayout": {
+          "type": "boolean",
+          "description": "Format report in standard accounting layout (defaults to true)"
+        }
+      },
+      "required": ["date"]
+    },
+    "inputsSpec": {
+      "required": ["date"],
+      "optional": ["periods", "standardLayout"]
+    }
+  },
+  {
+    "toolSlug": "Xero_ListAccounts",
+    "toolPurpose": "Retrieve chart of accounts listing all accounts in Xero with account codes, types, and status information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Filter by account status (e.g., 'ACTIVE', 'ARCHIVED')"
+        },
+        "Type": {
+          "type": "string",
+          "description": "Filter by account type (e.g., 'ASSET', 'LIABILITY', 'REVENUE', 'EXPENSE', 'EQUITY')"
+        },
+        "Code": {
+          "type": "string",
+          "description": "Filter by account code"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (defaults to 1)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["Status", "Type", "Code", "page"]
+    }
+  }
+]

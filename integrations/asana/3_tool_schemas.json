@@ -1,0 +1,209 @@
+[
+  {
+    "toolSlug": "Asana_ListTasks",
+    "toolPurpose": "Retrieve all tasks in a specific Asana project with optional filtering and field selection.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_gid": {
+          "type": "string",
+          "description": "Global ID of the Asana project to retrieve tasks from"
+        },
+        "opt_fields": {
+          "type": "string",
+          "description": "Comma-separated fields to return (e.g., 'gid,name,assignee,due_on,completed'). Improves query efficiency."
+        },
+        "completed_on": {
+          "type": "string",
+          "description": "Filter by completion status: 'any' (default), 'true' (completed only), or 'false' (active only)"
+        },
+        "is_blocking": {
+          "type": "boolean",
+          "description": "Filter by whether tasks are blocking other tasks"
+        },
+        "is_blocked": {
+          "type": "boolean",
+          "description": "Filter by whether tasks are blocked by other tasks"
+        }
+      },
+      "required": ["project_gid"]
+    },
+    "inputsSpec": {
+      "required": ["project_gid"],
+      "optional": ["opt_fields", "completed_on", "is_blocking", "is_blocked"]
+    }
+  },
+  {
+    "toolSlug": "Asana_GetTask",
+    "toolPurpose": "Retrieve detailed information about a specific task in Asana.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "task_gid": {
+          "type": "string",
+          "description": "Global ID of the task to retrieve"
+        },
+        "opt_fields": {
+          "type": "string",
+          "description": "Comma-separated fields to return (e.g., 'gid,name,assignee,due_on,completed,notes,projects'). Optimizes response size."
+        }
+      },
+      "required": ["task_gid"]
+    },
+    "inputsSpec": {
+      "required": ["task_gid"],
+      "optional": ["opt_fields"]
+    }
+  },
+  {
+    "toolSlug": "Asana_CreateTask",
+    "toolPurpose": "Create a new task in Asana with name, project assignment, due date, assignee, and notes.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Task title/name (required)"
+        },
+        "projects": {
+          "type": "array",
+          "description": "Array of project GIDs to add the task to",
+          "items": { "type": "string" }
+        },
+        "assignee": {
+          "type": "string",
+          "description": "User GID to assign the task to"
+        },
+        "due_on": {
+          "type": "string",
+          "description": "Due date in YYYY-MM-DD format"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Task description/notes in plain text or markdown"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Workspace GID (required if task is not assigned to a project)"
+        },
+        "external_id": {
+          "type": "string",
+          "description": "External ID for tracking integration references"
+        }
+      },
+      "required": ["name"]
+    },
+    "inputsSpec": {
+      "required": ["name"],
+      "optional": ["projects", "assignee", "due_on", "notes", "workspace", "external_id"]
+    }
+  },
+  {
+    "toolSlug": "Asana_UpdateTask",
+    "toolPurpose": "Update an existing Asana task's fields including name, due date, assignee, notes, or completion status.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "task_gid": {
+          "type": "string",
+          "description": "Global ID of the task to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "Updated task name"
+        },
+        "due_on": {
+          "type": "string",
+          "description": "Updated due date in YYYY-MM-DD format"
+        },
+        "assignee": {
+          "type": "string",
+          "description": "Updated assignee user GID"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Updated task notes/description"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Mark task as completed (true) or uncompleted (false)"
+        }
+      },
+      "required": ["task_gid"]
+    },
+    "inputsSpec": {
+      "required": ["task_gid"],
+      "optional": ["name", "due_on", "assignee", "notes", "completed"]
+    }
+  },
+  {
+    "toolSlug": "Asana_ListProjects",
+    "toolPurpose": "Retrieve all projects in an Asana workspace with optional filtering.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "workspace_gid": {
+          "type": "string",
+          "description": "Global ID of the Asana workspace"
+        },
+        "opt_fields": {
+          "type": "string",
+          "description": "Comma-separated fields to return (e.g., 'gid,name,owner,created_at,archived'). Improves query efficiency."
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "Filter by archived status (true=archived only, false=active only, omit for all)"
+        }
+      },
+      "required": ["workspace_gid"]
+    },
+    "inputsSpec": {
+      "required": ["workspace_gid"],
+      "optional": ["opt_fields", "archived"]
+    }
+  },
+  {
+    "toolSlug": "Asana_SearchTasks",
+    "toolPurpose": "Search for tasks in an Asana workspace by text query, assignee, or other criteria.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "workspace_gid": {
+          "type": "string",
+          "description": "Global ID of the Asana workspace to search in"
+        },
+        "text": {
+          "type": "string",
+          "description": "Free-form text search query (searches task name and notes)"
+        },
+        "assignee_gid": {
+          "type": "string",
+          "description": "Filter results to tasks assigned to a specific user GID"
+        },
+        "project_gid": {
+          "type": "string",
+          "description": "Filter results to tasks in a specific project GID"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Filter by completion status (true=completed, false=active)"
+        },
+        "opt_fields": {
+          "type": "string",
+          "description": "Comma-separated fields to return. Optimizes response payload."
+        }
+      },
+      "required": ["workspace_gid"]
+    },
+    "inputsSpec": {
+      "required": ["workspace_gid"],
+      "optional": ["text", "assignee_gid", "project_gid", "completed", "opt_fields"]
+    }
+  }
+]

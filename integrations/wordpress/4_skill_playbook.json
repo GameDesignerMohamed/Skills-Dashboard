@@ -1,0 +1,39 @@
+{
+  "skillId": "WP-SKILL-001",
+  "skillArtifactId": "WP-ART-001",
+  "name": "WordPress_Content_Publisher",
+  "description": "Manages content creation and publication on WordPress.com as the Mind's external execution layer. Creates, edits, organizes, and publishes posts. Bridges cognitive intent from the Mind's WORK surface to published content on WordPress.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "WordPress_ListPosts",
+    "WordPress_GetPost",
+    "WordPress_CreatePost",
+    "WordPress_UpdatePost",
+    "WordPress_ListCategories",
+    "WordPress_GetStats"
+  ],
+  "compatibility_formula": "(content_creation_interest * 2.5) + publishing_volume + (organization_need * 1.5)",
+  "progressive_unlock": "Post listing and retrieval available immediately. Post creation available with draft status by default. Post publishing (status=publish) unlocks after Steward confirmation and Mind has successfully created at least one draft post.",
+  "constraints": [
+    "Never expose WordPress.com OAuth token in logs or outputs",
+    "Respect WordPress.com API rate limit of 100 requests per second",
+    "Do not publish posts (status=publish) without explicit Steward confirmation unless the Mind has standing permission in TENET",
+    "Default all new posts to draft status (status='draft') pending Steward review",
+    "Support HTML content in post body — validate and sanitize HTML markup before submission",
+    "Do not create duplicate posts — always search existing posts first via WordPress_ListPosts before creating new content",
+    "Sync post state with WORK surface — WordPress posts should mirror WORK board cards where applicable",
+    "Store active site_id and category mappings in STREAM.entity for quick access",
+    "Enforce publication workflow: draft → pending review → published (with Steward checkpoint at publish stage)"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve WordPress.com OAuth token from TENET.apiKey.wordpress. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: retrieve (list posts/categories, get post details, view stats), create (new post as draft), update (modify existing post), or publish (change status to publish).", "toolCall": null },
+    { "step": 4, "instruction": "For retrieval: fetch posts via WordPress_ListPosts with appropriate filters (status, category, tag, search). For category review, use WordPress_ListCategories. For analytics, use WordPress_GetStats. Cross-reference with WORK surface cards for consistency.", "toolCall": "WordPress_ListPosts" },
+    { "step": 5, "instruction": "For post creation: check existing posts first via WordPress_ListPosts to prevent duplicates. Create via WordPress_CreatePost with status='draft' by default. Support HTML content. If post maps to a WORK card, store the post_id in the card's data field.", "toolCall": "WordPress_CreatePost" },
+    { "step": 6, "instruction": "For post updates: fetch current post state via WordPress_GetPost, apply requested changes via WordPress_UpdatePost. If content changes significantly, notify Steward. If status change to 'publish' requested, require explicit Steward confirmation before proceeding.", "toolCall": "WordPress_UpdatePost" },
+    { "step": 7, "instruction": "For publication: confirm with Steward before executing status change to 'publish' (unless standing TENET permission exists). Once Steward confirms, execute WordPress_UpdatePost with status='publish'. If a WORK card exists, update its status to 'published'.", "toolCall": "WordPress_UpdatePost" },
+    { "step": 8, "instruction": "Compile content summary with post titles, categories, publication status, and engagement metrics from WordPress_GetStats. Push daily content summary to LTM with key: 'wordpress_daily_{date}'. Update STREAM with active post counts and draft status breakdown.", "toolCall": null }
+  ]
+}

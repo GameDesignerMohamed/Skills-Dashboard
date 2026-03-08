@@ -1,0 +1,80 @@
+{
+  "templateId": "TPL-GODOT-010",
+  "name": "Card Game / Deck Builder Starter",
+  "genre": "card_game",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Turn-based card game with deck building, hand management with fan layout, mana/energy resource system, card effect resolution, enemy AI opponent, and battle progression.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with physics set to 2D, default scene: res://scenes/battle.tscn, input_map: ui_end_turn (Space)",
+    "scenes/": {
+      "card.tscn": "Control scene (card UI) with: TextureRect (background card art, 80x120), Label (card_name, top-left), Label (mana_cost, top-right, large number), Label (card_description, center), Sprite2D (card_image, bottom half of card), color_coded by type (damage=red, heal=green, draw=blue, buff=yellow, debuff=purple). card_data.gd reference for data binding.",
+      "hand_display.tscn": "Control scene containing card instances in fan layout (curved arc at bottom of screen). 5-7 cards displayed with slight overlap. CardUI scenes as children with positions calculated by fan_layout algorithm. Draggable: on_mouse_down set z_index high and track drag_offset, on_mouse_up return to original position or snap to play_area.",
+      "play_area.tscn": "Control scene (top-center rectangle) showing currently played cards for the turn. Displays up to 3 played cards in row, shows card being resolved (glow effect).",
+      "deck_pile.tscn": "Control scene (left side, stack visual) with Label (deck_count: X cards), on_click triggers draw event (if draw phase active)",
+      "discard_pile.tscn": "Control scene (right side) with Label (discard_count: X cards), on_hover tooltip showing last 3 discarded cards",
+      "player_board.tscn": "Control scene showing: TextureProgressBar (health bar, green-red gradient, 0-100), Label (health: 50/50), Label (mana: 3/5, mana_current/mana_max), board_field (Area2D, creature slots 1-3 for summoned creatures)",
+      "enemy_board.tscn": "Control scene variant of player_board at top of screen, shows enemy health, mana, creatures",
+      "ui/mana_display.tscn": "Control showing mana_current (large number) and mana_max (small), color coded (blue full, yellow mid, red low), on_mana_changed update color",
+      "ui/end_turn_button.tscn": "Button (End Turn), enabled during play phase, disabled during opponent turn or draw phase, text changes based on phase",
+      "battle.tscn": "Node2D root with: CanvasLayer (background), player_board instance, enemy_board instance, hand_display instance, play_area instance, deck_pile instance, discard_pile instance, turn_manager instance (Node2D), card_effects instance (Node2D), battle_manager instance (Node2D), ui/mana_display, ui/end_turn_button, phase_label (draw/play/end)"
+    },
+    "scripts/": {
+      "card_data.gd": "Resource class (Resource extends): card_id (string), card_name (string), mana_cost (int), card_type (enum: damage/heal/draw/buff/debuff/creature), description (string), artwork_path (string), effect_type (string for card_effects.gd lookup), effect_value (int: damage amount, heal amount, draw count, buff_stat, etc). Example: card_damage_10 { name: 'Fireball', type: damage, cost: 3, effect_value: 10 }, card_draw_2 { name: 'Study', type: draw, cost: 1, effect_value: 2 }. Load via preload('res://cards/card_damage_10.tres').",
+      "card_ui.gd": "Control script: card_data ref, display_card(card_data) binds name/cost/description to Labels, loads artwork to Sprite2D. _input handles mouse_down to parent hand_display, signal card_selected(card_data). Drag-and-drop: track drag_offset, snap back if not dropped on play_area.",
+      "hand_manager.gd": "Node script: hand_array (array of card_data refs, max 7 cards), hand_display ref. Methods: add_card_to_hand(card_data) appends to hand_array, instantiate card_ui scene, update_hand_display() calculates fan_layout positions (arc algorithm: angle = (index / max_cards) * 180 degrees, position along arc). on_card_played(card_data) removes from hand_array, move to play_area, emit card_played signal. Signals: hand_changed, card_played.",
+      "deck_manager.gd": "Node script: deck_array (array of card_data refs, loaded from deck_list.json), discard_array. Methods: shuffle_deck() randomizes deck_array, draw_card() pops from deck_array, if deck empty and discard not empty, reshuffle_discard_into_deck(). draw_cards(count) loops draw_card count times, return drawn_cards array. on_card_discarded(card_data) appends to discard_array. Signals: deck_changed, discard_changed.",
+      "turn_manager.gd": "Node script: current_turn (player/enemy), turn_phase (draw/play/end), turn_number, mana_current (0), mana_max (5), mana_next_max (scales up per turn). Methods: start_turn() if player: draw_cards(1), set_mana(mana_current = mana_max), emit turn_started. during play_phase: on_card_played check mana_current >= card_cost, subtract mana, resolve card_effects. on_end_turn_pressed() transition to enemy_turn, pause 1s, enemy_ai.play_turn(), return to player_turn. Signals: turn_started, phase_changed, mana_changed.",
+      "card_effects.gd": "Node script: effect_dict { damage: apply_damage(value), heal: apply_heal(value), draw: draw_cards(value), buff_atk: apply_buff(stat, value, duration), debuff_def: apply_debuff(stat, value, duration) }. Methods: resolve_effect(effect_type, effect_value, target) looks up effect_dict, calls corresponding method. apply_damage(target, amount) reduces target.health, apply_heal(caster, amount) increases health, draw_cards(player, amount) calls deck_manager.draw_card() count times add to hand. apply_buff/debuff applies stat modifiers via Tween for duration. Signals: effect_resolved.",
+      "enemy_ai.gd": "Node script: enemy_deck (separate deck_manager instance), enemy_hand, enemy_health. Methods: play_turn() during enemy_turn phase, query hand_array for valid plays (mana_current >= card_cost), select card via simple AI (prioritize highest damage > draw > heal), call card_effects.resolve_effect(). Alternate every 3 turns between aggressive (damage cards) and defensive (heal/draw cards). Pause between card plays (0.5s animations). Pass turn on end_turn.",
+      "battle_manager.gd": "Node script: player_health, enemy_health, battle_active. Methods: start_battle(player_deck, enemy_deck) initializes both decks, turn_manager.start_turn(). on_player_health_zero() enemy_wins, show game_over screen. on_enemy_health_zero() player_wins, show victory screen. update_ui() syncs health bars, mana displays. Signals: battle_started, player_win, enemy_win, health_changed."
+    },
+    "assets/": {
+      "cards/": {
+        "card_damage_10.tres": "Resource {card_id: 'damage_10', name: 'Fireball', cost: 3, type: damage, effect_type: 'damage', effect_value: 10, artwork: 'res://assets/art/fireball.png'}",
+        "card_damage_20.tres": "Resource {card_id: 'damage_20', name: 'Meteor Storm', cost: 5, type: damage, effect_value: 20}",
+        "card_heal_15.tres": "Resource {card_id: 'heal_15', name: 'Healing Light', cost: 2, type: heal, effect_value: 15}",
+        "card_draw_2.tres": "Resource {card_id: 'draw_2', name: 'Study Ancient Texts', cost: 1, type: draw, effect_value: 2}",
+        "card_buff_atk_3.tres": "Resource {card_id: 'buff_atk_3', name: 'Rage', cost: 1, type: buff, effect_type: 'buff_atk', effect_value: 3, duration: 1_turn}"
+      },
+      "decks/": {
+        "player_starter_deck.json": "Array of 20 card resource refs: [damage_10 x6, damage_20 x2, heal_15 x4, draw_2 x8]"
+      },
+      "art/": "card_bg.png (80x120 card background), fireball.png, meteor.png, heal_light.png, study_book.png, rage_symbol.png, etc"
+    }
+  },
+  "preBuiltMechanics": [
+    "Control-based card UI with TextureRect for artwork, Labels for name/cost/description",
+    "Hand management with fan layout algorithm positioning cards in arc pattern",
+    "Deck manager with shuffle, draw, and discard pile reshuffle mechanics",
+    "Mana/energy system: 3-5 mana per turn, regenerates, increases by 1 max per turn up to 10",
+    "Turn phases: draw (draw 1 card), play (play cards with valid mana), end (opponent's turn)",
+    "Card effect resolution system: damage, heal, draw, buff, debuff effects",
+    "Drag-and-drop card playing: pick from hand, place on play_area if mana permits",
+    "Enemy AI opponent with simple decision logic (prioritize damage, heal when needed, draw when hand empty)",
+    "Battle progression: track health, end battle on zero health, determine winner",
+    "Health bars and mana displays with real-time updates",
+    "Animated card resolution with brief pause between effects"
+  ],
+  "customizationPoints": [
+    "Design new card types: create card_*.tres resources with custom effect_type and effect_value. Example: card_stun (freeze enemy turn), card_draw_random (draw random card), card_create_token (summon 1/1 creature)",
+    "Implement card synergies: add keyword system (eg. 'combo' effects trigger if played after another card). Modify card_effects.gd to track last_played_card, check for keyword matches",
+    "Create creature/summoned unit system: cards can summon creatures (1/1, 2/2, etc.) that stay on board, attack enemy each turn, persist between turns",
+    "Build advanced AI: implement minimax algorithm or score-based heuristic (calculate hand value vs opponent threat), predict opponent plays",
+    "Add roguelike progression: victory unlocks new cards, each run builds deck by choosing from 3 random cards after each victory",
+    "Implement spell combos: modify card_effects.gd to chain effects (eg. playing two damage cards within 1 turn triggers 'double damage' bonus)",
+    "Create card rarity system: add rarity field (common/rare/epic/legendary) to card_data, higher rarity = higher stats, limit legendary to 1 per deck",
+    "Build deck building UI: Screen where player selects 20-30 cards from collection, save as deck_*.json, load at battle start"
+  ],
+  "examplePrompts": [
+    "Create a starter deck with 20 cards: 8 damage cards (5 power, 3 power), 6 draw cards, 4 heal cards, 2 buff cards.",
+    "Implement a mana system where player starts with 3 mana per turn, increases by 1 max per turn (up to 10), regenerates fully each turn.",
+    "Design 5 core card effects: Fireball (deal 10 damage), Healing Light (heal 15), Study (draw 2 cards), Rage (buff next attack by 3), Shield (reduce next damage by 5).",
+    "Build hand UI with fan layout: position cards in arc at bottom of screen, fan_layout algorithm spreads cards evenly across 180 degrees.",
+    "Implement card drag-and-drop: click card in hand, follows mouse, snap to play_area if valid play (mana sufficient), return to hand if invalid.",
+    "Create enemy AI that plays cards greedily: prioritize highest damage cards within mana budget, heal if health below 30%, draw if hand size below 3.",
+    "Add turn phases: draw phase (draw 1 card), play phase (play multiple cards), end phase (opponent's turn); display phase label.",
+    "Implement health and mana UI: show player health bar (50/50), mana display (3/5), enemy health bar (40/40), update in real-time on damage/heal/mana change."
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "skillId": "DBOX-SKILL-001",
+  "skillArtifactId": "DBOX-ART-001",
+  "name": "Dropbox_File_Navigator",
+  "description": "Manages files and folders in Dropbox as the Mind's external storage layer. Enables file browsing, searching, metadata retrieval, and folder organization. Bridges document management intent from the Mind's WORK surface to actionable file operations in cloud storage.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Dropbox_ListFolder",
+    "Dropbox_SearchFiles",
+    "Dropbox_GetMetadata",
+    "Dropbox_CreateFolder",
+    "Dropbox_GetSharedLinks",
+    "Dropbox_GetSpaceUsage"
+  ],
+  "compatibility_formula": "(storage_volume * 2.0) + (collaboration_need * 1.8) + document_search_frequency",
+  "progressive_unlock": "File listing and metadata retrieval available immediately. File search unlocks after Mind has successfully browsed at least one folder. Folder creation unlocks after Mind has searched for files at least once and provides visibility into directory structure.",
+  "constraints": [
+    "READ-HEAVY access pattern: all tools except Dropbox_CreateFolder are read-only",
+    "Never expose Dropbox API token in logs, outputs, or error messages",
+    "Respect Dropbox rate limit of 180 requests per 15 minutes per app",
+    "Require explicit Steward confirmation before executing Dropbox_CreateFolder due to persistent storage modification",
+    "Path format must start with '' (empty string for root) or '/' for nested paths (e.g., '/folder/subfolder')",
+    "Use cursor-based pagination for Dropbox_ListFolder when listing folders with >500 items",
+    "Do not search with overly broad queries to respect rate limits; encourage specific file names or extensions",
+    "File search respects Dropbox user's file permissions — do not attempt to access files without permissions",
+    "Store active folder paths in STREAM.entity for quick access in subsequent operations",
+    "Sync file structure understanding with WORK surface — map file references to WORK artifacts where applicable"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Verify path format starts with '' or '/'.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Dropbox API token from TENET.apiKey.dropbox. Construct Authorization header as 'Bearer {token}'. Use appropriate endpoint: https://api.dropboxapi.com/2 for RPC calls, https://content.dropboxapi.com/2 for content operations.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: browse (list folder), search (find files), inspect (get metadata), organize (create folder), or share (list shared links), or monitor (storage usage).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For browsing: execute Dropbox_ListFolder with specified path. If response contains 'has_more' flag, store cursor for pagination. Iterate if needed for large directories.",
+      "toolCall": "Dropbox_ListFolder"
+    },
+    {
+      "step": 5,
+      "instruction": "For searching: execute Dropbox_SearchFiles with query and optional path/extension filters. Limit results appropriately (default 100) to respect rate limits. Display match count and top results.",
+      "toolCall": "Dropbox_SearchFiles"
+    },
+    {
+      "step": 6,
+      "instruction": "For metadata retrieval: execute Dropbox_GetMetadata to inspect file properties. Include media_info for images/videos if relevant. Cross-reference file information with WORK surface artifacts.",
+      "toolCall": "Dropbox_GetMetadata"
+    },
+    {
+      "step": 7,
+      "instruction": "For folder creation: REQUIRE explicit Steward confirmation before proceeding. Execute Dropbox_CreateFolder with path. If autorename=true, handle renamed result gracefully. Update STREAM with new folder path.",
+      "toolCall": "Dropbox_CreateFolder"
+    },
+    {
+      "step": 8,
+      "instruction": "For shared links: execute Dropbox_GetSharedLinks to list all links for a file/folder. Report link status, access level (viewer/editor), and expiration if applicable.",
+      "toolCall": "Dropbox_GetSharedLinks"
+    },
+    {
+      "step": 9,
+      "instruction": "For storage monitoring: execute Dropbox_GetSpaceUsage. Calculate percentage used and warn if quota is >90% utilized. Push storage summary to LTM with key: 'dropbox_storage_{date}'.",
+      "toolCall": "Dropbox_GetSpaceUsage"
+    },
+    {
+      "step": 10,
+      "instruction": "Compile operation summary with file counts, paths, sizes, and any actions taken. Update STREAM.entity with active folder paths and search results for context in subsequent operations.",
+      "toolCall": null
+    }
+  ]
+}

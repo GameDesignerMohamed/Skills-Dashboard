@@ -1,0 +1,22 @@
+{
+  "appName": "HubSpot_Suite",
+  "description": "HubSpot CRM API v3 integration for contact, deal, company, and pipeline intelligence. Enables read-only queries to support customer relationship analytics and sales pipeline visibility.",
+  "domain": "crm",
+  "use_case": "Contact searching and retrieval, deal pipeline analysis, company research, and CRM data integration for business intelligence and customer insights.",
+  "tier": "verified",
+  "auth_type": "Bearer",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "HubSpot_SearchContacts",
+        "HubSpot_GetContact",
+        "HubSpot_ListDeals",
+        "HubSpot_GetDealPipeline",
+        "HubSpot_SearchCompanies",
+        "HubSpot_GetDeal"
+      ]
+    }
+  ]
+}

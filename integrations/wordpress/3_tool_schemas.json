@@ -1,0 +1,245 @@
+[
+  {
+    "toolSlug": "WordPress_ListPosts",
+    "toolPurpose": "Retrieve posts from a WordPress site with optional filters by status, category, tag, search query, or pagination.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain (e.g., 'example.wordpress.com' or numeric site ID)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter posts by status",
+          "enum": ["publish", "draft", "pending", "private", "trash", "scheduled"]
+        },
+        "category": {
+          "type": "string",
+          "description": "Filter posts by category slug or ID"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Filter posts by tag slug or ID"
+        },
+        "search": {
+          "type": "string",
+          "description": "Search posts by title or content"
+        },
+        "number": {
+          "type": "integer",
+          "description": "Number of posts to retrieve (default: 20, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for retrieving additional posts",
+          "minimum": 0
+        }
+      },
+      "required": ["site_id"]
+    },
+    "inputsSpec": {
+      "required": ["site_id"],
+      "optional": ["status", "category", "tag", "search", "number", "offset"]
+    }
+  },
+  {
+    "toolSlug": "WordPress_GetPost",
+    "toolPurpose": "Retrieve detailed information about a specific post including title, content, status, categories, tags, and metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain"
+        },
+        "post_id": {
+          "type": "string",
+          "description": "ID of the post to retrieve"
+        }
+      },
+      "required": ["site_id", "post_id"]
+    },
+    "inputsSpec": {
+      "required": ["site_id", "post_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "WordPress_CreatePost",
+    "toolPurpose": "Create a new post in WordPress with title, content, categories, tags, and publication status. Default status is draft pending Steward review.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain"
+        },
+        "title": {
+          "type": "string",
+          "description": "Post title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Post content (supports HTML markup and basic markdown)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Post publication status (default: 'draft'). Requires Steward confirmation for 'publish' status.",
+          "enum": ["draft", "pending", "publish", "private", "scheduled"]
+        },
+        "categories": {
+          "type": "array",
+          "description": "Array of category IDs or slugs to assign to the post",
+          "items": { "type": "string" }
+        },
+        "tags": {
+          "type": "array",
+          "description": "Array of tag names or IDs to assign to the post",
+          "items": { "type": "string" }
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "Post excerpt/summary"
+        },
+        "featured_image_url": {
+          "type": "string",
+          "description": "URL of the featured image for the post"
+        },
+        "scheduled_date": {
+          "type": "string",
+          "description": "Publication date in ISO 8601 format (e.g., '2026-03-10T15:30:00Z') for scheduled posts"
+        }
+      },
+      "required": ["site_id", "title", "content"]
+    },
+    "inputsSpec": {
+      "required": ["site_id", "title", "content"],
+      "optional": ["status", "categories", "tags", "excerpt", "featured_image_url", "scheduled_date"]
+    }
+  },
+  {
+    "toolSlug": "WordPress_UpdatePost",
+    "toolPurpose": "Update an existing post's title, content, status, categories, tags, or other properties. Steward confirmation required for status changes to 'publish'.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain"
+        },
+        "post_id": {
+          "type": "string",
+          "description": "ID of the post to update"
+        },
+        "title": {
+          "type": "string",
+          "description": "Updated post title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Updated post content (supports HTML markup)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Updated post status. Requires Steward confirmation for 'publish' status.",
+          "enum": ["draft", "pending", "publish", "private", "scheduled"]
+        },
+        "categories": {
+          "type": "array",
+          "description": "Updated category assignments (replaces existing categories)",
+          "items": { "type": "string" }
+        },
+        "tags": {
+          "type": "array",
+          "description": "Updated tag assignments (replaces existing tags)",
+          "items": { "type": "string" }
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "Updated post excerpt"
+        },
+        "featured_image_url": {
+          "type": "string",
+          "description": "Updated featured image URL"
+        }
+      },
+      "required": ["site_id", "post_id"]
+    },
+    "inputsSpec": {
+      "required": ["site_id", "post_id"],
+      "optional": ["title", "content", "status", "categories", "tags", "excerpt", "featured_image_url"]
+    }
+  },
+  {
+    "toolSlug": "WordPress_ListCategories",
+    "toolPurpose": "Retrieve all categories from a WordPress site for organizing and filtering posts.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain"
+        },
+        "number": {
+          "type": "integer",
+          "description": "Number of categories to retrieve (default: 20, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset for retrieving additional categories",
+          "minimum": 0
+        }
+      },
+      "required": ["site_id"]
+    },
+    "inputsSpec": {
+      "required": ["site_id"],
+      "optional": ["number", "offset"]
+    }
+  },
+  {
+    "toolSlug": "WordPress_GetStats",
+    "toolPurpose": "Retrieve site statistics including visitor counts, post metrics, and engagement analytics.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "description": "WordPress.com site ID or domain"
+        },
+        "stat_type": {
+          "type": "string",
+          "description": "Type of statistics to retrieve",
+          "enum": ["visits", "views", "posts", "followers", "top-posts", "referrers"]
+        },
+        "period": {
+          "type": "string",
+          "description": "Time period for statistics",
+          "enum": ["day", "week", "month", "year"]
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Number of data points to retrieve (default: 30)",
+          "minimum": 1,
+          "maximum": 365
+        }
+      },
+      "required": ["site_id"]
+    },
+    "inputsSpec": {
+      "required": ["site_id"],
+      "optional": ["stat_type", "period", "quantity"]
+    }
+  }
+]

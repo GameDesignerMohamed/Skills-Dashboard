@@ -1,0 +1,40 @@
+{
+  "skillId": "YELP-SKILL-001",
+  "skillArtifactId": "YELP-ART-001",
+  "name": "Yelp_Local_Scout",
+  "description": "Discovers and retrieves local business information from Yelp as the Mind's local exploration layer. Searches businesses by location and category, retrieves detailed business profiles and customer reviews. Bridges local discovery intent from the Mind's EXPLORE surface to actionable business insights and recommendations.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Yelp_SearchBusinesses",
+    "Yelp_GetBusiness",
+    "Yelp_GetReviews",
+    "Yelp_SearchByPhone",
+    "Yelp_Autocomplete"
+  ],
+  "compatibility_formula": "(local_discovery_interest * 2.0) + (exploration_need * 1.5) + (review_analysis_interest * 1.8)",
+  "progressive_unlock": "Business search available immediately. Business details and reviews unlock after Mind has performed at least one successful business search. Phone-based lookup and autocomplete available after retrieving first business details.",
+  "constraints": [
+    "Never expose Yelp API key in logs or outputs",
+    "Respect Yelp rate limit of 5000 requests per day",
+    "Do not cache business details for more than 24 hours",
+    "Always respect business privacy — do not scrape contact information for external use",
+    "Enforce geographic scope — requests must include valid location or coordinates",
+    "Do not manipulate review data — present reviews as-is from Yelp",
+    "Store recent business searches in STREAM.entity for quick re-access",
+    "For sensitive queries, validate location data before returning results to prevent privacy leakage",
+    "Limit review retrieval to 50 reviews maximum per business per session"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. Validate location format or coordinates.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Yelp API key from TENET.apiKey.yelp. Construct Authorization header as 'Bearer {key}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: search (find businesses by criteria), details (get specific business info), reviews (read customer feedback), phone_lookup (find by phone), or autocomplete (suggest terms).", "toolCall": null },
+    { "step": 4, "instruction": "For search: execute Yelp_SearchBusinesses with term, location, and optional filters (category, price, rating, open_now). Sort by relevance ('best_match'), rating, or distance. Store top 5 results in STREAM.entity with keys 'yelp_search_{timestamp}'.", "toolCall": "Yelp_SearchBusinesses" },
+    { "step": 5, "instruction": "For business details: extract business_id from search results and execute Yelp_GetBusiness. Retrieve hours, address, phone, photo URLs, attributes, and price range. Merge with search result data for comprehensive profile.", "toolCall": "Yelp_GetBusiness" },
+    { "step": 6, "instruction": "For reviews: execute Yelp_GetReviews with business_id and limit (default 20). Sort by 'newest' unless user prefers 'useful', 'cool', or 'funny'. Aggregate review ratings and sentiment for summary generation.", "toolCall": "Yelp_GetReviews" },
+    { "step": 7, "instruction": "For phone lookup: execute Yelp_SearchByPhone with normalized phone number. Return matched business with ID for further detail queries.", "toolCall": "Yelp_SearchByPhone" },
+    { "step": 8, "instruction": "For autocomplete: execute Yelp_Autocomplete with search text and optional geographic context (latitude/longitude) for location-aware suggestions. Return both business name and category suggestions.", "toolCall": "Yelp_Autocomplete" },
+    { "step": 9, "instruction": "Compile discovery summary with business names, ratings, review counts, hours, and key review insights. Push local discovery summary to LTM with key: 'yelp_discovery_{date}'. Update STREAM with recent searches and bookmarked businesses.", "toolCall": null }
+  ],
+  "readOnly": true
+}

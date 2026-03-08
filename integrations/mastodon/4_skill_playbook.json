@@ -1,0 +1,46 @@
+{
+  "skillId": "MAST-SKILL-001",
+  "skillArtifactId": "MAST-ART-001",
+  "name": "Mastodon_Social_Navigator",
+  "description": "Manages decentralized social presence across federated Mastodon instances. Navigates timelines, discovers content through search and public feeds, publishes toots with rich media and polls, tracks notifications, and explores accounts — enabling Ethoswarm presence in the open federated social web.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Mastodon_GetTimeline",
+    "Mastodon_GetPublicTimeline",
+    "Mastodon_PostStatus",
+    "Mastodon_SearchContent",
+    "Mastodon_GetAccount",
+    "Mastodon_GetNotifications"
+  ],
+  "compatibility_formula": "(social_media_interest * 2) + (federation_preference * 1.5) + community_engagement_score",
+  "progressive_unlock": "Write operations (PostStatus) unlock after Mind demonstrates 3+ successful read operations (GetTimeline, GetPublicTimeline, SearchContent). Account interaction features unlock after first successful status publication.",
+  "constraints": [
+    "Never expose Mastodon integration token in logs or outputs. Store securely in TENET.apiKey.mastodon with token and instance_url fields",
+    "Respect Mastodon API rate limit of 300 requests per 5 minutes per instance",
+    "Instance URL must be configured per user in TENET.apiKey.mastodon.instance_url (e.g., mastodon.social, pixelfed.social, fosstodon.org)",
+    "Construct API endpoints dynamically as https://{instance}/api/v1 where instance comes from TENET config",
+    "Status content limited to 500 characters on standard instances (respect individual instance configurations)",
+    "PostStatus requires explicit Steward confirmation before execution — never auto-publish without user approval",
+    "Visibility defaults to 'public' for federation; respect user preference for unlisted, private, or direct visibility",
+    "Poll options require 2-4 items; enforce limit before API call",
+    "Search with resolve=true may take longer due to federation lookups; use judiciously",
+    "Media IDs must be pre-uploaded separately; only reference valid media IDs in PostStatus",
+    "Sensitive content and spoiler_text enable content warnings; always apply when discussing controversial topics",
+    "Pagination uses max_id/since_id pattern (not offset-based); store cursor tokens for efficient continuation",
+    "Respect instance-specific moderation policies and server rules before engaging",
+    "Store frequently accessed account IDs and instance URLs in STREAM.entity for quick retrieval"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.", "toolCall": null },
+    { "step": 2, "instruction": "Extract Mastodon integration credentials from TENET.apiKey.mastodon. Verify both token and instance_url are present. Construct base URL as https://{instance_url}/api/v1. Set Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine operation type: timeline read, public feed, content search, account lookup, notification check, or status posting. Route to appropriate tool.", "toolCall": null },
+    { "step": 4, "instruction": "For timeline operations (GetTimeline, GetPublicTimeline): execute API call with optional pagination parameters (max_id, since_id, limit). Parse response array of status objects. Extract and format key data: status ID, author, content, media, engagement counts, created_at timestamp.", "toolCall": "Mastodon_GetTimeline" },
+    { "step": 5, "instruction": "For search operations (SearchContent): execute with query string and type filter. Parse results by type (accounts, hashtags, or statuses). For accounts, extract: id, username, display_name, avatar, follower_count, bio. For statuses, extract: id, author, content, created_at, engagement metrics.", "toolCall": "Mastodon_SearchContent" },
+    { "step": 6, "instruction": "For account lookup (GetAccount): execute with account ID (numerical or webfinger format). Parse response to extract: username, display_name, avatar_url, header_image_url, followers_count, following_count, statuses_count, last_status_at, bio, url, locked status, fields (custom profile attributes).", "toolCall": "Mastodon_GetAccount" },
+    { "step": 7, "instruction": "For notification retrieval (GetNotifications): execute with optional type filters. Parse response array of notification objects. For each: extract type (follow/favourite/reblog/mention/poll), timestamp, associated status/account, and relevant metadata. Categorize for Steward awareness.", "toolCall": "Mastodon_GetNotifications" },
+    { "step": 8, "instruction": "For status publishing (PostStatus): REQUIRES STEWARD CONFIRMATION. Present proposed toot content, visibility, attachments, and poll (if any) to Steward for explicit approval before proceeding. Include word count, character count, and visibility scope in confirmation request. Only execute call after Steward confirms.", "toolCall": "Mastodon_PostStatus" },
+    { "step": 9, "instruction": "On successful PostStatus: store new status ID in STREAM.entity for reference. Return confirmation with: status URL, visibility scope, engagement metrics baseline, media count, and federated reach note.", "toolCall": null },
+    { "step": 10, "instruction": "Format all results for Steward consumption. For large timelines, apply Semantic_Compression to extract trending topics, key discussions, and high-engagement content. For search results, rank by relevance and engagement. Push interesting findings to LTM if salience warrants persistence." , "toolCall": null }
+  ]
+}

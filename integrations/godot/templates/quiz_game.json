@@ -1,0 +1,63 @@
+{
+  "templateId": "TPL-GODOT-022",
+  "name": "Educational Quiz Game Starter",
+  "genre": "quiz",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "Interactive educational quiz game with multiple question types (multiple choice, true/false, fill-in-the-blank, image-based). Loads question banks from JSON data files. Features category selection, difficulty levels affecting timer and scoring, combo system for consecutive correct answers, lifelines (50/50, skip, hint), visual progress tracking, animated feedback (correct = green flash with particle confetti, incorrect = red shake), and persistent leaderboard with name entry.",
+  "rootNodeType": "Node",
+  "projectStructure": {
+    "project.godot": "Godot 4.x with input mappings: select_answer, submit, lifeline, pause, skip",
+    "data/": {
+      "questions.json": "Array of question objects: {id, category, difficulty, type, question_text, image_url (optional), answers (array), correct_answer (index), hint_text, time_limit_seconds}"
+    },
+    "scenes/": {
+      "title_screen.tscn": "Node2D with game title (Label), play button (Button), settings button (Button), quit button (Button), background Sprite2D",
+      "category_select.tscn": "Node2D with category buttons (HBoxContainer of Buttons), displays available quiz categories from loaded questions.json, selected category passed to gameplay",
+      "gameplay.tscn": "Node2D with question_display (child scene), answer container (VBoxContainer/GridContainer), timer display, progress bar, lifelines UI, current score label",
+      "question_display.tscn": "Node2D with Label for question_text, optional Sprite2D for question_image, visual indicator for current question number, difficulty badge",
+      "answer_multiple_choice.tscn": "VBoxContainer with 4 Button nodes (one per option), answer_selected signal on button press, visual highlight on hover, disabled state when submitted",
+      "answer_true_false.tscn": "HBoxContainer with 2 Buttons (True/False), answer_selected signal, larger buttons for touch, visual selection highlight",
+      "answer_fill_blank.tscn": "HBoxContainer with LineEdit for text input, submit Button, answer_selected signal on submit, keyboard focus handling",
+      "feedback_correct.tscn": "CanvasLayer with green background flash (0.3 sec), Label '+100 CORRECT!' (animated pop-up), particle emitter for confetti effect (0.5 sec), plays success sound",
+      "feedback_wrong.tscn": "CanvasLayer with red background flash (0.3 sec), Label 'X INCORRECT', camera shake effect (amplitude 5px, 3 shakes), plays wrong answer sound",
+      "results_screen.tscn": "Node2D with final score display, accuracy percentage (correct / total * 100), category stats, leaderboard rank indicator, play again button, main menu button",
+      "leaderboard.tscn": "Node2D with leaderboard table (ItemList or custom VBoxContainer), entries sorted by score descending, name/score/category columns, name entry TextEdit at top for new high scores, prev/next page buttons for pagination"
+    }
+  },
+  "preBuiltMechanics": [
+    "Question loader: question_loader.gd parses questions.json, filters by category, sorts by difficulty",
+    "Question bank structure: dict with id, category, difficulty (easy/medium/hard), type (multiple_choice/true_false/fill_blank/image), question_text, answers array, correct_answer index, hint, time_limit",
+    "Quiz manager: manages question flow, tracks current_question index, total_questions, answers_given array, score accumulation",
+    "Timer system: difficulty_level affects time_limit (easy: 30 sec, medium: 20 sec, hard: 10 sec), countdown Label updates every frame, auto-advance on timeout",
+    "Answer validation: compares user answer to correct_answer, case-insensitive for fill_blank, returns boolean",
+    "Scoring system: base 100 points per correct answer, multiplier by difficulty (easy 1x, medium 2x, hard 3x), streak bonus (+50 per consecutive correct)",
+    "Streak tracker: increment on correct answer, reset on incorrect, display visual combo counter, applies 1.5x score multiplier at 3+ streak",
+    "Lifeline system: 50/50 removes two incorrect answers from multiple choice, skip auto-advances question without scoring, hint reveals partial answer or clue; limited uses per quiz (3 uses total, 1 per type)",
+    "Feedback animation: correct answer triggers green flash overlay (0.2 sec) + particle confetti burst + success sound, incorrect answer triggers red shake (0.3 sec camera shake, 5px amplitude) + wrong sound",
+    "Progress bar: visual representation of current_question / total_questions, fills left-to-right, percentage label displayed",
+    "Leaderboard persistence: ConfigFile stores scores as entries: {name, score, category, date_string}, loads on startup, sorts by score descending",
+    "Leaderboard display: ItemList with top 10 entries, shows name (max 15 chars), score, category, highlights current session high score",
+    "Name entry: TextEdit for new high scores (top 10), limits to 15 characters, saves entry to leaderboard on confirm",
+    "Accuracy tracking: tracks correct_answers count, calculates accuracy_percentage = (correct / total) * 100, displays on results screen"
+  ],
+  "customizationPoints": [
+    "Expand question types: add multiple-select (check multiple correct answers), drag-and-drop matching, image click hotspots",
+    "Difficulty scaling: implement easy/medium/hard that affects time_limit, point values, AI-generated hint quality, answer option shuffling",
+    "Visual customization: add theme selector (dark/light), category-specific color schemes, animated progress bar with gradient fill",
+    "Audio design: add background music per difficulty, unique sound effects per question type, victory fanfare on high score",
+    "Statistics tracking: implement accuracy per category, average time per question, topic weak spots identified, detailed post-game statistics screen",
+    "Multiplayer mode: implement local multiplayer where players alternate questions, fastest answer wins bonus, leaderboard per player",
+    "Daily challenges: rotate featured question set daily, apply special scoring rules (2x points), track daily streaks",
+    "Question analytics: track which questions are most frequently answered incorrectly, implement spaced repetition for challenging questions",
+    "Customizable quizzes: allow users to import custom question.json files, validate JSON structure, support multiple languages",
+    "Achievements: implement achievement system (Perfect Streak: 10 consecutive correct, Speed Demon: finish in <5 sec per question, Master: 100% accuracy)"
+  ],
+  "examplePrompts": [
+    "Create a multiple choice question display showing 4 answer options as buttons, track which option is selected (highlighted in blue), validate against correct_answer index, apply 100 base points * difficulty_multiplier to score on correct answer",
+    "Implement a streak counter that increments on consecutive correct answers and resets on wrong answer, applying 1.5x score multiplier when streak reaches 3+ (combo bonus)",
+    "Design a timer system where difficulty level (easy/medium/hard) sets time_limit to 30/20/10 seconds respectively, countdown updates every frame, auto-advances to next question if timer reaches zero",
+    "Create a leaderboard saved to ConfigFile that stores name, score, category, date, loads on startup sorted by score descending, displays top 10 entries, and highlights the current session's best score",
+    "Implement a lifeline system with 3 total uses: 50/50 removes two wrong answers from multiple choice, skip advances without scoring, hint reveals partial answer; show remaining lifeline count visually"
+  ]
+}

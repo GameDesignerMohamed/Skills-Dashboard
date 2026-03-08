@@ -1,0 +1,12 @@
+{
+  "title": "Google Maps Location Suite v1.0",
+  "offeringId": "GMAPS-001-GEO",
+  "description": "Google Maps Platform API integration for geocoding, reverse geocoding, place search, place details, and directions. Enables location-based services, geographic data retrieval, and route planning as an external execution layer for spatial intelligence.",
+  "endpoints": [
+    "https://maps.googleapis.com/maps/api/geocode/json",
+    "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+    "https://maps.googleapis.com/maps/api/place/details/json",
+    "https://maps.googleapis.com/maps/api/directions/json"
+  ],
+  "lastUpdate": "2026-03-05"
+}

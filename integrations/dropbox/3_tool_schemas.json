@@ -1,0 +1,164 @@
+[
+  {
+    "toolSlug": "Dropbox_ListFolder",
+    "toolPurpose": "List files and folders in a specified Dropbox path with cursor-based pagination support for large directories.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Dropbox path to list (use '' for root, or '/folder/subfolder' format). Must start with '' or '/'"
+        },
+        "recursive": {
+          "type": "boolean",
+          "description": "If true, recursively list all contents including subfolders"
+        },
+        "include_deleted": {
+          "type": "boolean",
+          "description": "If true, include deleted files in listings (for trash/recovery)"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of entries to return per request (1-2000, default 500)",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Cursor for pagination to retrieve next batch of results"
+        }
+      },
+      "required": ["path"]
+    },
+    "inputsSpec": {
+      "required": ["path"],
+      "optional": ["recursive", "include_deleted", "limit", "cursor"]
+    }
+  },
+  {
+    "toolSlug": "Dropbox_SearchFiles",
+    "toolPurpose": "Search for files in Dropbox by name, content, or file properties with advanced filtering options.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query string (e.g., 'budget.xlsx', 'presentation', '.pdf' for file extension)"
+        },
+        "path": {
+          "type": "string",
+          "description": "Limit search to a specific folder path (optional)"
+        },
+        "max_results": {
+          "type": "integer",
+          "description": "Maximum number of search results to return (1-1000, default 100)",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "file_extensions": {
+          "type": "array",
+          "description": "Filter search by file extensions (e.g., ['pdf', 'docx', 'xlsx'])",
+          "items": { "type": "string" }
+        },
+        "file_status": {
+          "type": "string",
+          "description": "Filter by file status (active, deleted, or all)",
+          "enum": ["active", "deleted", "all"]
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["path", "max_results", "file_extensions", "file_status"]
+    }
+  },
+  {
+    "toolSlug": "Dropbox_GetMetadata",
+    "toolPurpose": "Retrieve detailed metadata for a specific file or folder including size, modification time, sharing status, and content hash.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Full path to the file or folder (use '' for root)"
+        },
+        "include_media_info": {
+          "type": "boolean",
+          "description": "Include media properties like image dimensions and video duration"
+        },
+        "include_deleted": {
+          "type": "boolean",
+          "description": "Include deleted file metadata"
+        },
+        "include_has_explicit_shared_members": {
+          "type": "boolean",
+          "description": "Include information about explicit shared members"
+        }
+      },
+      "required": ["path"]
+    },
+    "inputsSpec": {
+      "required": ["path"],
+      "optional": ["include_media_info", "include_deleted", "include_has_explicit_shared_members"]
+    }
+  },
+  {
+    "toolSlug": "Dropbox_CreateFolder",
+    "toolPurpose": "Create a new folder in Dropbox at the specified path. Requires Steward confirmation due to persistent storage impact.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Full path for the new folder (e.g., '/Documents/Projects/NewProject')"
+        },
+        "autorename": {
+          "type": "boolean",
+          "description": "If true, automatically rename if a folder with same name exists (e.g., 'NewProject (1)')"
+        }
+      },
+      "required": ["path"]
+    },
+    "inputsSpec": {
+      "required": ["path"],
+      "optional": ["autorename"]
+    }
+  },
+  {
+    "toolSlug": "Dropbox_GetSharedLinks",
+    "toolPurpose": "List all shared links created for a specific file or folder, including expiration and access levels.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Full path to the file or folder to retrieve shared links for"
+        }
+      },
+      "required": ["path"]
+    },
+    "inputsSpec": {
+      "required": ["path"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Dropbox_GetSpaceUsage",
+    "toolPurpose": "Retrieve account storage usage information including allocated quota, used space, and remaining capacity.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": []
+    }
+  }
+]

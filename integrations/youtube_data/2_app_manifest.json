@@ -1,0 +1,22 @@
+{
+  "appName": "YouTube_Data_Suite",
+  "description": "YouTube Data API v3 integration for video search, channel analysis, and content discovery.",
+  "domain": "content",
+  "use_case": "Video search, channel monitoring, trending content discovery, comment analysis, and playlist management.",
+  "tier": "verified",
+  "auth_type": "API Key",
+  "header_key": "key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "YouTube_SearchVideos",
+        "YouTube_GetVideoDetails",
+        "YouTube_GetChannelInfo",
+        "YouTube_GetVideoComments",
+        "YouTube_GetTrending",
+        "YouTube_GetPlaylistItems"
+      ]
+    }
+  ]
+}

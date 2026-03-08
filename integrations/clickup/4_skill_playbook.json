@@ -1,0 +1,40 @@
+{
+  "skillId": "CLKUP-SKILL-001",
+  "skillArtifactId": "CLKUP-ART-001",
+  "name": "ClickUp_Task_Manager",
+  "description": "Manages tasks, lists, and spaces in ClickUp as the Mind's external execution layer. Creates, organizes, prioritizes, and tracks project tasks. Bridges cognitive intent from the Mind's WORK surface to actionable items in ClickUp workspace.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "ClickUp_GetTasks",
+    "ClickUp_GetTask",
+    "ClickUp_CreateTask",
+    "ClickUp_UpdateTask",
+    "ClickUp_GetSpaces",
+    "ClickUp_GetLists"
+  ],
+  "compatibility_formula": "(project_management_interest * 2.5) + task_volume + (collaboration_need * 1.5)",
+  "progressive_unlock": "Task reading and space/list discovery available immediately. Task creation and updates unlock after Mind has retrieved existing tasks at least once to understand the workspace structure. Advanced features like custom fields and subtasks unlock after successful creation of first task.",
+  "constraints": [
+    "Never expose ClickUp API token in logs or outputs",
+    "Respect ClickUp rate limit of 100 requests per minute per token",
+    "Do not create or update tasks without explicit Steward confirmation unless the Mind has standing permission in TENET",
+    "Sync task state with WORK surface — ClickUp tasks should mirror WORK board cards where applicable",
+    "Do not create duplicate tasks — always check existing tasks first via ClickUp_GetTasks before creation",
+    "Priority values must be integers 1-4 (1=urgent, 2=high, 3=medium, 4=low); validate before API calls",
+    "Store active list_id and space_id in STREAM.entity for quick access",
+    "Due dates must be in YYYY-MM-DD format or Unix timestamp milliseconds; normalize before submission",
+    "Task assignments can only include valid user IDs from the workspace; validate against team roster first",
+    "Status values vary by workspace configuration; retrieve available statuses via ClickUp_GetLists before enforcing"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed. For priority, ensure value is integer 1-4. For dates, validate format (YYYY-MM-DD or milliseconds).", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve ClickUp API token from TENET.apiKey.clickup. Construct Authorization header as 'Bearer {token}'. Set rate limit tracking to monitor 100 req/min constraint.", "toolCall": null },
+    { "step": 3, "instruction": "Determine intent: review (get tasks/spaces/lists), create (new task), update (modify existing), or retrieve details (single task).", "toolCall": null },
+    { "step": 4, "instruction": "For review: fetch ClickUp_GetSpaces with team_id to map workspace hierarchy. Then ClickUp_GetLists to show available lists within spaces. Finally ClickUp_GetTasks for list contents. Cross-reference with WORK surface cards for consistency.", "toolCall": "ClickUp_GetSpaces" },
+    { "step": 5, "instruction": "For task details: retrieve full task info via ClickUp_GetTask including custom fields and comments if requested. Validate task exists before attempting updates.", "toolCall": "ClickUp_GetTask" },
+    { "step": 6, "instruction": "For task creation: check existing tasks first via ClickUp_GetTasks to prevent duplicates. Validate assignee IDs exist in workspace. Validate priority is 1-4. Confirm with Steward before creating (unless TENET standing permission exists). Create via ClickUp_CreateTask. If task maps to WORK card, store ClickUp task_id in card data.", "toolCall": "ClickUp_CreateTask" },
+    { "step": 7, "instruction": "For updates: fetch current task state first via ClickUp_GetTask, apply requested changes via ClickUp_UpdateTask. Validate priority (1-4) and assignees before submission. If priority or status changes, evaluate whether WORK board card should also update.", "toolCall": "ClickUp_UpdateTask" },
+    { "step": 8, "instruction": "Compile task summary with space names, list names, due dates, priorities, and assignee counts. Push project summary to LTM with key 'clickup_summary_{date}'. Update STREAM with active task counts per list. Log all operations respecting rate limit (100 req/min)." }
+  ]
+}

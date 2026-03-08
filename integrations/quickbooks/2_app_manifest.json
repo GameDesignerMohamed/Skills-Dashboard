@@ -1,0 +1,22 @@
+{
+  "appName": "QuickBooks_Suite",
+  "description": "QuickBooks Online API v3 integration for financial data retrieval, entity queries, and accounting report generation.",
+  "domain": "financial",
+  "use_case": "Invoice retrieval, customer queries, financial reporting (P&L and Balance Sheet), chart of accounts access, and comprehensive entity queries using QuickBooks SQL-like syntax.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "QuickBooks_QueryEntities",
+        "QuickBooks_GetInvoice",
+        "QuickBooks_ListCustomers",
+        "QuickBooks_GetProfitAndLoss",
+        "QuickBooks_GetBalanceSheet",
+        "QuickBooks_ListAccounts"
+      ]
+    }
+  ]
+}

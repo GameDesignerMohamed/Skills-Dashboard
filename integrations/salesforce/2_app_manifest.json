@@ -1,0 +1,22 @@
+{
+  "appName": "Salesforce_Suite",
+  "description": "Salesforce REST API v59.0 integration for CRM operations, SOQL querying, SOSL search, record retrieval, and metadata discovery.",
+  "domain": "crm",
+  "use_case": "Salesforce record querying and retrieval, full-text search, sObject discovery, metadata inspection, recent items tracking, and CRM data aggregation for Steward insights.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Salesforce_Query",
+        "Salesforce_GetRecord",
+        "Salesforce_SearchRecords",
+        "Salesforce_ListObjects",
+        "Salesforce_DescribeObject",
+        "Salesforce_GetRecentItems"
+      ]
+    }
+  ]
+}

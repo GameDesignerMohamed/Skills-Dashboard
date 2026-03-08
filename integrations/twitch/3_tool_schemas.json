@@ -1,0 +1,170 @@
+[
+  {
+    "toolSlug": "Twitch_SearchChannels",
+    "toolPurpose": "Search for Twitch channels by query string with optional pagination support.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query string for channel names or descriptions"
+        },
+        "first": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default: 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Cursor for pagination to get the next set of results"
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["first", "after"]
+    }
+  },
+  {
+    "toolSlug": "Twitch_GetStreams",
+    "toolPurpose": "Retrieve live streams with optional filtering by game_id or user_id, sorted by viewer count.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "game_id": {
+          "type": "string",
+          "description": "Filter by game ID (numeric string)"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Filter by broadcaster user ID (numeric string)"
+        },
+        "first": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default: 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Cursor for pagination to get the next set of results"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["game_id", "user_id", "first", "after"]
+    }
+  },
+  {
+    "toolSlug": "Twitch_GetUsers",
+    "toolPurpose": "Retrieve user information by numeric user IDs or login names. Required for resolving display names to numeric IDs.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "array",
+          "description": "Array of user IDs (numeric strings)",
+          "items": { "type": "string" }
+        },
+        "login": {
+          "type": "array",
+          "description": "Array of login names/usernames",
+          "items": { "type": "string" }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["id", "login"]
+    }
+  },
+  {
+    "toolSlug": "Twitch_GetTopGames",
+    "toolPurpose": "Retrieve the top games on Twitch sorted by viewer count with pagination support.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "first": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default: 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Cursor for pagination to get the next set of results"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["first", "after"]
+    }
+  },
+  {
+    "toolSlug": "Twitch_GetChannelInfo",
+    "toolPurpose": "Retrieve detailed channel information including title, description, game category, and viewer language for a specific broadcaster.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "broadcaster_id": {
+          "type": "string",
+          "description": "Broadcaster's numeric user ID (required)"
+        }
+      },
+      "required": ["broadcaster_id"]
+    },
+    "inputsSpec": {
+      "required": ["broadcaster_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Twitch_GetClips",
+    "toolPurpose": "Retrieve clips created for a specific broadcaster with optional date range filtering and pagination.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "broadcaster_id": {
+          "type": "string",
+          "description": "Broadcaster's numeric user ID (required)"
+        },
+        "started_at": {
+          "type": "string",
+          "description": "Starting date in RFC 3339 format (e.g., 2024-01-01T00:00:00Z)"
+        },
+        "ended_at": {
+          "type": "string",
+          "description": "Ending date in RFC 3339 format (e.g., 2024-12-31T23:59:59Z)"
+        },
+        "first": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default: 20)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Cursor for pagination to get the next set of results"
+        }
+      },
+      "required": ["broadcaster_id"]
+    },
+    "inputsSpec": {
+      "required": ["broadcaster_id"],
+      "optional": ["started_at", "ended_at", "first", "after"]
+    }
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "appName": "Medium_Suite",
+  "domain": "content",
+  "version": "1.0.0",
+  "semver": "1.0.0",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "tier": "verified",
+  "description": "Medium Suite application manifest for content publishing and management",
+  "metadata": {
+    "maintainer": "Ethoswarm",
+    "created": "2026-03-05",
+    "documentation_url": "https://medium.com/developers"
+  },
+  "permissions": [
+    "read:user_profile",
+    "read:publications",
+    "write:posts",
+    "write:posts_in_publication"
+  ],
+  "versioning": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0,
+    "prerelease": null
+  }
+}

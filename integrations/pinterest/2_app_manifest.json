@@ -1,0 +1,21 @@
+{
+  "appName": "Pinterest_Suite",
+  "description": "Pinterest API v5 integration for visual content discovery, pin creation, and board management.",
+  "domain": "social_media",
+  "use_case": "Pin discovery and search, board management, pin creation and publishing, visual content curation, and mood board organization.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Pinterest_GetUserAccount",
+        "Pinterest_ListBoards",
+        "Pinterest_ListPins",
+        "Pinterest_CreatePin",
+        "Pinterest_SearchPins"
+      ]
+    }
+  ]
+}

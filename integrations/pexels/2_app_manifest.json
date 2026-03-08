@@ -1,0 +1,21 @@
+{
+  "appName": "Pexels_Media_Suite",
+  "description": "Pexels REST API v1 integration for discovering, searching, and retrieving free stock photos and videos with mandatory photographer attribution.",
+  "domain": "media_library",
+  "use_case": "Photo and video search, curated media discovery, featured collections browsing, media attribution and licensing reference, and visual content research for creative projects.",
+  "tier": "verified",
+  "auth_type": "API Key",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Pexels_SearchPhotos",
+        "Pexels_GetPhoto",
+        "Pexels_CuratedPhotos",
+        "Pexels_SearchVideos",
+        "Pexels_GetFeaturedCollections"
+      ]
+    }
+  ]
+}

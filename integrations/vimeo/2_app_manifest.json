@@ -1,0 +1,21 @@
+{
+  "appName": "Vimeo_Discovery_Suite",
+  "description": "Vimeo video discovery and exploration integration for searching, retrieving video details, accessing personal video libraries, and exploring channel content.",
+  "domain": "media_entertainment",
+  "use_case": "Video research, content discovery, video library exploration, channel analytics, and multimedia content curation within Vimeo's platform.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Vimeo_SearchVideos",
+        "Vimeo_GetVideo",
+        "Vimeo_GetMyVideos",
+        "Vimeo_GetChannel",
+        "Vimeo_GetChannelVideos"
+      ]
+    }
+  ]
+}

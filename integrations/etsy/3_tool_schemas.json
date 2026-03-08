@@ -1,0 +1,137 @@
+[
+  {
+    "toolSlug": "Etsy_SearchListings",
+    "toolPurpose": "Search active Etsy listings by keywords, category, sort order, and pagination. Returns listing IDs, titles, prices, and shop information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "keywords": {
+          "type": "string",
+          "description": "Search query string for listing titles and descriptions (required for search)"
+        },
+        "taxonomy_id": {
+          "type": "integer",
+          "description": "Filter by Etsy taxonomy category ID (e.g., 697 for Art, 1775 for Jewelry). Optional."
+        },
+        "sort_on": {
+          "type": "string",
+          "description": "Sort results by field",
+          "enum": ["created", "down", "up", "favorite_count", "relevance"]
+        },
+        "sort_order": {
+          "type": "string",
+          "description": "Sort direction",
+          "enum": ["asc", "desc"]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default 25)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset - number of results to skip (default 0)",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "required": ["keywords"]
+    },
+    "inputsSpec": {
+      "required": ["keywords"],
+      "optional": ["taxonomy_id", "sort_on", "sort_order", "limit", "offset"]
+    }
+  },
+  {
+    "toolSlug": "Etsy_GetListing",
+    "toolPurpose": "Retrieve detailed information about a specific listing by ID. Returns title, description, price, currency, quantity available, shop ID, and other metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "listing_id": {
+          "type": "integer",
+          "description": "The Etsy listing ID (required)"
+        }
+      },
+      "required": ["listing_id"]
+    },
+    "inputsSpec": {
+      "required": ["listing_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Etsy_GetListingImages",
+    "toolPurpose": "Retrieve all images associated with a specific listing. Returns image URLs, display order, and alt text.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "listing_id": {
+          "type": "integer",
+          "description": "The Etsy listing ID (required)"
+        }
+      },
+      "required": ["listing_id"]
+    },
+    "inputsSpec": {
+      "required": ["listing_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Etsy_GetShop",
+    "toolPurpose": "Retrieve information about a specific shop by shop ID. Returns shop name, description, URL, icon, listing count, and sales metrics.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "shop_id": {
+          "type": "integer",
+          "description": "The Etsy shop ID (required)"
+        }
+      },
+      "required": ["shop_id"]
+    },
+    "inputsSpec": {
+      "required": ["shop_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Etsy_SearchShops",
+    "toolPurpose": "Search for shops by shop name. Returns matching shop IDs, names, and basic information for shop discovery.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "shop_name": {
+          "type": "string",
+          "description": "Shop name or partial shop name to search for (required)"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return (1-100, default 25)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset - number of results to skip (default 0)",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "required": ["shop_name"]
+    },
+    "inputsSpec": {
+      "required": ["shop_name"],
+      "optional": ["limit", "offset"]
+    }
+  }
+]

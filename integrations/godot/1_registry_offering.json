@@ -1,0 +1,45 @@
+{
+  "title": "Godot Game Development Suite v1.2",
+  "offeringId": "GODOT-001-GAMEDEV",
+  "description": "Godot Engine MCP integration for AI-driven game development. Enables a Mind to create scenes, manipulate nodes, write GDScript, run projects, capture debug output, take screenshots, simulate input, and manage the full game development lifecycle. Includes a comprehensive template library with 25 pre-built starter projects spanning all major game genres for rapid prototyping from natural language game concepts.",
+  "endpoints": [
+    "mcp://godot-mcp/scene",
+    "mcp://godot-mcp/script",
+    "mcp://godot-mcp/project",
+    "mcp://godot-mcp/runtime",
+    "mcp://godot-mcp/editor",
+    "mcp://godot-mcp/templates"
+  ],
+  "templateLibrary": {
+    "version": "1.2.0",
+    "templateCount": 25,
+    "templates": [
+      { "templateId": "TPL-GODOT-001", "name": "2D Platformer Starter", "genre": "platformer", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-002", "name": "Top-Down RPG Starter", "genre": "rpg", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-003", "name": "Puzzle Game Starter", "genre": "puzzle", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-004", "name": "Endless Runner Starter", "genre": "endless_runner", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-005", "name": "Space Shooter / Shmup Starter", "genre": "space_shooter", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-006", "name": "Tower Defense Starter", "genre": "tower_defense", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-007", "name": "2D Fighting Game Starter", "genre": "fighting", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-008", "name": "Top-Down Racing Starter", "genre": "racing", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-009", "name": "Survival Horror Starter", "genre": "survival_horror", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-010", "name": "Card Game / Deck Builder Starter", "genre": "card_game", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-011", "name": "Visual Novel Starter", "genre": "visual_novel", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-012", "name": "Farming Simulator Starter", "genre": "farming_sim", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-013", "name": "Rhythm Game Starter", "genre": "rhythm", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-014", "name": "Roguelike Dungeon Crawler Starter", "genre": "roguelike", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-015", "name": "Physics Sandbox Starter", "genre": "sandbox", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-016", "name": "City Builder / Tycoon Starter", "genre": "city_builder", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-017", "name": "Stealth Game Starter", "genre": "stealth", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-018", "name": "Top-Down Battle Royale Starter", "genre": "battle_royale", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-019", "name": "Metroidvania Starter", "genre": "metroidvania", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-020", "name": "Bullet Hell / Danmaku Starter", "genre": "bullet_hell", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-021", "name": "Sports Game Starter (Soccer)", "genre": "sports", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-022", "name": "Educational Quiz Game Starter", "genre": "quiz", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-023", "name": "Virtual Pet / Tamagotchi Starter", "genre": "virtual_pet", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-024", "name": "Turn-Based Strategy Starter", "genre": "turn_based_strategy", "dimension": "2D" },
+      { "templateId": "TPL-GODOT-025", "name": "Idle / Clicker Game Starter", "genre": "idle_clicker", "dimension": "2D" }
+    ]
+  },
+  "lastUpdate": "2026-03-07"
+}

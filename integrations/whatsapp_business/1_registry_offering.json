@@ -1,0 +1,9 @@
+{
+  "title": "WhatsApp Business Cloud API Suite v1.0",
+  "offeringId": "WABU-001-COMM",
+  "description": "WhatsApp Business Cloud API integration for sending and receiving messages, managing message templates, sending media, and reading message status. Enables a Mind to communicate with Stewards and external contacts directly through WhatsApp.",
+  "endpoints": [
+    "https://graph.facebook.com/v19.0"
+  ],
+  "lastUpdate": "2026-03-05"
+}

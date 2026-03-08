@@ -1,0 +1,13 @@
+{
+  "title": "Foursquare Places API Suite v3.0",
+  "offeringId": "FSQ-PLACES-001",
+  "description": "Foursquare Places API v3 integration for place search, geocoding, place details, photos, and user tips/reviews. Enables location-based place discovery, venue information retrieval, and community insights as an external execution layer for spatial intelligence and venue research.",
+  "endpoints": [
+    "https://api.foursquare.com/v3/places/search",
+    "https://api.foursquare.com/v3/places/{fsq_id}",
+    "https://api.foursquare.com/v3/places/{fsq_id}/photos",
+    "https://api.foursquare.com/v3/places/{fsq_id}/tips",
+    "https://api.foursquare.com/v3/autocomplete"
+  ],
+  "lastUpdate": "2026-03-06"
+}

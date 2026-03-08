@@ -1,0 +1,192 @@
+[
+  {
+    "toolSlug": "Bluesky_GetTimeline",
+    "toolPurpose": "Retrieve the authenticated user's home timeline with posts from followed accounts, supporting pagination via cursor and optional limit configuration.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of posts to return (default: 30, max: 100)"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from a previous response to continue fetching posts"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "cursor"]
+    }
+  },
+  {
+    "toolSlug": "Bluesky_GetAuthorFeed",
+    "toolPurpose": "Retrieve all posts created by a specific user (author) with optional filtering for replies and reposts.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "actor": {
+          "type": "string",
+          "description": "User handle (e.g., 'john.bsky.social') or DID (Decentralized Identifier) of the author"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of posts to return (default: 30, max: 100)"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from a previous response for continued retrieval"
+        },
+        "filter": {
+          "type": "string",
+          "description": "Filter type: 'posts_only' (exclude replies and reposts), 'posts_with_replies', or 'all' (default)"
+        }
+      },
+      "required": ["actor"]
+    },
+    "inputsSpec": {
+      "required": ["actor"],
+      "optional": ["limit", "cursor", "filter"]
+    }
+  },
+  {
+    "toolSlug": "Bluesky_CreatePost",
+    "toolPurpose": "Create a new post on Bluesky with text content and optional rich facets (mentions, hashtags, links). REQUIRES explicit Steward confirmation before execution.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Post content text (required, max 300 characters)"
+        },
+        "facets": {
+          "type": "array",
+          "description": "Optional array of rich facets (mentions, hashtags, links) to embed in the post",
+          "items": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "object",
+                "description": "Character index range in the text",
+                "properties": {
+                  "byteStart": { "type": "integer" },
+                  "byteEnd": { "type": "integer" }
+                },
+                "required": ["byteStart", "byteEnd"]
+              },
+              "features": {
+                "type": "array",
+                "description": "Array of feature objects (mention, tag, link, etc.)"
+              }
+            },
+            "required": ["index", "features"]
+          }
+        },
+        "reply_to": {
+          "type": "string",
+          "description": "Optional URI of parent post if this is a reply"
+        },
+        "labels": {
+          "type": "array",
+          "description": "Optional content labels for safety/moderation",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["text"]
+    },
+    "inputsSpec": {
+      "required": ["text"],
+      "optional": ["facets", "reply_to", "labels"]
+    }
+  },
+  {
+    "toolSlug": "Bluesky_SearchPosts",
+    "toolPurpose": "Search for posts across Bluesky using keyword queries with optional date range and sorting options.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query (keywords, hashtags, or natural language text)"
+        },
+        "sort": {
+          "type": "string",
+          "description": "Sort order: 'latest' (default), 'top', or 'trending'"
+        },
+        "since": {
+          "type": "string",
+          "description": "ISO 8601 timestamp to filter posts created after this date"
+        },
+        "until": {
+          "type": "string",
+          "description": "ISO 8601 timestamp to filter posts created before this date"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 25, max: 100)"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from a previous response"
+        }
+      },
+      "required": ["q"]
+    },
+    "inputsSpec": {
+      "required": ["q"],
+      "optional": ["sort", "since", "until", "limit", "cursor"]
+    }
+  },
+  {
+    "toolSlug": "Bluesky_GetProfile",
+    "toolPurpose": "Retrieve detailed profile information for a specific Bluesky user including handle, display name, description, followers count, and posts count.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "actor": {
+          "type": "string",
+          "description": "User handle (e.g., 'john.bsky.social') or DID (Decentralized Identifier) to retrieve profile for"
+        }
+      },
+      "required": ["actor"]
+    },
+    "inputsSpec": {
+      "required": ["actor"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Bluesky_GetNotifications",
+    "toolPurpose": "Retrieve the authenticated user's notifications including likes, reposts, replies, follows, and mentions with pagination support.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of notifications to return (default: 30, max: 100)"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from a previous response for continued retrieval"
+        },
+        "seen": {
+          "type": "boolean",
+          "description": "Filter by notification read status (true=seen only, false=unseen only, omit for all)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "cursor", "seen"]
+    }
+  }
+]

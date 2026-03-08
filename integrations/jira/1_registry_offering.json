@@ -1,0 +1,9 @@
+{
+  "title": "Jira Project Management Suite v1.0",
+  "offeringId": "JIRA-001-PM",
+  "description": "Jira Cloud REST API v3 integration for managing issues, projects, and collaboration. Enables a Mind to search, create, update, and track issues as an external execution layer for project management and team coordination.",
+  "endpoints": [
+    "https://{domain}.atlassian.net/rest/api/3"
+  ],
+  "lastUpdate": "2026-03-05"
+}

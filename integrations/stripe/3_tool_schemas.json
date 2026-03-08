@@ -1,0 +1,237 @@
+[
+  {
+    "toolSlug": "Stripe_ListCustomers",
+    "toolPurpose": "Retrieve a list of customers with optional pagination and email filtering.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of customers to return (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "email": {
+          "type": "string",
+          "description": "Filter customers by email address (partial match)"
+        },
+        "starting_after": {
+          "type": "string",
+          "description": "Pagination cursor - return customers after this customer ID"
+        },
+        "ending_before": {
+          "type": "string",
+          "description": "Pagination cursor - return customers before this customer ID"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "email", "starting_after", "ending_before"]
+    }
+  },
+  {
+    "toolSlug": "Stripe_GetBalance",
+    "toolPurpose": "Retrieve the current account balance showing available and pending amounts across all currencies.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "expand": {
+          "type": "array",
+          "description": "Expand nested objects (e.g., 'data.source')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["expand"]
+    }
+  },
+  {
+    "toolSlug": "Stripe_ListPayments",
+    "toolPurpose": "List payment intents with optional filtering by status, customer, or date range.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of payments to return (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter by payment intent status",
+          "enum": ["succeeded", "processing", "requires_action", "requires_capture", "canceled"]
+        },
+        "customer": {
+          "type": "string",
+          "description": "Filter payments by customer ID"
+        },
+        "created_gte": {
+          "type": "integer",
+          "description": "Filter payments created on or after this Unix timestamp"
+        },
+        "created_lte": {
+          "type": "integer",
+          "description": "Filter payments created on or before this Unix timestamp"
+        },
+        "starting_after": {
+          "type": "string",
+          "description": "Pagination cursor - return payments after this payment intent ID"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "status", "customer", "created_gte", "created_lte", "starting_after"]
+    }
+  },
+  {
+    "toolSlug": "Stripe_ListInvoices",
+    "toolPurpose": "List invoices with optional filtering by status, customer, subscription, or subscription status.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of invoices to return (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter by invoice status",
+          "enum": ["draft", "open", "paid", "uncollectible", "void"]
+        },
+        "customer": {
+          "type": "string",
+          "description": "Filter invoices by customer ID"
+        },
+        "subscription": {
+          "type": "string",
+          "description": "Filter invoices by subscription ID"
+        },
+        "subscription_status": {
+          "type": "string",
+          "description": "Filter by subscription status",
+          "enum": ["active", "past_due", "unpaid", "canceled", "trialing"]
+        },
+        "created_gte": {
+          "type": "integer",
+          "description": "Filter invoices created on or after this Unix timestamp"
+        },
+        "created_lte": {
+          "type": "integer",
+          "description": "Filter invoices created on or before this Unix timestamp"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "status", "customer", "subscription", "subscription_status", "created_gte", "created_lte"]
+    }
+  },
+  {
+    "toolSlug": "Stripe_GetSubscriptions",
+    "toolPurpose": "List subscriptions with optional filtering by status, customer, or price/product.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of subscriptions to return (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter by subscription status",
+          "enum": ["active", "past_due", "unpaid", "canceled", "trialing"]
+        },
+        "customer": {
+          "type": "string",
+          "description": "Filter subscriptions by customer ID"
+        },
+        "price": {
+          "type": "string",
+          "description": "Filter subscriptions by price ID"
+        },
+        "created_gte": {
+          "type": "integer",
+          "description": "Filter subscriptions created on or after this Unix timestamp"
+        },
+        "created_lte": {
+          "type": "integer",
+          "description": "Filter subscriptions created on or before this Unix timestamp"
+        },
+        "starting_after": {
+          "type": "string",
+          "description": "Pagination cursor - return subscriptions after this subscription ID"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "status", "customer", "price", "created_gte", "created_lte", "starting_after"]
+    }
+  },
+  {
+    "toolSlug": "Stripe_ListProducts",
+    "toolPurpose": "List products with optional filtering by active/inactive status.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of products to return (1-100, default 10)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Filter by active status (true=active, false=inactive, omitted=both)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Filter by product type",
+          "enum": ["service", "good"]
+        },
+        "created_gte": {
+          "type": "integer",
+          "description": "Filter products created on or after this Unix timestamp"
+        },
+        "created_lte": {
+          "type": "integer",
+          "description": "Filter products created on or before this Unix timestamp"
+        },
+        "starting_after": {
+          "type": "string",
+          "description": "Pagination cursor - return products after this product ID"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "active", "type", "created_gte", "created_lte", "starting_after"]
+    }
+  }
+]

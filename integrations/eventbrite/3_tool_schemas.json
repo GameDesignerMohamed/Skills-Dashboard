@@ -1,0 +1,142 @@
+[
+  {
+    "toolSlug": "Eventbrite_SearchEvents",
+    "toolPurpose": "Search public events on Eventbrite by keyword, location, and date range. Returns matching events with basic details including event ID, name, description, date, time, and venue information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query keyword (e.g., 'Python conference', 'music festival')"
+        },
+        "location_address": {
+          "type": "string",
+          "description": "Location address or city for event search (e.g., 'San Francisco, CA', 'New York')"
+        },
+        "start_date_range_start": {
+          "type": "string",
+          "description": "Start date for event range search in ISO 8601 format (e.g., '2026-03-05T00:00:00Z')"
+        },
+        "start_date_range_end": {
+          "type": "string",
+          "description": "End date for event range search in ISO 8601 format (e.g., '2026-04-05T23:59:59Z')"
+        },
+        "sort_by": {
+          "type": "string",
+          "description": "Sort results by field",
+          "enum": ["best", "date", "distance"]
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["q", "location_address", "start_date_range_start", "start_date_range_end", "sort_by", "page"]
+    }
+  },
+  {
+    "toolSlug": "Eventbrite_GetEvent",
+    "toolPurpose": "Retrieve detailed information about a specific event by event ID. Returns event name, description, status, dates, times, venue details, ticket classes, pricing, and organizer information.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "description": "Eventbrite event ID to retrieve details for"
+        },
+        "expand": {
+          "type": "array",
+          "description": "Additional data to expand in response (e.g., 'tickets', 'organizer')",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["event_id"]
+    },
+    "inputsSpec": {
+      "required": ["event_id"],
+      "optional": ["expand"]
+    }
+  },
+  {
+    "toolSlug": "Eventbrite_ListUserEvents",
+    "toolPurpose": "List all events created or managed by the authenticated user. Returns user's events with status, creation date, and basic event information. Requires authentication with user's Eventbrite account.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Filter by event status",
+          "enum": ["all", "live", "archived", "draft", "cancelled", "deleted"]
+        },
+        "order_by": {
+          "type": "string",
+          "description": "Sort order for results",
+          "enum": ["name", "start_asc", "start_desc", "created_asc", "created_desc"]
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["status", "order_by", "page"]
+    }
+  },
+  {
+    "toolSlug": "Eventbrite_GetEventAttendees",
+    "toolPurpose": "Retrieve list of attendees for a specific event. Returns attendee names, emails, ticket information, and check-in status. Requires event ownership or organizer authorization.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "description": "Eventbrite event ID to retrieve attendees for"
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter attendees by status",
+          "enum": ["all", "attending", "not_attending", "maybe"]
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)"
+        }
+      },
+      "required": ["event_id"]
+    },
+    "inputsSpec": {
+      "required": ["event_id"],
+      "optional": ["status", "page"]
+    }
+  },
+  {
+    "toolSlug": "Eventbrite_GetVenue",
+    "toolPurpose": "Retrieve detailed venue information by venue ID. Returns venue name, address, capacity, coordinates, and contact details.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "venue_id": {
+          "type": "string",
+          "description": "Eventbrite venue ID to retrieve details for"
+        }
+      },
+      "required": ["venue_id"]
+    },
+    "inputsSpec": {
+      "required": ["venue_id"],
+      "optional": []
+    }
+  }
+]

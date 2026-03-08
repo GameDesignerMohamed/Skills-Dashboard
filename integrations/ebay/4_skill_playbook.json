@@ -1,0 +1,91 @@
+{
+  "skillId": "EBAY-SKILL-001",
+  "skillArtifactId": "EBAY-ART-001",
+  "name": "eBay_Marketplace_Intelligence",
+  "description": "Monitors and analyzes marketplace data from eBay Browse API. Retrieves item search results, product details, item variations, performs visual search, and identifies trending marketplace deals. Bridges product discovery and price research from eBay to the Mind's market analysis and research layers. READ-ONLY operations only.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "eBay_SearchItems",
+    "eBay_GetItem",
+    "eBay_GetItemsByGroup",
+    "eBay_SearchByImage",
+    "eBay_GetMarketplaceTrending"
+  ],
+  "compatibility_formula": "(marketplace_interest * 3.0) + (product_research_need * 2.5) + competitive_analysis_requirement",
+  "progressive_unlock": "Item search available immediately. Item detail retrieval unlocks after successful search. Item variations and trending analysis unlock after item detail access. Visual search capabilities unlock after performing standard search to verify marketplace connectivity.",
+  "constraints": [
+    "READ-ONLY operations only — never create, modify, or delete listings; never place orders or bids",
+    "Never expose eBay authentication tokens in logs, outputs, or STREAM data",
+    "Marketplace data must be treated with proper care — prices are subject to change and auction status is time-sensitive",
+    "Always note data freshness — prices and availability may have changed since API response",
+    "Do not cache sensitive seller information beyond current session",
+    "eBay rate limits: 5000 API calls per day (application token), 1000 per hour for user token operations. Batch queries using pagination (limit, offset).",
+    "Never expose full seller payment method details or personal information in logs",
+    "Use STREAM.entity to cache pagination cursors and item group IDs for efficient multi-page queries",
+    "All timestamps from eBay API are ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ); maintain format for consistency",
+    "Item IDs and category IDs are strings; do not assume numeric format"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters are present and correctly typed. For search queries, ensure q parameter is non-empty. For pagination, ensure offset >= 0 and limit <= 200.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve eBay OAuth 2.0 Bearer token from TENET.apiKey.ebay. Construct Authorization header as 'Bearer {access_token}'. Token type must be application token for Browse API access with 5000 daily calls quota.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: item search (keyword discovery), item detail lookup (specific product analysis), item group browse (explore variations), visual search (image-based discovery), or trending market analysis (category trend monitoring).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For item search: Always use eBay_SearchItems with q parameter as primary search. Optionally filter by category_ids to narrow results. Use filter parameter for advanced criteria (price ranges, condition, availability). Use sort parameter to order by price, rating, or time remaining. Specify limit and offset for pagination control.",
+      "toolCall": "eBay_SearchItems"
+    },
+    {
+      "step": 5,
+      "instruction": "For item detail retrieval: Use eBay_GetItem with specific item_id to retrieve comprehensive product information including current price, condition (NEW, REFURBISHED, USED), seller rating, shipping cost, return policy, and item specifics. Store item details in STREAM.entity for cross-referencing with variations and comparisons.",
+      "toolCall": "eBay_GetItem"
+    },
+    {
+      "step": 6,
+      "instruction": "For item variation exploration: Call eBay_GetItemsByGroup with item_group_id to retrieve all product variants (different colors, sizes, storage capacities, etc.). Useful for price comparison across variants and inventory availability assessment. Use pagination (limit, offset) for large variation sets.",
+      "toolCall": "eBay_GetItemsByGroup"
+    },
+    {
+      "step": 7,
+      "instruction": "For visual search: Call eBay_SearchByImage with either image_data (base64-encoded) or image_url parameter to find visually similar items on eBay. Useful for product sourcing, duplicate detection, or finding equivalent items from different sellers. Store search results in STREAM with reference to original image.",
+      "toolCall": "eBay_SearchByImage"
+    },
+    {
+      "step": 8,
+      "instruction": "For marketplace trending analysis: Call eBay_GetMarketplaceTrending with optional category_ids filter to identify hot-selling items and trending deals. Responses include deal ranking and popularity metrics. Compile trending categories summary in STREAM.marketplace_trends for market sentiment tracking.",
+      "toolCall": "eBay_GetMarketplaceTrending"
+    },
+    {
+      "step": 9,
+      "instruction": "Handle pagination for large result sets: Check response metadata for total_pages or has_more indicator. If additional pages available, use offset parameter to fetch next page. Build pagination cache in STREAM.ebay_pagination_{search_id} storing last_offset and total_results. Never fetch all pages automatically — respect 5000/day rate limit quota.",
+      "toolCall": null
+    },
+    {
+      "step": 10,
+      "instruction": "Price normalization: Extract price values and ensure currency code is included (USD, GBP, EUR, etc.). Convert all prices to standard decimal notation. Flag auction items (ending time) separately from fixed-price listings. Store original API response price for data integrity audit.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Seller reputation analysis: Extract seller rating (0-100 scale), review count, and positive feedback percentage from item response. Flag sellers with low ratings (<95%) or insufficient feedback (<10 reviews). Include seller business type (individual vs. store) in comparative analysis.",
+      "toolCall": null
+    },
+    {
+      "step": 12,
+      "instruction": "Compile market intelligence summary: total items found, price range (min/max/average), condition distribution (NEW/REFURBISHED/USED percentages), average seller rating, shipping cost analysis, and category trend indicators. Push daily marketplace intelligence report to LTM with key 'ebay_market_report_{date}_{category}'. Update STREAM with competitor pricing data and availability metrics for decision support.",
+      "toolCall": null
+    }
+  ]
+}

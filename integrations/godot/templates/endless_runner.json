@@ -1,0 +1,69 @@
+{
+  "templateId": "TPL-GODOT-004",
+  "name": "Endless Runner Starter",
+  "genre": "endless_runner",
+  "engine": "Godot 4.x",
+  "dimension": "2D",
+  "description": "An auto-scrolling endless runner with procedural obstacle generation, lane switching or jumping mechanics, increasing difficulty, score/distance tracking, and death/restart flow. Includes a CharacterBody2D player with jump/slide, obstacle spawner with randomized patterns, parallax scrolling background, and a game over screen with high score.",
+  "rootNodeType": "Node2D",
+  "projectStructure": {
+    "project.godot": "Project configuration — display: 1280x720, physics: 2D default gravity 980, input map with jump/slide/move_up/move_down actions",
+    "scenes/": {
+      "main.tscn": "Node2D root — manages game state (menu, playing, game_over), contains player, obstacle_spawner, ground, background, and UI as children",
+      "player.tscn": "CharacterBody2D — Sprite2D with run animation, CollisionShape2D (capsule), AnimationPlayer (run/jump/slide/hit states), fixed X position with Y movement for jumping",
+      "obstacles/obstacle_base.tscn": "Area2D — CollisionShape2D, Sprite2D, auto-scroll movement leftward, queue_free when off-screen",
+      "obstacles/obstacle_low.tscn": "Inherits obstacle_base — ground-level obstacle (jump to avoid)",
+      "obstacles/obstacle_high.tscn": "Inherits obstacle_base — aerial obstacle (slide to avoid)",
+      "obstacles/obstacle_gap.tscn": "Inherits obstacle_base — gap in ground (jump across)",
+      "collectibles/coin_line.tscn": "Node2D — row of Area2D coins at configurable height, collected on body overlap",
+      "environment/ground.tscn": "StaticBody2D — infinite scrolling ground using two Sprite2D segments that swap positions",
+      "environment/parallax_bg.tscn": "ParallaxBackground — 3 ParallaxLayers (sky static, clouds slow, buildings medium) for depth effect",
+      "ui/hud.tscn": "CanvasLayer — distance Label (top-center), coin count (top-right), current multiplier indicator",
+      "ui/game_over.tscn": "CanvasLayer — 'Game Over' title, final distance, high score comparison, coins earned, restart Button, menu Button"
+    },
+    "scripts/": {
+      "player.gd": "extends CharacterBody2D — gravity applied in _physics_process, jump on input (only if on_floor), slide activates crouch collision shape and animation, hit detection via Area2D signal triggers death sequence with brief invincibility flash",
+      "obstacle_spawner.gd": "extends Node — spawn_timer with decreasing interval (difficulty ramp), obstacle_pool of packed scenes, pattern_sequences array for curated obstacle combinations, random selection with minimum spacing rules, speed increases over time",
+      "ground_scroller.gd": "extends Node2D — two ground segments scrolling left at game_speed, repositions segment to right edge when it exits left viewport",
+      "game_manager.gd": "extends Node (autoload) — game_speed (increases over time), distance_traveled, coin_count, is_playing state, high_score persistence with ConfigFile, difficulty_curve formula based on distance",
+      "coin.gd": "extends Area2D — on_body_entered adds to game_manager coin_count, plays collect animation, queue_free"
+    },
+    "assets/": {
+      "placeholder_runner.png": "32x48 character spritesheet (run cycle 6 frames, jump 2 frames, slide 2 frames, hit 1 frame)",
+      "placeholder_ground.png": "1280x64 seamless ground tile",
+      "placeholder_obstacle.png": "32x48 obstacle variants (crate, barrier, spike)",
+      "placeholder_bg_sky.png": "1280x720 sky gradient",
+      "placeholder_bg_clouds.png": "2560x200 seamless cloud layer (transparent)",
+      "placeholder_bg_city.png": "2560x300 seamless cityscape silhouette"
+    }
+  },
+  "preBuiltMechanics": [
+    "Auto-scrolling world with increasing speed",
+    "Jump and slide player mechanics",
+    "Procedural obstacle spawning with pattern variety",
+    "Parallax scrolling multi-layer background",
+    "Infinite ground scrolling (seamless loop)",
+    "Coin/collectible system",
+    "Distance-based scoring",
+    "Difficulty ramping (speed + obstacle frequency)",
+    "Death and restart flow",
+    "High score persistence"
+  ],
+  "customizationPoints": [
+    "Player character sprite and animations",
+    "Obstacle types and visual themes",
+    "Difficulty curve (speed ramp rate, spawn intervals)",
+    "Lane-based movement (3 lanes) vs free jumping",
+    "Power-ups (magnet, shield, slow-motion, double coins)",
+    "Background theme (city, forest, space, underwater)",
+    "Add boss encounters at distance milestones",
+    "Seasonal/themed obstacle sets",
+    "Coin shop for unlocking characters/themes"
+  ],
+  "examplePrompts": [
+    "Make a Temple Run style endless runner",
+    "Create a game where a dinosaur jumps over cacti",
+    "Build an infinite running game with obstacles",
+    "Design a runner game where difficulty increases over time"
+  ]
+}

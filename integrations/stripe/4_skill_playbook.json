@@ -1,0 +1,91 @@
+{
+  "skillId": "STRIPE-SKILL-001",
+  "skillArtifactId": "STRIPE-ART-001",
+  "name": "Stripe_Financial_Analytics",
+  "description": "Monitors and analyzes financial data from Stripe payment infrastructure. Retrieves customer records, payment history, invoice data, subscription status, product catalogs, and real-time account balance. Bridges financial metrics from Stripe to the Mind's reporting and analytics layers. READ-ONLY operations only.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Stripe_ListCustomers",
+    "Stripe_GetBalance",
+    "Stripe_ListPayments",
+    "Stripe_ListInvoices",
+    "Stripe_GetSubscriptions",
+    "Stripe_ListProducts"
+  ],
+  "compatibility_formula": "(financial_interest * 3.0) + (revenue_tracking_need * 2.5) + customer_base_size",
+  "progressive_unlock": "Balance and product catalog retrieval available immediately. Payment, invoice, and subscription queries unlock after Mind has accessed balance at least once to confirm Stripe account connectivity. Customer queries available after successful balance check.",
+  "constraints": [
+    "READ-ONLY operations only — never create charges, customers, subscriptions, or any write operations",
+    "Never expose Stripe secret keys in logs, outputs, or STREAM data",
+    "Financial data must be treated with extra care — all amounts are in smallest unit (cents for USD, etc.)",
+    "Always confirm financial data accuracy against Stripe dashboard before making decisions",
+    "Do not cache sensitive customer PII beyond current session",
+    "Stripe rate limits: 100 requests per second. Batch large queries using pagination (starting_after, ending_before).",
+    "Never expose full payment method details (card numbers, tokens) in logs",
+    "Use STREAM.entity to cache pagination cursors for efficient multi-page queries",
+    "All timestamps from Stripe API are Unix epoch (seconds); convert to ISO 8601 for human-readable output"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters are present and correctly typed. For date range filters, ensure created_lte >= created_gte.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "Retrieve Stripe secret API key from TENET.apiKey.stripe. Construct Authorization header as 'Bearer {secret_key}'. Note: Bearer token uses secret key, not restricted API key.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "Determine intent: balance check (account health), customer inquiry (list/filter by email), payment review (list/filter by status or date), invoice review (list/filter by status or customer), subscription monitoring (list/filter by status or customer), or product catalog (list with active filter).",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "For balance retrieval: Always start with Stripe_GetBalance first to verify account connectivity and get current financial position. Response includes available[].amount (immediately available) and pending[].amount (settling). Store balance snapshot in STREAM.stripe_balance_last_checked with timestamp.",
+      "toolCall": "Stripe_GetBalance"
+    },
+    {
+      "step": 5,
+      "instruction": "For customer queries: Use Stripe_ListCustomers with optional email filter for quick lookup. If email provided, Stripe performs partial match (case-insensitive). Store retrieved customer IDs in STREAM.entity for use in subsequent queries (payments, invoices, subscriptions by that customer).",
+      "toolCall": "Stripe_ListCustomers"
+    },
+    {
+      "step": 6,
+      "instruction": "For payment review: Call Stripe_ListPayments with status and date filters as needed. Statuses: 'succeeded' (fully paid), 'processing' (pending), 'requires_action' (awaiting customer), 'requires_capture' (authorized but not captured), 'canceled'. Amounts in cents. Store top payment IDs in STREAM for correlation analysis.",
+      "toolCall": "Stripe_ListPayments"
+    },
+    {
+      "step": 7,
+      "instruction": "For invoice review: Call Stripe_ListInvoices with status and customer filters. Statuses: 'draft' (unsent), 'open' (sent, unpaid), 'paid' (settled), 'uncollectible' (payment failed, no retry), 'void' (canceled). Cross-reference with subscription data for recurring revenue tracking.",
+      "toolCall": "Stripe_ListInvoices"
+    },
+    {
+      "step": 8,
+      "instruction": "For subscription monitoring: Call Stripe_GetSubscriptions with status filter. Statuses: 'active' (billing active), 'past_due' (payment failed but retrying), 'unpaid' (multiple failures), 'canceled' (customer ended), 'trialing' (trial period). Compile MRR (Monthly Recurring Revenue) by summing active subscriptions' monthly amounts.",
+      "toolCall": "Stripe_GetSubscriptions"
+    },
+    {
+      "step": 9,
+      "instruction": "For product/price catalog: Call Stripe_ListProducts with active filter. Active=true shows billable items; Active=false shows archived. Type filter: 'service' (subscription/software), 'good' (physical products). Store product IDs with their price tiers in STREAM for revenue analysis.",
+      "toolCall": "Stripe_ListProducts"
+    },
+    {
+      "step": 10,
+      "instruction": "Handle pagination for large result sets: Check response 'has_more' flag. If true, use 'starting_after' with the last retrieved object ID to fetch next page. Build pagination cache in STREAM.stripe_pagination_{resource}. Never fetch all pages automatically — respect Stripe rate limits.",
+      "toolCall": null
+    },
+    {
+      "step": 11,
+      "instruction": "Convert all timestamps from Unix epoch to ISO 8601 (YYYY-MM-DDTHH:MM:SSZ) for readability. Convert all monetary amounts from cents to standard currency notation (e.g., 10000 cents = $100.00 USD). Include currency code in all financial summaries.",
+      "toolCall": null
+    },
+    {
+      "step": 12,
+      "instruction": "Compile financial summary: total available balance, pending settlements, active customer count, MRR (from active subscriptions), total invoices outstanding, subscription churn indicators. Push daily financial report to LTM with key 'stripe_daily_report_{date}'. Update STREAM with key metrics for decision-making.",
+      "toolCall": null
+    }
+  ]
+}

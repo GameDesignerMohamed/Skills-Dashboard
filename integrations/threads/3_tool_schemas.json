@@ -1,0 +1,171 @@
+[
+  {
+    "toolSlug": "Threads_GetProfile",
+    "toolPurpose": "Retrieve authenticated user's Threads profile information including user ID, username, profile picture URL, and biography. Provides foundational account identification and profile metadata.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "description": "Specific profile fields to retrieve (default: id, username, threads_profile_picture_url, threads_biography)",
+          "items": {
+            "type": "string",
+            "enum": ["id", "username", "threads_profile_picture_url", "threads_biography", "name", "website", "followers_count", "following_count"]
+          }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["fields"]
+    }
+  },
+  {
+    "toolSlug": "Threads_GetThreads",
+    "toolPurpose": "Retrieve list of authenticated user's published threads with metadata including thread ID, media type, text content, publication timestamp, permanent link, and reply status. Supports pagination and time-range filtering.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "description": "Specific thread fields to retrieve (default: id, media_type, text, timestamp, permalink, is_reply)",
+          "items": {
+            "type": "string",
+            "enum": ["id", "media_type", "text", "timestamp", "permalink", "is_reply", "like_count", "reply_count", "repost_count", "quote_count"]
+          }
+        },
+        "since": {
+          "type": "string",
+          "description": "Retrieve threads published after this timestamp (RFC 3339 format, e.g., '2026-03-01T00:00:00Z')"
+        },
+        "until": {
+          "type": "string",
+          "description": "Retrieve threads published before this timestamp (RFC 3339 format)"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of threads to return (default: 10, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["fields", "since", "until", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Threads_PublishThread",
+    "toolPurpose": "Publish new thread content to authenticated user's Threads account via two-step process (create media container then publish). Supports text-only, image, or video content. REQUIRES explicit Steward confirmation before execution due to public content publication.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "media_type": {
+          "type": "string",
+          "description": "Content type for the thread (TEXT for text-only, IMAGE for image content, VIDEO for video content)",
+          "enum": ["TEXT", "IMAGE", "VIDEO"]
+        },
+        "text": {
+          "type": "string",
+          "description": "Thread text content (required for TEXT type, optional for IMAGE/VIDEO with captions; max 500 characters)"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL to image file (required if media_type=IMAGE; JPEG or PNG, max 8MB)"
+        },
+        "video_url": {
+          "type": "string",
+          "description": "URL to video file (required if media_type=VIDEO; MP4 format, max 100MB, max 60 seconds)"
+        },
+        "alt_text": {
+          "type": "string",
+          "description": "Accessibility alt text for image or video (recommended; max 150 characters)"
+        },
+        "require_confirmation": {
+          "type": "boolean",
+          "description": "If true, require explicit Steward confirmation before publishing (default: true)"
+        }
+      },
+      "required": ["media_type"]
+    },
+    "inputsSpec": {
+      "required": ["media_type"],
+      "optional": ["text", "image_url", "video_url", "alt_text", "require_confirmation"]
+    }
+  },
+  {
+    "toolSlug": "Threads_GetReplies",
+    "toolPurpose": "Retrieve list of replies to a specific thread including reply ID, text content, author username, and publication timestamp. Enables conversation thread analysis and reply enumeration.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string",
+          "description": "ID of the parent thread to retrieve replies for"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Specific reply fields to retrieve (default: id, text, username, timestamp)",
+          "items": {
+            "type": "string",
+            "enum": ["id", "text", "username", "timestamp", "user_id", "like_count", "reply_count"]
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of replies to return (default: 25, max: 100)",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["thread_id"]
+    },
+    "inputsSpec": {
+      "required": ["thread_id"],
+      "optional": ["fields", "limit"]
+    }
+  },
+  {
+    "toolSlug": "Threads_GetInsights",
+    "toolPurpose": "Retrieve aggregated engagement metrics and audience insights for authenticated user's account including views, likes, replies, reposts, and quotes across specified time period. Supports metric filtering and date-range analysis.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "type": "array",
+          "description": "Specific engagement metrics to retrieve (default: views, likes, replies, reposts, quotes)",
+          "items": {
+            "type": "string",
+            "enum": ["views", "likes", "replies", "reposts", "quotes", "followers", "impressions"]
+          }
+        },
+        "since": {
+          "type": "string",
+          "description": "Retrieve insights after this timestamp (RFC 3339 format, e.g., '2026-03-01T00:00:00Z'); default: last 7 days"
+        },
+        "until": {
+          "type": "string",
+          "description": "Retrieve insights before this timestamp (RFC 3339 format); default: today"
+        },
+        "granularity": {
+          "type": "string",
+          "description": "Aggregation granularity for time-series data (default: total)",
+          "enum": ["total", "daily", "weekly"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["metric", "since", "until", "granularity"]
+    }
+  }
+]

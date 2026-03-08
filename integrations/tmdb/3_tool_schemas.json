@@ -1,0 +1,200 @@
+[
+  {
+    "toolSlug": "TMDB_SearchMovies",
+    "toolPurpose": "Search for movies by keyword with optional language, year, and region filters. Returns paginated results with basic movie metadata including title, release date, and poster imagery.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query for movie title or keyword (e.g., 'The Matrix', 'action adventure', 'sci-fi')"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for paginated results (default 1)",
+          "minimum": 1,
+          "default": 1
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for results (e.g., 'en', 'es', 'fr', 'de')",
+          "default": "en"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Filter results by release year (e.g., 2024)"
+        },
+        "region": {
+          "type": "string",
+          "description": "ISO 3166-1 region code to filter results by release region (e.g., 'US', 'GB', 'JP')"
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["page", "language", "year", "region"]
+    }
+  },
+  {
+    "toolSlug": "TMDB_SearchTV",
+    "toolPurpose": "Search for TV shows by keyword with optional language, first air date year, and pagination support. Returns basic TV show metadata including title, first air date, and poster imagery.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query for TV show title or keyword (e.g., 'Breaking Bad', 'comedy series', 'drama')"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for paginated results (default 1)",
+          "minimum": 1,
+          "default": 1
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for results (e.g., 'en', 'es', 'fr', 'de')",
+          "default": "en"
+        },
+        "first_air_date_year": {
+          "type": "integer",
+          "description": "Filter results by first air date year (e.g., 2023)"
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["page", "language", "first_air_date_year"]
+    }
+  },
+  {
+    "toolSlug": "TMDB_GetMovieDetails",
+    "toolPurpose": "Retrieve comprehensive details for a specific movie by TMDB movie ID. Returns full metadata including plot, runtime, genres, ratings, cast, crew, videos, and images when requested.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "movie_id": {
+          "type": "integer",
+          "description": "TMDB movie ID (e.g., 550 for Fight Club)"
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for details (e.g., 'en', 'es', 'fr')",
+          "default": "en"
+        },
+        "append_to_response": {
+          "type": "string",
+          "description": "Comma-separated list of additional data to append (e.g., 'credits,videos,images,reviews,recommendations')",
+          "enum": ["credits", "videos", "images", "reviews", "recommendations", "credits,videos,images"]
+        }
+      },
+      "required": ["movie_id"]
+    },
+    "inputsSpec": {
+      "required": ["movie_id"],
+      "optional": ["language", "append_to_response"]
+    }
+  },
+  {
+    "toolSlug": "TMDB_GetTVDetails",
+    "toolPurpose": "Retrieve comprehensive details for a specific TV series by TMDB series ID. Returns full metadata including plot, episode information, genres, ratings, cast, crew, videos, and images when requested.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "series_id": {
+          "type": "integer",
+          "description": "TMDB TV series ID (e.g., 1399 for Breaking Bad)"
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for details (e.g., 'en', 'es', 'fr')",
+          "default": "en"
+        },
+        "append_to_response": {
+          "type": "string",
+          "description": "Comma-separated list of additional data to append (e.g., 'credits,videos,images,reviews,recommendations')",
+          "enum": ["credits", "videos", "images", "reviews", "recommendations", "credits,videos,images"]
+        }
+      },
+      "required": ["series_id"]
+    },
+    "inputsSpec": {
+      "required": ["series_id"],
+      "optional": ["language", "append_to_response"]
+    }
+  },
+  {
+    "toolSlug": "TMDB_GetTrending",
+    "toolPurpose": "Retrieve trending movies, TV shows, or person entries across specified time windows. Returns paginated list of currently trending entertainment content with time-window filtering (day/week).",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "media_type": {
+          "type": "string",
+          "description": "Type of trending content to retrieve",
+          "enum": ["all", "movie", "tv", "person"],
+          "default": "all"
+        },
+        "time_window": {
+          "type": "string",
+          "description": "Time window for trending analysis",
+          "enum": ["day", "week"],
+          "default": "day"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for paginated results (default 1)",
+          "minimum": 1,
+          "default": 1
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for results (e.g., 'en', 'es', 'fr')",
+          "default": "en"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["media_type", "time_window", "page", "language"]
+    }
+  },
+  {
+    "toolSlug": "TMDB_GetPopular",
+    "toolPurpose": "Retrieve currently popular movies from TMDB. Returns paginated list of movies sorted by popularity with optional language and regional filtering.",
+    "created_by": "human",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "description": "Page number for paginated results (default 1)",
+          "minimum": 1,
+          "default": 1
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code for results (e.g., 'en', 'es', 'fr', 'de')",
+          "default": "en"
+        },
+        "region": {
+          "type": "string",
+          "description": "ISO 3166-1 region code to filter results by popularity region (e.g., 'US', 'GB', 'JP')"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["page", "language", "region"]
+    }
+  }
+]

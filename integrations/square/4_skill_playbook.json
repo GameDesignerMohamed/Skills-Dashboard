@@ -1,0 +1,38 @@
+{
+  "skillId": "SQ-SKILL-001",
+  "skillArtifactId": "SQ-ART-001",
+  "name": "Square_Business_Analyst",
+  "description": "Analyzes payments, orders, customers, inventory, and locations as the Mind's external business intelligence layer. Retrieves financial data, customer insights, and operational metrics. Bridges business analysis intent from the Mind to actionable business intelligence from Square merchant systems.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "Square_ListPayments",
+    "Square_ListOrders",
+    "Square_ListCustomers",
+    "Square_GetCatalog",
+    "Square_ListLocations"
+  ],
+  "compatibility_formula": "(financial_interest * 2.0) + business_volume + (analytics_need * 1.8)",
+  "progressive_unlock": "Payment and location data available immediately for read-only access. Order and customer retrieval unlocks after Mind has accessed payment history at least once to understand transaction patterns. Catalog access available for inventory analysis.",
+  "constraints": [
+    "Never expose Square API token in logs or outputs",
+    "Respect Square rate limit of 30-120 requests per minute depending on endpoint",
+    "All retrieved data is READ-ONLY - no create/update/delete operations permitted",
+    "Respect Square PCI compliance requirements - do not expose full card numbers or sensitive payment details",
+    "Store merchant location IDs in STREAM.entity for quick access to multi-location contexts",
+    "Cache customer and catalog data for at least 5 minutes to reduce API calls",
+    "Timestamp all queries with RFC 3339 format for audit trail compliance",
+    "Respect customer privacy - do not export raw customer lists without anonymization for reports"
+  ],
+  "steps": [
+    { "step": 1, "instruction": "Validate input against Layer 3 Tool Schema. Confirm required parameters present and correctly typed.", "toolCall": null },
+    { "step": 2, "instruction": "Retrieve Square API token from TENET.apiKey.square. Construct Authorization header as 'Bearer {token}'.", "toolCall": null },
+    { "step": 3, "instruction": "Determine analysis intent: financial review (payments), order tracking (orders), customer insights (customers), inventory assessment (catalog), or operational visibility (locations).", "toolCall": null },
+    { "step": 4, "instruction": "For payment review: fetch Square_ListPayments with optional date range. Default to last 30 days if begin_at/end_at not specified. Aggregate by payment method and status for summary statistics.", "toolCall": "Square_ListPayments" },
+    { "step": 5, "instruction": "For order tracking: call Square_ListOrders with location_id filter if multi-location context exists. Apply state_filter for OPEN orders needing attention or COMPLETED for revenue analysis. Use sort_field 'CREATE_AT' for chronological ordering.", "toolCall": "Square_ListOrders" },
+    { "step": 6, "instruction": "For customer insights: retrieve Square_ListCustomers to build customer database snapshot. Cache results in STREAM for subsequent analysis. Flag high-value customers based on order frequency if needed.", "toolCall": "Square_ListCustomers" },
+    { "step": 7, "instruction": "For inventory assessment: call Square_GetCatalog with include_related_data=true to see item variations and pricing. Organize by type (ITEM, ITEM_VARIATION) for completeness. Store in LTM with key 'square_catalog_{date}'.", "toolCall": "Square_GetCatalog" },
+    { "step": 8, "instruction": "For operational visibility: retrieve Square_ListLocations to map all managed business locations. Store location_ids in STREAM.entity for context-aware subsequent queries.", "toolCall": "Square_ListLocations" },
+    { "step": 9, "instruction": "Compile comprehensive business summary with key metrics: total payment volume, order status distribution, active customer count, catalog item count, and location count. Push daily business intelligence summary to LTM with key: 'square_business_daily_{date}'. Update STREAM with current metrics.", "toolCall": null }
+  ]
+}

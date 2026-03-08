@@ -1,0 +1,21 @@
+{
+  "appName": "PayPal_Suite",
+  "description": "PayPal REST API v2 integration for transaction monitoring, order tracking, dispute management, and financial reporting.",
+  "domain": "fintech",
+  "use_case": "Payment order retrieval, transaction history tracking, account balance monitoring, dispute investigation, and payout batch reporting.",
+  "tier": "verified",
+  "auth_type": "OAuth 2.0 Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "PayPal_GetOrder",
+        "PayPal_ListTransactions",
+        "PayPal_GetBalance",
+        "PayPal_ListDisputes",
+        "PayPal_ListPayouts"
+      ]
+    }
+  ]
+}
