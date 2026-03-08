@@ -1,0 +1,206 @@
+[
+  {
+    "toolSlug": "Discord_GetGuild",
+    "toolPurpose": "Retrieve detailed information about a Discord guild (server) including name, description, member count, icon, features, and verification level.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/guilds/{guild_id}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "guild_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the Discord guild"
+        },
+        "with_counts": {
+          "type": "boolean",
+          "description": "Include approximate member and presence counts",
+          "default": true
+        }
+      },
+      "required": ["guild_id"]
+    },
+    "inputsSpec": {
+      "required": ["guild_id"],
+      "optional": ["with_counts"]
+    }
+  },
+  {
+    "toolSlug": "Discord_ListChannels",
+    "toolPurpose": "List all channels in a guild including text, voice, category, announcement, and forum channels with position, topic, and permission overwrites.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/guilds/{guild_id}/channels",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "guild_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the Discord guild"
+        }
+      },
+      "required": ["guild_id"]
+    },
+    "inputsSpec": {
+      "required": ["guild_id"],
+      "optional": []
+    }
+  },
+  {
+    "toolSlug": "Discord_GetMessages",
+    "toolPurpose": "Retrieve messages from a specific channel with pagination support. Returns message content, author, timestamps, embeds, attachments, and reactions.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/channels/{channel_id}/messages",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the channel"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of messages to retrieve (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "before": {
+          "type": "string",
+          "description": "Get messages before this message ID (for pagination)"
+        },
+        "after": {
+          "type": "string",
+          "description": "Get messages after this message ID (for pagination)"
+        },
+        "around": {
+          "type": "string",
+          "description": "Get messages around this message ID"
+        }
+      },
+      "required": ["channel_id"]
+    },
+    "inputsSpec": {
+      "required": ["channel_id"],
+      "optional": ["limit", "before", "after", "around"]
+    }
+  },
+  {
+    "toolSlug": "Discord_SendMessage",
+    "toolPurpose": "Send a message to a specific channel. Supports plain text, embeds, components, and message references (replies). WRITE operation — requires explicit Mind confirmation before execution.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/channels/{channel_id}/messages",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the target channel"
+        },
+        "content": {
+          "type": "string",
+          "description": "The message text content (up to 2000 characters)"
+        },
+        "embeds": {
+          "type": "array",
+          "description": "Array of embed objects (up to 10 per message)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "color": { "type": "integer" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "message_reference": {
+          "type": "object",
+          "description": "Reference to another message (for replies)",
+          "properties": {
+            "message_id": { "type": "string" }
+          }
+        },
+        "tts": {
+          "type": "boolean",
+          "description": "Whether this is a text-to-speech message",
+          "default": false
+        }
+      },
+      "required": ["channel_id", "content"]
+    },
+    "inputsSpec": {
+      "required": ["channel_id", "content"],
+      "optional": ["embeds", "message_reference", "tts"]
+    }
+  },
+  {
+    "toolSlug": "Discord_ListMembers",
+    "toolPurpose": "List members of a guild with pagination. Returns user profiles, nicknames, roles, join dates, and avatar information.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/guilds/{guild_id}/members",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "guild_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the Discord guild"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Max number of members to return (1-1000)",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        },
+        "after": {
+          "type": "string",
+          "description": "Get members after this user ID (for pagination)",
+          "default": "0"
+        }
+      },
+      "required": ["guild_id"]
+    },
+    "inputsSpec": {
+      "required": ["guild_id"],
+      "optional": ["limit", "after"]
+    }
+  },
+  {
+    "toolSlug": "Discord_ManageRoles",
+    "toolPurpose": "Add or remove a role from a guild member. WRITE operation — requires explicit Mind confirmation before execution. Used for automated moderation, onboarding flows, and community engagement rewards.",
+    "created_by": "human",
+    "httpMethod": "PUT",
+    "endpoint": "/guilds/{guild_id}/members/{user_id}/roles/{role_id}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "guild_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the Discord guild"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the user"
+        },
+        "role_id": {
+          "type": "string",
+          "description": "The unique snowflake ID of the role to assign"
+        },
+        "action": {
+          "type": "string",
+          "description": "Whether to add or remove the role",
+          "enum": ["add", "remove"]
+        }
+      },
+      "required": ["guild_id", "user_id", "role_id", "action"]
+    },
+    "inputsSpec": {
+      "required": ["guild_id", "user_id", "role_id", "action"],
+      "optional": []
+    }
+  }
+]

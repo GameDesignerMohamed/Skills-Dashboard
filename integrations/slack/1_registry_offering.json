@@ -1,0 +1,9 @@
+{
+  "title": "Slack Workspace Suite v1.0",
+  "offeringId": "SLCK-001-COMMS",
+  "description": "Slack Web API integration for workspace communication, channel management, message handling, user lookups, and search. Enables read and write access to conversations, threads, reactions, and user profiles via a Bot Token (xoxb-). Supports public and private channels, direct messages, threaded replies, and emoji reactions across Slack workspaces.",
+  "endpoints": [
+    "https://slack.com/api"
+  ],
+  "lastUpdate": "2026-03-08"
+}

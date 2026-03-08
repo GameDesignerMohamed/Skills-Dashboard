@@ -1,0 +1,231 @@
+[
+  {
+    "toolSlug": "Slack_ListConversations",
+    "toolPurpose": "List channels (public, private, DMs, group DMs) in a Slack workspace with pagination. Returns channel name, topic, purpose, member count, and archive status.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/conversations.list",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "types": {
+          "type": "string",
+          "description": "Comma-separated channel types to include: public_channel, private_channel, mpim, im",
+          "default": "public_channel,private_channel"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of channels to return per page (1-1000)",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 200
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from previous response's response_metadata.next_cursor"
+        },
+        "exclude_archived": {
+          "type": "boolean",
+          "description": "Exclude archived channels from results",
+          "default": true
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["types", "limit", "cursor", "exclude_archived"]
+    }
+  },
+  {
+    "toolSlug": "Slack_GetHistory",
+    "toolPurpose": "Retrieve message history from a conversation (channel, DM, or group DM). Returns messages with text, author, timestamps, thread metadata, reactions, and file attachments.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/conversations.history",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel ID (e.g., 'C024BE91L')"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of messages to return (1-1000)",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from previous response"
+        },
+        "oldest": {
+          "type": "string",
+          "description": "Only messages after this Unix timestamp (inclusive)"
+        },
+        "latest": {
+          "type": "string",
+          "description": "Only messages before this Unix timestamp (exclusive)"
+        },
+        "inclusive": {
+          "type": "boolean",
+          "description": "Include messages with oldest or latest timestamps",
+          "default": false
+        }
+      },
+      "required": ["channel"]
+    },
+    "inputsSpec": {
+      "required": ["channel"],
+      "optional": ["limit", "cursor", "oldest", "latest", "inclusive"]
+    }
+  },
+  {
+    "toolSlug": "Slack_PostMessage",
+    "toolPurpose": "Send a message to a channel or thread. Supports plain text, rich-text blocks, and threaded replies. WRITE operation — requires explicit Mind confirmation before execution.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/chat.postMessage",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel ID to post the message to"
+        },
+        "text": {
+          "type": "string",
+          "description": "The message text (supports Slack mrkdwn formatting). Also serves as fallback for blocks."
+        },
+        "blocks": {
+          "type": "array",
+          "description": "Array of Block Kit layout blocks for rich formatting",
+          "items": {
+            "type": "object"
+          }
+        },
+        "thread_ts": {
+          "type": "string",
+          "description": "Timestamp of parent message to reply in thread"
+        },
+        "reply_broadcast": {
+          "type": "boolean",
+          "description": "When replying in thread, also post to channel",
+          "default": false
+        },
+        "unfurl_links": {
+          "type": "boolean",
+          "description": "Enable URL unfurling in the message",
+          "default": true
+        }
+      },
+      "required": ["channel", "text"]
+    },
+    "inputsSpec": {
+      "required": ["channel", "text"],
+      "optional": ["blocks", "thread_ts", "reply_broadcast", "unfurl_links"]
+    }
+  },
+  {
+    "toolSlug": "Slack_GetUserInfo",
+    "toolPurpose": "Retrieve detailed profile information for a Slack user including display name, real name, email, title, timezone, status, and avatar.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/users.info",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "User ID (e.g., 'U024BE7LH')"
+        },
+        "include_locale": {
+          "type": "boolean",
+          "description": "Include the user's locale information",
+          "default": false
+        }
+      },
+      "required": ["user"]
+    },
+    "inputsSpec": {
+      "required": ["user"],
+      "optional": ["include_locale"]
+    }
+  },
+  {
+    "toolSlug": "Slack_SearchMessages",
+    "toolPurpose": "Search messages across the workspace using Slack's search syntax. Supports queries with modifiers like from:, in:, has:, before:, after:, and boolean operators.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/search.messages",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query string. Supports Slack search modifiers (e.g., 'from:@user in:#channel has:link budget report')"
+        },
+        "count": {
+          "type": "integer",
+          "description": "Number of results per page (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination",
+          "default": 1
+        },
+        "sort": {
+          "type": "string",
+          "description": "Sort order for results",
+          "enum": ["score", "timestamp"],
+          "default": "score"
+        },
+        "sort_dir": {
+          "type": "string",
+          "description": "Sort direction",
+          "enum": ["asc", "desc"],
+          "default": "desc"
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["count", "page", "sort", "sort_dir"]
+    }
+  },
+  {
+    "toolSlug": "Slack_AddReaction",
+    "toolPurpose": "Add an emoji reaction to a message. WRITE operation — requires explicit Mind confirmation before execution. Used for feedback acknowledgment, voting, and automated triage workflows.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/reactions.add",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel ID where the message exists"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp (ts) of the message to react to"
+        },
+        "name": {
+          "type": "string",
+          "description": "Emoji name without colons (e.g., 'thumbsup', 'white_check_mark', 'eyes')"
+        }
+      },
+      "required": ["channel", "timestamp", "name"]
+    },
+    "inputsSpec": {
+      "required": ["channel", "timestamp", "name"],
+      "optional": []
+    }
+  }
+]

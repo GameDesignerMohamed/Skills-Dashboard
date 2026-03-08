@@ -22,7 +22,10 @@ async function fetchAllIssues() {
     const afterClause = cursor ? `, after: "${cursor}"` : '';
     const query = `{
       issues(
-        filter: { team: { name: { eq: "${TEAM_NAME}" } } }
+        filter: {
+          team: { name: { eq: "${TEAM_NAME}" } }
+          project: { name: { eq: "Skills Repository" } }
+        }
         first: 250
         ${afterClause}
         orderBy: updatedAt
@@ -31,6 +34,7 @@ async function fetchAllIssues() {
           identifier
           title
           createdAt
+          archivedAt
           state { name type }
           labels { nodes { name } }
         }
@@ -52,7 +56,7 @@ async function fetchAllIssues() {
     cursor = pageInfo.endCursor;
   }
 
-  return allIssues;
+  return allIssues.filter(i => !i.archivedAt);
 }
 
 // ── Clean title: strip UUIDs, artifact IDs, offering prefixes ──

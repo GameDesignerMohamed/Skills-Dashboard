@@ -18,7 +18,10 @@ async function fetchAllIssues(apiKey) {
     const afterClause = cursor ? `, after: "${cursor}"` : '';
     const query = `{
       issues(
-        filter: { team: { name: { eq: "${TEAM_NAME}" } } }
+        filter: {
+          team: { name: { eq: "${TEAM_NAME}" } }
+          project: { name: { eq: "Skills Repository" } }
+        }
         first: 250
         ${afterClause}
         orderBy: updatedAt
@@ -27,6 +30,7 @@ async function fetchAllIssues(apiKey) {
           identifier
           title
           createdAt
+          archivedAt
           state { name type }
           labels { nodes { name } }
         }
@@ -47,7 +51,7 @@ async function fetchAllIssues(apiKey) {
     hasMore = pageInfo.hasNextPage;
     cursor = pageInfo.endCursor;
   }
-  return allIssues;
+  return allIssues.filter(i => !i.archivedAt);
 }
 
 function cleanTitle(title) {
@@ -461,7 +465,7 @@ export default async function handler(req, res) {
     skills.sort((a, b) => (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9));
 
     const kpis = {
-      total: raw.length,
+      total: pipeline.filter(i => ['Testing', 'Mind Verified', 'Human Verified', 'Uploading', 'Needs Attention'].includes(i.state.name)).length,
       testing: pipeline.filter(i => i.state.name === 'Testing').length,
       verified: pipeline.filter(i => ['Mind Verified', 'Human Verified'].includes(i.state.name)).length,
       uploading: pipeline.filter(i => i.state.name === 'Uploading').length,

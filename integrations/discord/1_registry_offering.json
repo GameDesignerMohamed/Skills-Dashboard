@@ -1,0 +1,9 @@
+{
+  "title": "Discord Community Suite v1.0",
+  "offeringId": "DCRD-001-SOCIAL",
+  "description": "Discord Bot API v10 integration for community management, messaging, channel operations, and member analytics. Enables read and write access to guilds (servers), channels, messages, and member data via a Bot Token. Supports text channels, voice channel metadata, role management, and webhook-based notifications across Discord communities.",
+  "endpoints": [
+    "https://discord.com/api/v10"
+  ],
+  "lastUpdate": "2026-03-08"
+}

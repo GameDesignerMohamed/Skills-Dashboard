@@ -1,0 +1,22 @@
+{
+  "appName": "Discord_Suite",
+  "description": "Discord Bot API v10 integration for community management. Supports guild (server) operations, channel management, message handling, member queries, role management, and webhook notifications. Requires a Bot Token with appropriate gateway intents and permissions.",
+  "domain": "social",
+  "use_case": "Community moderation, server analytics, automated messaging, member engagement tracking, role-based access control, channel management, and webhook-driven notifications.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Discord_GetGuild",
+        "Discord_ListChannels",
+        "Discord_GetMessages",
+        "Discord_SendMessage",
+        "Discord_ListMembers",
+        "Discord_ManageRoles"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "appName": "Slack_Suite",
+  "description": "Slack Web API integration for workspace communication and collaboration. Supports channel management, message posting and retrieval, threaded conversations, user profile lookups, search across messages and files, and emoji reactions. Requires a Bot Token (xoxb-) with appropriate OAuth scopes.",
+  "domain": "communication",
+  "use_case": "Team messaging, channel management, conversation history retrieval, threaded discussion tracking, user directory lookup, workspace-wide search, emoji reactions for feedback, and automated notifications.",
+  "tier": "verified",
+  "auth_type": "Bearer Token",
+  "header_key": "Authorization",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Slack_ListConversations",
+        "Slack_GetHistory",
+        "Slack_PostMessage",
+        "Slack_GetUserInfo",
+        "Slack_SearchMessages",
+        "Slack_AddReaction"
+      ]
+    }
+  ]
+}

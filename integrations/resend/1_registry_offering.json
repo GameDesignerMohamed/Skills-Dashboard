@@ -1,9 +1,0 @@
-{
-  "title": "Resend Email API Suite v1.0",
-  "offeringId": "RSND-001-EMAIL",
-  "description": "Resend API integration for modern transactional email delivery, domain management, and email analytics. Supports sending HTML and plain text emails, managing API keys, and tracking delivery metrics.",
-  "endpoints": [
-    "https://api.resend.com"
-  ],
-  "lastUpdate": "2026-03-08"
-}
