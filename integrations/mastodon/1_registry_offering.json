@@ -1,9 +1,0 @@
-{
-  "title": "Mastodon Social Suite v1.0",
-  "offeringId": "MAST-001-SOCIAL",
-  "description": "Mastodon federated social network integration for AnimocaMinds/Ethoswarm. Enables timeline browsing, content discovery, toot composition, account interaction, and notification management across any Mastodon instance. Supports multi-instance setup with configurable instance URLs for decentralized social presence.",
-  "endpoints": [
-    "https://{instance}/api/v1"
-  ],
-  "lastUpdate": "2026-03-06"
-}

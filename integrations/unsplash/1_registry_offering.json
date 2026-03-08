@@ -1,9 +1,0 @@
-{
-  "title": "Unsplash Image Suite v1.0",
-  "offeringId": "UNSPL-001-IMG",
-  "description": "Unsplash REST API integration for searching, discovering, and retrieving curated photos. Enables a Mind to access high-quality images from the Unsplash library with comprehensive filtering and collection management.",
-  "endpoints": [
-    "https://api.unsplash.com"
-  ],
-  "lastUpdate": "2026-03-05"
-}

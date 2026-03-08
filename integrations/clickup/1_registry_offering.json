@@ -1,9 +1,0 @@
-{
-  "title": "ClickUp Project Suite v1.0",
-  "offeringId": "CLKUP-001-PM",
-  "description": "ClickUp API v2 integration for managing tasks, lists, spaces, and project workflows. Enables a Mind to create, organize, track, and collaborate on tasks as an external execution layer for Steward project management.",
-  "endpoints": [
-    "https://api.clickup.com/api/v2"
-  ],
-  "lastUpdate": "2026-03-05"
-}

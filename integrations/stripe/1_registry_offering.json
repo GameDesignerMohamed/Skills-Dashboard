@@ -1,9 +1,0 @@
-{
-  "title": "Stripe Payments Suite v1.0",
-  "offeringId": "STRIPE-001-PAY",
-  "description": "Stripe REST API v1 integration for querying payment infrastructure, account balance, customers, invoices, subscriptions, and products. Enables read-only access to financial data for analytics, reporting, and payment reconciliation.",
-  "endpoints": [
-    "https://api.stripe.com/v1"
-  ],
-  "lastUpdate": "2026-03-05"
-}

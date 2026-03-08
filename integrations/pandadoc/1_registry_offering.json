@@ -1,9 +1,0 @@
-{
-  "title": "PandaDoc Documents Suite v1.0",
-  "offeringId": "PDOC-001-DOCS",
-  "description": "PandaDoc API v1 integration for document management, template-based creation, and signing workflow automation. Enables a Mind to create, send, and track documents as an external execution layer for Steward document operations.",
-  "endpoints": [
-    "https://api.pandadoc.com/public/v1"
-  ],
-  "lastUpdate": "2026-03-05"
-}

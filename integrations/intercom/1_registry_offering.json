@@ -1,9 +1,0 @@
-{
-  "title": "Intercom Support Suite v1.0",
-  "offeringId": "ICOM-001-SUPPORT",
-  "description": "Intercom REST API v2.11 integration for customer support management. Enables a Mind to search contacts, retrieve conversations, and manage customer interactions as an external execution layer for Steward support operations.",
-  "endpoints": [
-    "https://api.intercom.io"
-  ],
-  "lastUpdate": "2026-03-05"
-}

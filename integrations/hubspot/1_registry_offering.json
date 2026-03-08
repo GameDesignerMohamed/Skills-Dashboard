@@ -1,9 +1,0 @@
-{
-  "title": "HubSpot CRM Suite v1.0",
-  "offeringId": "HSPOT-001-CRM",
-  "description": "HubSpot CRM API v3 integration for searching and retrieving contacts, deals, companies, and pipeline information. Provides read-only access to critical business data for the Mind's customer relationship intelligence layer.",
-  "endpoints": [
-    "https://api.hubapi.com/crm/v3"
-  ],
-  "lastUpdate": "2026-03-05"
-}

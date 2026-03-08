@@ -1,9 +1,0 @@
-{
-  "title": "Shopify Commerce Suite v1.0",
-  "offeringId": "SHOP-001-ECOM",
-  "description": "Shopify Admin REST API v2024-01 integration for managing products, orders, inventory, and customer data. Enables a Mind to query and analyze store data as a read-only analytics layer for ecommerce operations.",
-  "endpoints": [
-    "https://{store}.myshopify.com/admin/api/2024-01"
-  ],
-  "lastUpdate": "2026-03-05"
-}

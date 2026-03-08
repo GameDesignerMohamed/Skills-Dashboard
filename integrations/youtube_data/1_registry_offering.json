@@ -1,9 +1,0 @@
-{
-  "title": "YouTube Data API Suite v1.0",
-  "offeringId": "YTUB-001-VIDO",
-  "description": "YouTube Data API v3 integration for searching videos, retrieving channel analytics, reading video details and comments, and tracking trending content. Enables a Mind to research video content, monitor channels, and analyze audience engagement.",
-  "endpoints": [
-    "https://www.googleapis.com/youtube/v3"
-  ],
-  "lastUpdate": "2026-03-05"
-}

@@ -1,9 +1,0 @@
-{
-  "title": "Twitch Helix API Suite v1.0",
-  "offeringId": "TWITCH-001-PROD",
-  "description": "Twitch Helix API v1 integration for exploring live streams, games, channels, and clips. Provides read-only access to stream discovery, channel information, and clip content for content curation and gaming insights.",
-  "endpoints": [
-    "https://api.twitch.tv/helix/"
-  ],
-  "lastUpdate": "2026-03-05"
-}

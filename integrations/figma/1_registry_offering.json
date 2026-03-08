@@ -1,9 +1,0 @@
-{
-  "title": "Figma Design Suite v1.0",
-  "offeringId": "FIGMA-001-DESIGN",
-  "description": "Figma REST API v1 integration for accessing design files, components, and assets. Enables a Mind to inspect, analyze, and export design system data as an external design interface for collaborative design workflows.",
-  "endpoints": [
-    "https://api.figma.com/v1"
-  ],
-  "lastUpdate": "2026-03-05"
-}

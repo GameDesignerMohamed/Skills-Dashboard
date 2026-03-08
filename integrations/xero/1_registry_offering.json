@@ -1,9 +1,0 @@
-{
-  "title": "Xero Accounting Suite v1.0",
-  "offeringId": "XERO-001-ACCT",
-  "description": "Xero REST API v2 integration for comprehensive accounting and financial management. Enables financial analysis, invoice tracking, contact management, and financial reporting as an external execution layer for accounting and bookkeeping operations.",
-  "endpoints": [
-    "https://api.xero.com/api.xro/2.0"
-  ],
-  "lastUpdate": "2026-03-05"
-}

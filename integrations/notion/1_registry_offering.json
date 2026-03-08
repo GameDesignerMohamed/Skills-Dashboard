@@ -1,9 +1,0 @@
-{
-  "title": "Notion Workspace Suite v1.0",
-  "offeringId": "NOTN-001-PROD",
-  "description": "Full Notion workspace integration. Search pages, read content, create and update pages, manage databases, and query database entries. Enables a Mind to use Notion as a persistent external brain for notes, projects, and knowledge management.",
-  "endpoints": [
-    "https://api.notion.com/v1"
-  ],
-  "lastUpdate": "2026-03-05"
-}

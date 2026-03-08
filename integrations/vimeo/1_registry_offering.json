@@ -1,9 +1,0 @@
-{
-  "title": "Vimeo Video Discovery Suite v1.0",
-  "offeringId": "VIME-001-PROD",
-  "description": "Comprehensive Vimeo integration for video discovery and exploration. Search videos, retrieve detailed video information, access authenticated user's video library, explore channels, and browse channel content. Read-only access to Vimeo's video ecosystem enables comprehensive video research and content discovery.",
-  "endpoints": [
-    "https://api.vimeo.com/"
-  ],
-  "lastUpdate": "2026-03-06"
-}

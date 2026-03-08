@@ -1,9 +1,0 @@
-{
-  "title": "Zoom Meetings Suite v1.0",
-  "offeringId": "ZOOM-001-MEET",
-  "description": "Zoom REST API v2 integration for managing meetings, recordings, and participant data. Enables a Mind to schedule, retrieve, and manage Zoom meetings as an external execution layer for Steward communication and collaboration.",
-  "endpoints": [
-    "https://api.zoom.us/v2"
-  ],
-  "lastUpdate": "2026-03-05"
-}

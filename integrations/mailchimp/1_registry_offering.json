@@ -1,9 +1,0 @@
-{
-  "title": "Mailchimp Marketing Suite v1.0",
-  "offeringId": "MCHIMP-001-EMAIL",
-  "description": "Mailchimp REST API v3.0 integration for email marketing, campaign management, and audience analytics. Provides read-only access to audience lists, campaign reports, and subscriber data. Enables a Mind to analyze marketing performance and audience insights as an external analytics layer.",
-  "endpoints": [
-    "https://{dc}.api.mailchimp.com/3.0"
-  ],
-  "lastUpdate": "2026-03-05"
-}

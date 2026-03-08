@@ -1,9 +1,0 @@
-{
-  "title": "Yelp Local Discovery Suite v1.0",
-  "offeringId": "YELP-001-LOCAL",
-  "description": "Yelp Fusion API integration for discovering and searching local businesses. Enables a Mind to search businesses by location, category, phone number, and retrieve detailed reviews and business information for local decision-making and discovery.",
-  "endpoints": [
-    "https://api.yelp.com/v3"
-  ],
-  "lastUpdate": "2026-03-05"
-}

@@ -1,9 +1,0 @@
-{
-  "title": "WordPress Content Suite v1.0",
-  "offeringId": "WP-001-CMS",
-  "description": "WordPress.com REST API v1.1 integration for managing posts, categories, and site statistics. Enables a Mind to create, organize, and publish content as an external execution layer for Steward content management.",
-  "endpoints": [
-    "https://public-api.wordpress.com/rest/v1.1"
-  ],
-  "lastUpdate": "2026-03-05"
-}
