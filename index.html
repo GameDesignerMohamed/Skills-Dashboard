@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Skills â Pipeline Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #131112;
+    --white: #F5F5F3;
+    --blue: #10ACEB;
+    --muted: #A69080;
+    --charcoal: #333333;
+    --surface: #131112;
+    --surface-raised: #1D1A1B;
+    --surface-hover: #252223;
+    --border: #302E2F;
+    --border-subtle: #1F1E1D;
+    --blue-dim: rgba(16, 172, 235, 0.08);
+    --blue-glow: rgba(16, 172, 235, 0.15);
+    --green: #4AE8A0;
+    --amber: #E8C44A;
+    --red: #F15738;
+    --purple: #A07DE8;
+    --body-text: #C5C5C3;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--surface);
+    color: var(--white);
+    font-family: var(--font-body);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* âââ Noise texture overlay âââ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* âââ Header âââ */
+  .header {
+    padding: 48px 48px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 8px; }
+
+  .header-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blue);
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .header h1 {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .header h1 span { color: var(--blue); }
+
+  .header-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .header-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .header-total {
+    font-family: var(--font-mono);
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+  }
+  .header-total-label {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* âââ Main grid âââ */
+  .dashboard {
+    padding: 36px 48px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+  }
+
+  /* âââ Cards âââ */
+  .card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .card:hover { border-color: var(--border); }
+
+  .card-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-label svg {
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .card-value {
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card-sub {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* KPI Cards accent */
+  .kpi-testing .card-value { color: var(--blue); }
+  .kpi-testing::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--blue); opacity: 0.4; }
+
+  .kpi-verified .card-value { color: var(--green); }
+  .kpi-verified::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--green); opacity: 0.4; }
+
+  .kpi-uploading .card-value { color: var(--purple); }
+  .kpi-uploading::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--purple); opacity: 0.4; }
+
+  .kpi-attention .card-value { color: var(--amber); }
+  .kpi-attention::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--amber); opacity: 0.4; }
+
+  /* âââ Chart card âââ */
+  .chart-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title svg {
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* âââ Time series chart âââ */
+  .time-chart { position: relative; height: 200px; display: flex; align-items: flex-end; gap: 0; padding-top: 20px; }
+
+  .time-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+  .time-bar-wrapper {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+  }
+  .time-bar {
+    width: 60%;
+    border-radius: 6px 6px 2px 2px;
+    position: relative;
+    min-height: 4px;
+    transition: opacity 0.2s ease;
+  }
+  .time-bar-group:hover .time-bar { opacity: 0.85; }
+
+  .time-bar-value {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .time-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* âââ Skills table (full width) âââ */
+  .table-card { grid-column: span 4; }
+
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+
+  .search-box {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 14px 8px 36px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--white);
+    outline: none;
+    width: 280px;
+    transition: border-color 0.2s ease;
+    position: relative;
+  }
+  .search-box:focus { border-color: var(--blue); }
+  .search-box::placeholder { color: var(--muted); }
+
+  .search-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .search-wrapper svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    pointer-events: none;
+  }
+
+  .filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filter-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-pill:hover { border-color: var(--white); color: var(--white); }
+  .filter-pill.active { background: var(--white); color: var(--black); border-color: var(--white); }
+
+  .skills-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .skills-table thead th {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface-raised);
+  }
+  .skills-table tbody tr {
+    transition: background 0.15s ease;
+  }
+  .skills-table tbody tr:hover { background: var(--surface-hover); }
+  .skills-table tbody td {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+  .skills-table .col-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .skills-table .col-name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--white);
+    font-weight: 500;
+  }
+  .skills-table .col-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .status-badge::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-testing { background: var(--blue-dim); color: var(--blue); }
+  .status-testing::before { background: var(--blue); }
+  .status-verified { background: rgba(74, 232, 160, 0.08); color: var(--green); }
+  .status-verified::before { background: var(--green); }
+  .status-uploading { background: rgba(160, 125, 232, 0.08); color: var(--purple); }
+  .status-uploading::before { background: var(--purple); }
+  .status-attention { background: rgba(232, 196, 74, 0.08); color: var(--amber); }
+  .status-attention::before { background: var(--amber); }
+
+  .mind-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .table-scroll {
+    max-height: 480px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+  }
+  .table-scroll::-webkit-scrollbar { width: 6px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* âââ Bottom bar âââ */
+  .footer {
+    padding: 24px 48px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    margin: 0 48px;
+  }
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .footer-right {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* âââ Entrance animations âââ */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card, .header, .footer {
+    animation: fadeSlideUp 0.5s ease-out both;
+  }
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.3s; }
+  .card:nth-child(7) { animation-delay: 0.35s; }
+
+  /* âââ Bar animation âââ */
+  @keyframes growBar {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  .time-bar {
+    transform-origin: bottom;
+    animation: growBar 0.6s ease-out both;
+  }
+  .time-bar-group:nth-child(1) .time-bar { animation-delay: 0.3s; }
+  .time-bar-group:nth-child(2) .time-bar { animation-delay: 0.4s; }
+  .time-bar-group:nth-child(3) .time-bar { animation-delay: 0.5s; }
+
+  /* âââ Full-width cards âââ */
+  .full-width { grid-column: 1 / -1; }
+
+  /* âââ Responsive âââ */
+  @media (max-width: 1024px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .table-card { grid-column: 1 / -1; }
+    .header, .dashboard { padding-left: 24px; padding-right: 24px; }
+    .footer { margin: 0 24px; padding-left: 24px; padding-right: 24px; }
+  }
+  @media (max-width: 640px) {
+    .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .header { flex-direction: column; gap: 16px; padding: 24px 16px 0; }
+    .header-right { align-items: flex-start; }
+    .header h1 { font-size: 24px; }
+    .header-total { font-size: 36px; }
+    .dashboard { padding: 20px 16px 24px; }
+    .footer { margin: 0 16px; padding: 16px 0 24px; }
+
+    /* KPI cards: 2Ã2 grid */
+    .card { padding: 16px; border-radius: 10px; }
+    .card-value { font-size: 28px; }
+    .card-label { font-size: 9px; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .card-sub { font-size: 11px; }
+
+    /* Chart */
+    .time-chart { height: 160px; }
+    .time-bar-wrapper { height: 120px; }
+
+    /* Table controls stack vertically */
+    .table-controls { flex-direction: column; align-items: stretch; gap: 12px; }
+    .table-controls > div { flex-wrap: wrap; }
+    .filter-pills { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .filter-pill { flex-shrink: 0; font-size: 9px; padding: 5px 10px; }
+    .search-box { width: 100%; }
+    .search-wrapper { width: 100%; display: block; }
+
+    /* Table horizontal scroll */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .skills-table { min-width: 580px; }
+    .skills-table tbody td { padding: 8px 12px; font-size: 12px; }
+    .skills-table thead th { padding: 8px 12px; font-size: 8px; }
+
+    .table-footer { flex-direction: column; gap: 4px; align-items: flex-start; font-size: 10px; }
+    .footer-left, .footer-right { font-size: 9px; }
+  }
+  @media (max-width: 380px) {
+    .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card-value { font-size: 24px; }
+    .header h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- âââ HEADER âââ -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-badge">Live Pipeline</div>
+    <h1>Mind <span>Skills</span> Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <div class="header-date">MAR 07, 2026</div>
+    <div class="header-total">342</div>
+    <div class="header-total-label">total skills tracked</div>
+  </div>
+</div>
+
+<!-- âââ KPI ROW âââ -->
+<div class="dashboard">
+
+  <div class="card kpi-uploading">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Uploading
+    </div>
+    <div class="card-value">23</div>
+    <div class="card-sub">Queued for registry</div>
+  </div>
+
+  <div class="card kpi-testing">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>
+      Testing
+    </div>
+    <div class="card-value">69</div>
+    <div class="card-sub">In functional validation</div>
+  </div>
+
+  <div class="card kpi-verified">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      Mind Verified
+    </div>
+    <div class="card-value">9</div>
+    <div class="card-sub">Passed all checks</div>
+  </div>
+
+  <div class="card kpi-attention">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Needs Attention
+    </div>
+    <div class="card-value">19</div>
+    <div class="card-sub">Blocked or failing</div>
+  </div>
+
+  <!-- âââ TIME SERIES CHART âââ -->
+  <div class="card full-width">
+    <div class="chart-title">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Skills Created â Time Series
+    </div>
+    <div class="time-chart">
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 100%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">76</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 06</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 55%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">42</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 07</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- âââ SKILLS TABLE âââ -->
+  <div class="card table-card">
+    <div class="table-controls">
+      <div class="chart-title" style="margin-bottom:0">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><pathHLLLHÏ]HLLHMÝHÏ]HMÈMHÏÜÝÏ[\[[HÚÚ[ÂÙ]]Ý[OH\Ü^N^Ø[YÛZ][\ÎÙ[\ÙØ\LÈ]Û\ÜÏH[\\[È]ÛÛ\ÜÏH[\\[XÝ]HÛÛXÚÏH[\XJ	Ø[	ÊH[Ø]Û]ÛÛ\ÜÏH[\\[ÛÛXÚÏH[\XJ	Õ\Ý[ÉÊH\Ý[ÏØ]Û]ÛÛ\ÜÏH[\\[ÛÛXÚÏH[\XJ	ÓZ[\YYY	ÊH\YYYØ]Û]ÛÛ\ÜÏH[\\[ÛÛXÚÏH[\XJ	Õ\ØY[ÉÊH\ØY[ÏØ]Û]ÛÛ\ÜÏH[\\[ÛÛXÚÏH[\XJ	ÓYYÈ][[ÛÊH][[ÛØ]ÛÙ]]Û\ÜÏHÙX\Ú]Ü\\ÝÈY]ÐÞHÚ\ÛHÞHLHÞOHLHHÏ[HOHHLOHHHMHLHMHÏÜÝÏ[]\OH^Û\ÜÏHÙX\ÚXÞXÙZÛ\HÙX\ÚÚÚ[ËÛ[]HÙX\ÚXJ\Ë[YJH\XK[X[HÙX\ÚÚÚ[ÈÙ]Ù]Ù]]Û\ÜÏHXK\ØÜÛXHÛ\ÜÏHÚÚ[Ë]XHYHÚÚ[ÕXHXYÝ[OHÚYQÝ[YÜ][ÛÝÝ[OHÚYLÝ]\ÏÝÝ[OHÚYZ[ÝÝ[OHÚYLÜX]YÝÝÝXYÙHYHÚÚ[ÐÙHÝÙOÝXOÙ]]Û\ÜÏHXKYÛÝ\Ü[YHXPÛÝ[ÚÝÚ[ÈLÙLÚÚ[ÏÜÜ[Ü[LXÝ]H\[[HÚÚ[ÏÜÜ[Ù]Ù]Ù]KKH8¥d8¥d8¥dÓÕT8¥d8¥d8¥dKO]Û\ÜÏHÛÝ\]Û\ÜÏHÛÝ\[Y[[[ØØHZ[È	ZYÝÈÚÚ[È\ÜÚ]ÜOÙ]]Û\ÜÏHÛÝ\\YÚZ[ÚÚ[È\[[H	ZYÝÈ[[[ØØ[Z[ËZOÙ]Ù]ØÜ\ÛÛÝÚÚ[ÈHÂÚYÒÓLÍ[YN\ÜÐ\ÙH]Y[È[Ú[HÝ]\ÎZ[\YYYZ[^]NLËL
+ÈKÚYÒÓLÌÎ[YNÛÛ^ÛÛ\\ÜÛÜÝ]\ÎZ[\YYYZ[^]NLËL
+ÈKÚYÒÓLÌÍ[YNÛ\\Ú]XÝÝ]\ÎZ[\YYYZ[^]NLËL
+ÈKÚYÒÓLÌÍH[YN][	ÜÈYØØ]HÝ]\ÎZ[\YYYZ[^]NLËL
+ÈKÚYÒÓLÌÌ[YNTÑÈXÚ\Ú[Û]ÚÝ]\ÎZ[\YYYZ[^]NLËL
+ÈKÚYÒÓL
+È[YNZÕÚÈÝ]\ÎZ[\YYYZ[ÛY]NLËL
+KÚYÒÓLL
+H[YNX]ÛTHÝ]\ÎZ[\YYYZ[Ü\ÜÈ]NLËL
+KÚYÒÓLLÎ[YN][HRHÙX\ÚÝ]\ÎZ[\YYYZ[Ü\ÜÈ]NLËL
+KÚYÒÓLL
+È[YN\X[ÈPÔÝ]\ÎZ[\YYYZ[Ü\ÜÈ]NLËL
+KÚYÒÓLÌ[YNÛÙÝÝ]\Î\ØY[ÈZ[ÛY]NLËL
+KÚYÒÓLM[YNÛÜ\ÜÈÝ]\Î\ØY[ÈZ[ÛY]NLËL
+KÚYÒÓLÌÈ[YNX\ÝÙÛÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÍ[YNYY][HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÈ[YN][]HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓL[YN]ÞHÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÍÈ[YN^T[Ý]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLH[YNP^HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÍ[YN[QØÈÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓL[YNÜÞÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÍH[YN[Û^KÛÛHÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLNH[YNÛXÚÕ\Ý]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÌ[YN[\ÛÛHÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLH[YN[ÝYÜ[HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓL[YNXÜÝÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÈ[YNÛÛÙÛHX\ÈÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓL[YNÚ\HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLH[YNÝ\Ü]X\HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓL[YNYÛXHÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÎH[YN[\\ÝÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÌ[YNXZ[Ú[\Ý]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÎ[YN^[ÈÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÌH[YN\HÝ]\Î\ØY[ÈZ[P]NLËL
+KÚYÒÓLÍ[YNØ\X[]HÚÙ\Ý]\ÎYYÈ][[ÛZ[^]NLËL
+ÈKÚYÒÓLÌÍ[YN\ÝÝØÛÛÝ]\ÎYYÈ][[ÛZ[^]NLËL
+ÈKÚYÒÓLL
+[YNX\Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM
+[YN[X\Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM[YN[X[^\Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMH[YNÙ[R[\Ý[ÈYÙ[Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM[YNX]ÛTHÝZYHÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMÈ[YN\X[ÈPÔÝZYHÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM
+[YNY[]HÛÝÝ\\Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM
+È[YNY[]HÛÝÝ\\HÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLM[YNX]ÚÛ]ÜÈÝØÛÛÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMH[YNÚÚ[[Û]ÜÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLML[YNÝÜÙ\YÙ[Ý]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMLH[YNÛXÚÈÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLML[YN[ÈÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMLÈ[YNØ[UÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMM[YN[ÝÙ\Ý\ÝÈÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMM[YN]]ÛX][ÛÛÜÙÝÜÈÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMMH[YN\X[ÈPÔ[YÜ][ÛÝ]\ÎYYÈ][[ÛZ[Ü\ÜÈ]NLËL
+KÚYÒÓLÌH[YNY[[ÜHÝØÛÛÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÌ[YNÜÝ\Y\\ÝÝØÛÛÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÍH[YN[]\Ø[\ÛX]Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÎH[YNXXÛÛPÔÙ\\Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÍÈ[YNÛÛXÝÜPÔÛY[Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÌH[YNÝ\HÚ]XÈ[ÚÜÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÌÈ[YNØ[]X[YÙ\Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌ[YNÜ[Û]ÈÚ]^[Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌ[YNÛÝ\ZYÛÙHÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÈ[YNÜ[Û]ÈÙ[ÛÛYHX]Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌH[YNÜ[Û]ÈÚ]^[ÝØÛÛÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌ[YNQÜ[ÚXÈ]Y]Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌ[YNÜ[Û]ÈÚ]^[Ý]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌÈ[YNYÙ[^Ú[ÙHTHÝ]\Î\Ý[ÈZ[^]NLËL
+ÈKÚYÒÓLÌNH[YNÙÚXË]ËTÛØÚX[[Ú[HÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌH[YNXH[Ú[Y\[ÈÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌN[YNÝØÛÛ[YÛY[Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ[YNÝ]YÚXÈ[[YÙ[ÙHÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌMÈ[YN[YÜ[HÚXÙHÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌM[YNÈÙX]\Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌLÈ[YNÈ[ÜÜXÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌMH[YNØ[[\ÞHÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌM[YNØ[[\Ü]HZ[Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌLH[YNÈÛÛ[]]HÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌL[YNÈÛÛ[]]H[[ÈÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ[YNÛØ[[Û^H[Ù\Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ
+È[YNX[	XÛÝ\HÞ[ÈÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌL[YNÈ]\ÜÈYÙHÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌH[YNÛØ[][[\Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ
+[YN]]HQÚY[Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ[YNÛØ[ØY]HÚYÛ[Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌÈ[YNÛÝ\ZYÛ]ÛÜ[ÙHÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌH[YNÚÚ[\]Y\ÝX[YÙ\Ý]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ
+H[YNØØ[^\Y[ÙH\Ú]XÝÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLÌ
+[YNY\ÙX\ÚÝ]\Î\Ý[ÈZ[[^TÞ[]NLËL
+ÈKÚYÒÓLM
+H[YNY[]HÛÝÝ\\ÈÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓL[YN]ZXÚÐÛÚÜÈÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLH[YNØ[\ÙÜÙHÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓL[YNÙ[ÜYÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLÈ[YNÛÝ[ÛÝYÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓLN[YNY\ÚÞHÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMÈ[YN\Ø[HÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓL
+[YNÜ]X\HÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓL
+H[YNÝ\HÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓL
+[YNXYÈÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓL[YNQÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLH[YN[XÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLL[YNÚ]ÚÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLLH[YN[Ü\ÚÝ]\Î\Ý[ÈZ[P]NLËL
+KÚYÒÓLMH[YN\ÈÝ]\Î\Ý[ÈZ[P]NLËL
+KÚYÒÓMÍÈ[YNÜ[ÙX]\Ý]\Î\Ý[ÈZ[ÛY]NLËL
+HKÚYÒÓLM[YNY[Ý]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓLMÈ[YN[\ÚÈÝ]\Î\Ý[ÈZ[]Ú]]NLËL
+KÚYÒÓLL[YN[Y[ÈÝ]\Î\Ý[ÈZ[]Ú]]NLËL
+KÚYÒÓLN[YNÛÛHÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLLÈ[YNÚ]Ð\Ý]\Î\Ý[ÈZ[]Ú]]NLËL
+KÚYÒÓLLH[YNÙXÜ]XZØYÙH]Y]ÜÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLL
+[YN\X[ÈPÔÝZYHÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓLLÎH[YN][HÙX\ÙX\ÚÝ]\Î\Ý[ÈZ[Ü\ÜÈ]NLËL
+KÚYÒÓMÌH[YNÝÜÙ\YÙ[Ý]\Î\Ý[ÈZ[ÛY]NLËL
+HKÚYÒÓNM[YNX]ÚÛ]ÜÈÝØÛÛÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓNMH[YNÚÚ[[Û]ÜÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓNM[YNÝÜÙ\X[YÙ\Ý]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓNMÈ[YNÛXÚÈÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓNN[YN[ÈÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓNNH[YNØ[[\Þ[ÈÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLL[YNÛÛ[][]H[[YÙ[ÙHÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KÚYÒÓLL[YNÙXÜ]XZØYÙH]Y]ÜÝ]\Î\Ý[ÈZ[ÛY]NLËL
+KNÂ[Ý[ÛÙ]Ý]\ÐÛ\ÜÊÊHÂY
+ÈOOH	Õ\Ý[ÉÊH]\	ÜÝ]\Ë]\Ý[ÉÎÂY
+ÈOOH	ÓZ[\YYY	ÊH]\	ÜÝ]\Ë]\YYY	ÎÂY
+ÈOOH	Õ\ØY[ÉÊH]\	ÜÝ]\Ë]\ØY[ÉÎÂY
+ÈOOH	ÓYYÈ][[ÛÊH]\	ÜÝ]\ËX][[ÛÎÂ]\	ÉÎÂB[Ý[Û[\XJ]JHÂÛÛÝÙHHØÝ[Y[Ù][[Y[RY
+	ÜÚÚ[ÐÙIÊNÂÙK[\SH]KX\
+ÈO]K\Ý]\ÏHÜËÝ]\ßH]K[[YOHÜË[YKÓÝÙ\Ø\ÙJ
+_HÛ\ÜÏHÛÛZYÜËYOÝÛ\ÜÏHÛÛ[[YHÜË[Y_OÝÜ[Û\ÜÏHÝ]\ËXYÙH	ÙÙ]Ý]\ÐÛ\ÜÊËÝ]\Ê_HÜËÝ]\ßOÜÜ[ÝÜ[Û\ÜÏHZ[]YÈÜËZ[OÜÜ[ÝÛ\ÜÏHÛÛY]HÜË]KÛXÙJ
+J_OÝÝ
+KÚ[	ÉÊNÂØÝ[Y[Ù][[Y[RY
+	ÝXPÛÝ[	ÊK^ÛÛ[HÚÝÚ[È	Ù]K[ÝHÙ	ÜÚÚ[Ë[ÝHÚÚ[ØÂB]Ý\[[\H	Ø[	ÎÂ]Ý\[ÙX\ÚH	ÉÎÂ[Ý[Û[\XJÝ]\ÊHÂÝ\[[\HÝ]\ÎÂØÝ[Y[]Y\TÙ[XÝÜ[
+	Ë[\\[	ÊKÜXXÚ
+OÛ\ÜÓ\Ý[[ÝJ	ØXÝ]IÊJNÂ][\Ù]Û\ÜÓ\ÝY
+	ØXÝ]IÊNÂ\Q[\Ê
+NÂB[Ý[ÛÙX\ÚXJ]Y\JHÂÝ\[ÙX\ÚH]Y\KÓÝÙ\Ø\ÙJ
+NÂ\Q[\Ê
+NÂB[Ý[Û\Q[\Ê
+HÂ][\YHÚÚ[ÎÂY
+Ý\[[\OOH	Ø[	ÊHÂ[\YH[\Y[\ÈOËÝ]\ÈOOHÝ\[[\NÂBY
+Ý\[ÙX\Ú
+HÂ[\YH[\Y[\ÈOË[YKÓÝÙ\Ø\ÙJ
+K[ÛY\ÊÝ\[ÙX\Ú
+HËYÓÝÙ\Ø\ÙJ
+K[ÛY\ÊÝ\[ÙX\Ú
+HËZ[ÓÝÙ\Ø\ÙJ
+K[ÛY\ÊÝ\[ÙX\Ú
+B
+NÂB[\XJ[\Y
+NÂB[\XJÚÚ[ÊNÂÜØÜ\ØÙOÚ[
