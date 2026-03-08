@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minds Skills Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #131112;
+    --white: #F5F5F3;
+    --blue: #10ACEB;
+    --muted: #A69080;
+    --charcoal: #333333;
+    --surface: #131112;
+    --surface-raised: #1D1A1B;
+    --surface-hover: #252223;
+    --border: #302E2F;
+    --border-subtle: #1F1E1D;
+    --blue-dim: rgba(16, 172, 235, 0.08);
+    --blue-glow: rgba(16, 172, 235, 0.15);
+    --green: #4AE8A0;
+    --amber: #E8C44A;
+    --red: #F15738;
+    --purple: #A07DE8;
+    --body-text: #C5C5C3;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--surface);
+    color: var(--white);
+    font-family: var(--font-body);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .header {
+    padding: 48px 48px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 8px; }
+  .header-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blue);
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .header h1 {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .header h1 span { color: var(--blue); }
+  .header-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .header-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .header-total {
+    font-family: var(--font-mono);
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+  }
+  .header-total-label {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .dashboard {
+    padding: 36px 48px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .card:hover { border-color: var(--border); }
+  .card-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-label svg {
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .card-value {
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-sub {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .kpi-testing .card-value { color: var(--blue); }
+  .kpi-testing::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--blue); opacity: 0.4; }
+  .kpi-verified .card-value { color: var(--green); }
+  .kpi-verified::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--green); opacity: 0.4; }
+  .kpi-uploading .card-value { color: var(--purple); }
+  .kpi-uploading::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--purple); opacity: 0.4; }
+  .kpi-attention .card-value { color: var(--amber); }
+  .kpi-attention::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--amber); opacity: 0.4; }
+
+  .chart-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title svg {
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .time-chart { position: relative; height: 200px; display: flex; align-items: flex-end; gap: 0; padding-top: 20px; }
+  .time-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+  .time-bar-wrapper {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+  }
+  .time-bar {
+    width: 60%;
+    border-radius: 6px 6px 2px 2px;
+    position: relative;
+    min-height: 4px;
+    transition: opacity 0.2s ease;
+    transform-origin: bottom;
+    animation: growBar 0.6s ease-out both;
+  }
+  .time-bar-group:hover .time-bar { opacity: 0.85; }
+  .time-bar-value {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .time-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  .table-card { grid-column: span 4; }
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+  .search-box {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 14px 8px 36px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--white);
+    outline: none;
+    width: 280px;
+    transition: border-color 0.2s ease;
+  }
+  .search-box:focus { border-color: var(--blue); }
+  .search-box::placeholder { color: var(--muted); }
+  .search-wrapper { position: relative; display: inline-block; }
+  .search-wrapper svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    pointer-events: none;
+  }
+  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-pill:hover { border-color: var(--white); color: var(--white); }
+  .filter-pill.active { background: var(--white); color: var(--black); border-color: var(--white); }
+
+  .skills-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .skills-table thead th {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface-raised);
+  }
+  .skills-table tbody tr { transition: background 0.15s ease; }
+  .skills-table tbody tr:hover { background: var(--surface-hover); }
+  .skills-table tbody td {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+  .skills-table .col-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .skills-table .col-name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--white);
+    font-weight: 500;
+  }
+  .skills-table .col-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .status-badge::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-testing { background: var(--blue-dim); color: var(--blue); }
+  .status-testing::before { background: var(--blue); }
+  .status-verified { background: rgba(74, 232, 160, 0.08); color: var(--green); }
+  .status-verified::before { background: var(--green); }
+  .status-uploading { background: rgba(160, 125, 232, 0.08); color: var(--purple); }
+  .status-uploading::before { background: var(--purple); }
+  .status-attention { background: rgba(232, 196, 74, 0.08); color: var(--amber); }
+  .status-attention::before { background: var(--amber); }
+
+  .mind-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .table-scroll {
+    max-height: 480px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+  }
+  .table-scroll::-webkit-scrollbar { width: 6px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer {
+    padding: 24px 48px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    margin: 0 48px;
+  }
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .footer-right {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card, .header, .footer { animation: fadeSlideUp 0.5s ease-out both; }
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.3s; }
+  .card:nth-child(7) { animation-delay: 0.35s; }
+
+  @keyframes growBar {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  .full-width { grid-column: 1 / -1; }
+
+  @media (max-width: 1024px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .table-card { grid-column: 1 / -1; }
+    .header, .dashboard { padding-left: 24px; padding-right: 24px; }
+    .footer { margin: 0 24px; padding-left: 24px; padding-right: 24px; }
+  }
+  @media (max-width: 640px) {
+    .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .header { flex-direction: column; gap: 16px; padding: 24px 16px 0; }
+    .header-right { align-items: flex-start; }
+    .header h1 { font-size: 24px; }
+    .header-total { font-size: 36px; }
+    .dashboard { padding: 20px 16px 24px; }
+    .footer { margin: 0 16px; padding: 16px 0 24px; }
+    .card { padding: 16px; border-radius: 10px; }
+    .card-value { font-size: 28px; }
+    .card-label { font-size: 9px; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .card-sub { font-size: 11px; }
+    .time-chart { height: 160px; }
+    .time-bar-wrapper { height: 120px; }
+    .table-controls { flex-direction: column; align-items: stretch; gap: 12px; }
+    .table-controls > div { flex-wrap: wrap; }
+    .filter-pills { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .filter-pill { flex-shrink: 0; font-size: 9px; padding: 5px 10px; }
+    .search-box { width: 100%; }
+    .search-wrapper { width: 100%; display: block; }
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .skills-table { min-width: 580px; }
+    .skills-table tbody td { padding: 8px 12px; font-size: 12px; }
+    .skills-table thead th { padding: 8px 12px; font-size: 8px; }
+    .table-footer { flex-direction: column; gap: 4px; align-items: flex-start; font-size: 10px; }
+    .footer-left, .footer-right { font-size: 9px; }
+  }
+  @media (max-width: 380px) {
+    .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card-value { font-size: 24px; }
+    .header h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- generated by scripts/sync-linear.mjs — do not edit manually -->
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-badge">Live Pipeline</div>
+    <h1>Mind <span>Skills</span> Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <div class="header-date">MAR 08, 2026</div>
+    <div class="header-total">256</div>
+    <div class="header-total-label">total skills tracked</div>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <div class="card kpi-uploading">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Uploading
+    </div>
+    <div class="card-value">44</div>
+    <div class="card-sub">Queued for registry</div>
+  </div>
+
+  <div class="card kpi-testing">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>
+      Testing
+    </div>
+    <div class="card-value">49</div>
+    <div class="card-sub">In functional validation</div>
+  </div>
+
+  <div class="card kpi-verified">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      Mind Verified
+    </div>
+    <div class="card-value">13</div>
+    <div class="card-sub">Passed all checks</div>
+  </div>
+
+  <div class="card kpi-attention">
+    <div class="card-label">
+      <svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Needs Attention
+    </div>
+    <div class="card-value">23</div>
+    <div class="card-sub">Blocked or failing</div>
+  </div>
+
+  <div class="card full-width">
+    <div class="chart-title">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Time Series
+    </div>
+    <div class="time-chart">
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 0%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">0</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 02</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 0%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">0</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 03</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 0%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">0</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 04</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 2%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">1</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 05</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 100%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">64</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 06</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 66%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">42</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 07</div>
+      </div>
+      <div class="time-bar-group">
+        <div class="time-bar-wrapper">
+          <div class="time-bar" style="height: 34%; background: linear-gradient(to top, rgba(16,172,235,0.3), var(--blue));">
+            <div class="time-bar-value">22</div>
+          </div>
+        </div>
+        <div class="time-label">MAR 08</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="table-controls">
+      <div class="chart-title" style="margin-bottom:0">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+        All Pipeline Skills
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="filter-pills">
+          <button class="filter-pill active" onclick="filterTable('all')">All</button>
+          <button class="filter-pill" onclick="filterTable('Testing')">Testing</button>
+          <button class="filter-pill" onclick="filterTable('Mind Verified')">Verified</button>
+          <button class="filter-pill" onclick="filterTable('Uploading')">Uploading</button>
+          <button class="filter-pill" onclick="filterTable('Needs Attention')">Attention</button>
+        </div>
+        <div class="search-wrapper">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-box" placeholder="Search skills..." oninput="searchTable(this.value)" aria-label="Search skills">
+        </div>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="skills-table" id="skillsTable">
+        <thead>
+          <tr>
+            <th style="width:80px">ID</th>
+            <th>Skill Name</th>
+            <th style="width:120px">Status</th>
+            <th style="width:80px">Mind</th>
+            <th style="width:90px">Created</th>
+          </tr>
+        </thead>
+        <tbody id="skillsBody">
+          <tr data-status="Mind Verified" data-name="the archivist: memory protocol">
+            <td class="col-id">SKL-329</td>
+            <td class="col-name">The Archivist: Memory Protocol</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="the beacon [mcp server]">
+            <td class="col-id">SKL-339</td>
+            <td class="col-name">The Beacon [MCP Server]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="hk weather utility v1 (soa service)">
+            <td class="col-id">SKL-316</td>
+            <td class="col-name">HK Weather Utility v1 (SOA Service)</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="the croupier [trust protocol]">
+            <td class="col-id">SKL-332</td>
+            <td class="col-name">The Croupier [Trust Protocol]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="the razor [context compressor]">
+            <td class="col-id">SKL-338</td>
+            <td class="col-name">The Razor [Context Compressor]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="the prompt architect [skill]">
+            <td class="col-id">SKL-334</td>
+            <td class="col-name">The Prompt Architect [Skill]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="the devil's advocate [skill]">
+            <td class="col-id">SKL-335</td>
+            <td class="col-name">The Devil's Advocate [Skill]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="usdc precision patch [utility]">
+            <td class="col-id">SKL-330</td>
+            <td class="col-name">USDC Precision Patch [Utility]</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="bassbase: agent-native audio">
+            <td class="col-id">SKL-342</td>
+            <td class="col-name">BassBase: Agent-Native Audio</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="tiktok content suite v1.0">
+            <td class="col-id">SKL-287</td>
+            <td class="col-name">TikTok Content Suite v1.0</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="maton api gateway (v1.0.0) — unified auth proxy">
+            <td class="col-id">SKL-105</td>
+            <td class="col-name">Maton API Gateway (v1.0.0) — Unified Auth Proxy</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="tavily v1.0.0 (ai search)">
+            <td class="col-id">SKL-138</td>
+            <td class="col-name">Tavily v1.0.0 (AI Search)</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Mind Verified" data-name="virtuals acp v1.1.0 (universal commerce)">
+            <td class="col-id">SKL-107</td>
+            <td class="col-name">Virtuals ACP v1.1.0 (Universal Commerce)</td>
+            <td><span class="status-badge status-verified">Mind Verified</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="the connector [mcp client]">
+            <td class="col-id">SKL-337</td>
+            <td class="col-name">The Connector [MCP Client]</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="the diplomat [universal]">
+            <td class="col-id">SKL-341</td>
+            <td class="col-name">The Diplomat [Universal]</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="the openclaw citizen [protocol]">
+            <td class="col-id">SKL-324</td>
+            <td class="col-name">The OpenClaw Citizen [Protocol]</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="agent-native exchange api v1">
+            <td class="col-id">SKL-323</td>
+            <td class="col-name">Agent-Native Exchange API v1</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="sovereign node essentials">
+            <td class="col-id">SKL-328</td>
+            <td class="col-name">Sovereign Node Essentials</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="forensic audit: the dedb trojan">
+            <td class="col-id">SKL-322</td>
+            <td class="col-name">Forensic Audit: The DEDB Trojan</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="openclaw welcome mat v1">
+            <td class="col-id">SKL-327</td>
+            <td class="col-name">OpenClaw Welcome Mat V1</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="virtuals acp guide (openclaw-style commerce)">
+            <td class="col-id">SKL-106</td>
+            <td class="col-name">Virtuals ACP Guide (OpenClaw-style Commerce)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="quickbooks accounting suite v1.0">
+            <td class="col-id">SKL-280</td>
+            <td class="col-name">QuickBooks Accounting Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="salesforce crm suite v1.0">
+            <td class="col-id">SKL-281</td>
+            <td class="col-name">Salesforce CRM Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="sendgrid email suite v1.0">
+            <td class="col-id">SKL-282</td>
+            <td class="col-name">SendGrid Email Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="soundcloud music exploration suite v1.0">
+            <td class="col-id">SKL-283</td>
+            <td class="col-name">SoundCloud Music Exploration Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="bluesky at protocol suite v1.0">
+            <td class="col-id">SKL-258</td>
+            <td class="col-name">Bluesky AT Protocol Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="asana project suite v1.0">
+            <td class="col-id">SKL-257</td>
+            <td class="col-name">Asana Project Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="logic-to-social synthesis engine">
+            <td class="col-id">SKL-319</td>
+            <td class="col-name">Logic-to-Social Synthesis Engine</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="vibe engineering & structural synthesis">
+            <td class="col-id">SKL-321</td>
+            <td class="col-name">Vibe Engineering & Structural Synthesis</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="protocol alignment & implementation support">
+            <td class="col-id">SKL-318</td>
+            <td class="col-name">Protocol Alignment & Implementation Support</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="strategic intelligence synthesis">
+            <td class="col-id">SKL-320</td>
+            <td class="col-name">Strategic Intelligence Synthesis</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="telegram voice skill v1 (animoca blueprint)">
+            <td class="col-id">SKL-317</td>
+            <td class="col-name">Telegram Voice Skill v1 (Animoca Blueprint)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="hk transport hub (app)">
+            <td class="col-id">SKL-313</td>
+            <td class="col-name">HK Transport Hub (App)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="universal calendar proxy (multi-tenant)">
+            <td class="col-id">SKL-315</td>
+            <td class="col-name">Universal Calendar Proxy (Multi-Tenant)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="universal calendar proxy: write rail (option a)">
+            <td class="col-id">SKL-314</td>
+            <td class="col-name">Universal Calendar Proxy: Write Rail (Option A)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="hk commute">
+            <td class="col-id">SKL-311</td>
+            <td class="col-name">HK Commute</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="hk commute planning">
+            <td class="col-id">SKL-312</td>
+            <td class="col-name">HK Commute Planning</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="global money transfer">
+            <td class="col-id">SKL-308</td>
+            <td class="col-name">Global Money Transfer</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="health & recovery sync">
+            <td class="col-id">SKL-307</td>
+            <td class="col-name">Health & Recovery Sync</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="global travel planner">
+            <td class="col-id">SKL-309</td>
+            <td class="col-name">Global Travel Planner</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="private id shield">
+            <td class="col-id">SKL-306</td>
+            <td class="col-name">Private ID Shield</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="global safety signal">
+            <td class="col-id">SKL-302</td>
+            <td class="col-name">Global Safety Signal</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="sovereign net worth pulse">
+            <td class="col-id">SKL-303</td>
+            <td class="col-name">Sovereign Net Worth Pulse</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="skill request management">
+            <td class="col-id">SKL-301</td>
+            <td class="col-name">Skill Request Management</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="local experience architect">
+            <td class="col-id">SKL-305</td>
+            <td class="col-name">Local Experience Architect</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="deep search synthesis">
+            <td class="col-id">SKL-304</td>
+            <td class="col-name">Deep Search Synthesis</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Helix-Synth</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Testing" data-name="openweather suite v1.0">
+            <td class="col-id">SKL-77</td>
+            <td class="col-name">OpenWeather Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-05</td>
+          </tr>
+          <tr data-status="Testing" data-name="square payments suite v1.0">
+            <td class="col-id">SKL-284</td>
+            <td class="col-name">Square Payments Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="stripe payments suite v1.0">
+            <td class="col-id">SKL-285</td>
+            <td class="col-name">Stripe Payments Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="threads social media suite v1.0">
+            <td class="col-id">SKL-286</td>
+            <td class="col-name">Threads Social Media Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="tmdb movie & tv database suite v1.0">
+            <td class="col-id">SKL-288</td>
+            <td class="col-name">TMDB Movie & TV Database Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="tumblr microblogging suite v1.0">
+            <td class="col-id">SKL-289</td>
+            <td class="col-name">Tumblr Microblogging Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="twitch helix api suite v1.0">
+            <td class="col-id">SKL-290</td>
+            <td class="col-name">Twitch Helix API Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="unsplash image suite v1.0">
+            <td class="col-id">SKL-291</td>
+            <td class="col-name">Unsplash Image Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="xero accounting suite v1.0">
+            <td class="col-id">SKL-295</td>
+            <td class="col-name">Xero Accounting Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="yelp local discovery suite v1.0">
+            <td class="col-id">SKL-296</td>
+            <td class="col-name">Yelp Local Discovery Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="airtable database suite v1.0">
+            <td class="col-id">SKL-256</td>
+            <td class="col-name">Airtable Database Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="zendesk support suite v1.0">
+            <td class="col-id">SKL-297</td>
+            <td class="col-name">Zendesk Support Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="vimeo video discovery suite v1.0">
+            <td class="col-id">SKL-292</td>
+            <td class="col-name">Vimeo Video Discovery Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="zoom meetings suite v1.0">
+            <td class="col-id">SKL-298</td>
+            <td class="col-name">Zoom Meetings Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="whatsapp business cloud api suite v1.0">
+            <td class="col-id">SKL-293</td>
+            <td class="col-name">WhatsApp Business Cloud API Suite v1.0</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Testing" data-name="tavily guide (web research protocol)">
+            <td class="col-id">SKL-139</td>
+            <td class="col-name">Tavily Guide (Web Research Protocol)</td>
+            <td><span class="status-badge status-testing">Testing</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="clerk user management suite v1.0">
+            <td class="col-id">SKL-364</td>
+            <td class="col-name">Clerk User Management Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="loom video messaging suite v1.0">
+            <td class="col-id">SKL-363</td>
+            <td class="col-name">Loom Video Messaging Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="brevo email marketing suite v1.0">
+            <td class="col-id">SKL-362</td>
+            <td class="col-name">Brevo Email Marketing Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="posthog product analytics suite v1.0">
+            <td class="col-id">SKL-361</td>
+            <td class="col-name">PostHog Product Analytics Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="gitlab devops suite v1.0">
+            <td class="col-id">SKL-360</td>
+            <td class="col-name">GitLab DevOps Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="miro collaboration suite v1.0">
+            <td class="col-id">SKL-359</td>
+            <td class="col-name">Miro Collaboration Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="mapbox geospatial suite v1.0">
+            <td class="col-id">SKL-358</td>
+            <td class="col-name">Mapbox Geospatial Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="contentful content management suite v1.0">
+            <td class="col-id">SKL-357</td>
+            <td class="col-name">Contentful Content Management Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="typeform forms & surveys suite v1.0">
+            <td class="col-id">SKL-356</td>
+            <td class="col-name">Typeform Forms & Surveys Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="datadog monitoring suite v1.0">
+            <td class="col-id">SKL-355</td>
+            <td class="col-name">Datadog Monitoring Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="discord community suite v1.0">
+            <td class="col-id">SKL-353</td>
+            <td class="col-name">Discord Community Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="slack workspace suite v1.0">
+            <td class="col-id">SKL-354</td>
+            <td class="col-name">Slack Workspace Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="farcaster social protocol suite v1.0">
+            <td class="col-id">SKL-352</td>
+            <td class="col-name">Farcaster Social Protocol Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="amplitude analytics suite v1.0">
+            <td class="col-id">SKL-351</td>
+            <td class="col-name">Amplitude Analytics Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="coinbase exchange data suite v1.0">
+            <td class="col-id">SKL-350</td>
+            <td class="col-name">Coinbase Exchange Data Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="plaid financial data suite v1.0">
+            <td class="col-id">SKL-349</td>
+            <td class="col-name">Plaid Financial Data Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="duffel travel api suite v1.0">
+            <td class="col-id">SKL-348</td>
+            <td class="col-name">Duffel Travel API Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="resend email api suite v1.0">
+            <td class="col-id">SKL-347</td>
+            <td class="col-name">Resend Email API Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="opensea nft marketplace suite v1.0">
+            <td class="col-id">SKL-346</td>
+            <td class="col-name">OpenSea NFT Marketplace Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="luma events suite v1.0">
+            <td class="col-id">SKL-345</td>
+            <td class="col-name">Luma Events Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="mixpanel product analytics suite v1.0">
+            <td class="col-id">SKL-344</td>
+            <td class="col-name">Mixpanel Product Analytics Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="coingecko crypto data suite v1.0">
+            <td class="col-id">SKL-343</td>
+            <td class="col-name">CoinGecko Crypto Data Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-08</td>
+          </tr>
+          <tr data-status="Uploading" data-name="godot game development suite v1.2">
+            <td class="col-id">SKL-300</td>
+            <td class="col-name">Godot Game Development Suite v1.2</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">Glyf</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="mastodon social suite v1.0">
+            <td class="col-id">SKL-273</td>
+            <td class="col-name">Mastodon Social Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="medium publishing suite v1.0">
+            <td class="col-id">SKL-274</td>
+            <td class="col-name">Medium Publishing Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="eventbrite events suite v1.0">
+            <td class="col-id">SKL-263</td>
+            <td class="col-name">Eventbrite Events Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="etsy marketplace suite v1.0">
+            <td class="col-id">SKL-262</td>
+            <td class="col-name">Etsy Marketplace Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="paypal payment integration suite v1.0">
+            <td class="col-id">SKL-277</td>
+            <td class="col-name">PayPal Payment Integration Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="ebay browse & search suite v1.0">
+            <td class="col-id">SKL-261</td>
+            <td class="col-name">eBay Browse & Search Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="pandadoc documents suite v1.0">
+            <td class="col-id">SKL-276</td>
+            <td class="col-name">PandaDoc Documents Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="dropbox storage suite v1.0">
+            <td class="col-id">SKL-260</td>
+            <td class="col-name">Dropbox Storage Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="monday.com project suite v1.0">
+            <td class="col-id">SKL-275</td>
+            <td class="col-name">Monday.com Project Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="clickup project suite v1.0">
+            <td class="col-id">SKL-259</td>
+            <td class="col-name">ClickUp Project Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="intercom support suite v1.0">
+            <td class="col-id">SKL-270</td>
+            <td class="col-name">Intercom Support Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="instagram social suite v1.0">
+            <td class="col-id">SKL-269</td>
+            <td class="col-name">Instagram Social Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="hubspot crm suite v1.0">
+            <td class="col-id">SKL-268</td>
+            <td class="col-name">HubSpot CRM Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="google maps location suite v1.0">
+            <td class="col-id">SKL-267</td>
+            <td class="col-name">Google Maps Location Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="giphy gif suite v1.0">
+            <td class="col-id">SKL-266</td>
+            <td class="col-name">Giphy GIF Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="foursquare places api suite v3.0">
+            <td class="col-id">SKL-265</td>
+            <td class="col-name">Foursquare Places API Suite v3.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="figma design suite v1.0">
+            <td class="col-id">SKL-264</td>
+            <td class="col-name">Figma Design Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="pinterest visual suite v1.0">
+            <td class="col-id">SKL-279</td>
+            <td class="col-name">Pinterest Visual Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="mailchimp marketing suite v1.0">
+            <td class="col-id">SKL-272</td>
+            <td class="col-name">Mailchimp Marketing Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="pexels stock media library v1.0">
+            <td class="col-id">SKL-278</td>
+            <td class="col-name">Pexels Stock Media Library v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Uploading" data-name="jira project management suite v1.0">
+            <td class="col-id">SKL-271</td>
+            <td class="col-name">Jira Project Management Suite v1.0</td>
+            <td><span class="status-badge status-uploading">Uploading</span></td>
+            <td><span class="mind-tag">AB</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="openclaw citizen protocol">
+            <td class="col-id">SKL-325</td>
+            <td class="col-name">OpenClaw Citizen Protocol</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="hk driver’s edge">
+            <td class="col-id">SKL-310</td>
+            <td class="col-name">HK Driver’s Edge</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="the openclaw citizen [protocol]">
+            <td class="col-id">SKL-326</td>
+            <td class="col-name">The OpenClaw Citizen [Protocol]</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="the sonar [capability broker]">
+            <td class="col-id">SKL-340</td>
+            <td class="col-name">The Sonar [Capability Broker]</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="the arbiter [trust protocol]">
+            <td class="col-id">SKL-336</td>
+            <td class="col-name">The Arbiter [Trust Protocol]</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="slack integration protocol v1.0">
+            <td class="col-id">SKL-151</td>
+            <td class="col-name">Slack Integration Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="wordpress content suite v1.0">
+            <td class="col-id">SKL-294</td>
+            <td class="col-name">WordPress Content Suite v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="wallet manager">
+            <td class="col-id">SKL-333</td>
+            <td class="col-name">Wallet Manager</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="the notary [civic anchor]">
+            <td class="col-id">SKL-331</td>
+            <td class="col-name">The Notary [Civic Anchor]</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Flux</span></td>
+            <td class="col-date">03-07</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="humanizer (natural writing protocol)">
+            <td class="col-id">SKL-140</td>
+            <td class="col-name">Humanizer (Natural Writing Protocol)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="self-improving agent (learning loop)">
+            <td class="col-id">SKL-141</td>
+            <td class="col-name">Self-Improving Agent (Learning Loop)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="maton api gateway guide">
+            <td class="col-id">SKL-142</td>
+            <td class="col-name">Maton API Gateway Guide</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="virtuals acp guide (universal commerce)">
+            <td class="col-id">SKL-143</td>
+            <td class="col-name">Virtuals ACP Guide (Universal Commerce)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="uber ride v1.0.0 (ride booking)">
+            <td class="col-id">SKL-104</td>
+            <td class="col-name">Uber Ride v1.0.0 (Ride Booking)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="linear connect v1.2.0 (stable)">
+            <td class="col-id">SKL-144</td>
+            <td class="col-name">Linear Connect v1.2.0 (Stable)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">Sparks</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="matchclaws protocol v2.0 (official documentation)">
+            <td class="col-id">SKL-148</td>
+            <td class="col-name">MatchClaws Protocol v2.0 (Official Documentation)</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="skillmd_translator v1.0">
+            <td class="col-id">SKL-149</td>
+            <td class="col-name">skillmd_translator v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="agent browser protocol v1.0">
+            <td class="col-id">SKL-150</td>
+            <td class="col-name">Agent Browser Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="trello managed protocol v1.0">
+            <td class="col-id">SKL-152</td>
+            <td class="col-name">Trello Managed Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="caldav sync protocol v1.0">
+            <td class="col-id">SKL-153</td>
+            <td class="col-name">Caldav Sync Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="answer overflow q&a protocol v1.0">
+            <td class="col-id">SKL-154</td>
+            <td class="col-name">Answer Overflow Q&A Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="automation workflows protocol v1.0">
+            <td class="col-id">SKL-156</td>
+            <td class="col-name">Automation Workflows Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+          <tr data-status="Needs Attention" data-name="virtuals' acp integration protocol v1.0">
+            <td class="col-id">SKL-155</td>
+            <td class="col-name">Virtuals' ACP Integration Protocol v1.0</td>
+            <td><span class="status-badge status-attention">Needs Attention</span></td>
+            <td><span class="mind-tag">—</span></td>
+            <td class="col-date">03-06</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      <span id="tableCount">Showing 129 of 129 skills</span>
+      <span>129 active pipeline skills</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-left">Animoca Minds &middot; Skills Repository</div>
+  <div class="footer-right">Mind Skills Pipeline &middot; animocaminds.ai</div>
+</div>
+
+<script>
+const allRows = document.querySelectorAll('#skillsBody tr');
+const totalCount = allRows.length;
+let currentFilter = 'all';
+let currentSearch = '';
+
+function filterTable(status) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  applyFilters();
+}
+
+function searchTable(query) {
+  currentSearch = query.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters() {
+  let visible = 0;
+  allRows.forEach(row => {
+    const matchStatus = currentFilter === 'all' || row.dataset.status === currentFilter;
+    const matchSearch = !currentSearch ||
+      row.dataset.name.includes(currentSearch) ||
+      row.querySelector('.col-id').textContent.toLowerCase().includes(currentSearch) ||
+      row.querySelector('.mind-tag').textContent.toLowerCase().includes(currentSearch);
+    const show = matchStatus && matchSearch;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('tableCount').textContent = 'Showing ' + visible + ' of ' + totalCount + ' skills';
+}
+</script>
+
+</body>
+</html>
