@@ -1,0 +1,7 @@
+{
+  "offeringId": "NTSM-001-SCRUMMASTER",
+  "title": "Notion Scrum Master v1.0.0",
+  "description": "AI-powered Scrum Master built on the 84Minds Notion app. Automates kanban board management — moves cards across columns via status updates, facilitates daily standups by querying In Progress items, runs sprint planning from backlog, tracks velocity via story point aggregation, enforces WIP limits, detects blockers from comments and stale cards, and generates retrospective summaries. Operates on existing Notion databases as sprint boards — discovers board structure dynamically. Requires the 84Minds Notion app (OAuth) from the Agent Exchange. Note: card creation requires Steward action in Notion — the bazaar app does not include CreatePage.",
+  "endpoints": ["https://api.notion.com"],
+  "lastUpdate": "2026-04-15"
+}
