@@ -1,0 +1,32 @@
+{
+  "appName": "NotionScrumMaster_Suite",
+  "description": "Scrum Master capabilities layered on the 84Minds Notion app (OAuth). Uses Notion databases as sprint boards for kanban automation, sprint ceremonies, velocity tracking, blocker detection, and WIP limit enforcement. Auth delegates to the bazaar Notion app via OAuth.",
+  "domain": "project_management",
+  "use_case": "Automated scrum ceremonies, kanban card movement, sprint velocity tracking, blocker detection, WIP limit enforcement, team standup facilitation, retrospective generation, and sprint planning — all through Notion databases as the source of truth.",
+  "tier": "verified",
+  "auth_type": "OAuth",
+  "header_key": "Authorization",
+  "bazaarAppRef": {
+    "appId": "E2881C6F-F022-F111-AD1D-0EA9A5017E89",
+    "provider": "84Minds",
+    "version": "v1.1.17",
+    "authType": "OAuth"
+  },
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Search",
+        "QueryDatabase",
+        "RetrievePage",
+        "UpdatePage",
+        "MovePage",
+        "AppendBlockChildren",
+        "UpdateBlock",
+        "UpdateDatabase",
+        "ListComments",
+        "RetrieveMe"
+      ]
+    }
+  ]
+}
