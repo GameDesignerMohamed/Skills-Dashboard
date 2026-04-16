@@ -1,0 +1,633 @@
+[
+  {
+    "toolSlug": "BB_CreateSession",
+    "toolPurpose": "Create a new cloud browser session via POST /v1/sessions. Returns a session object with id, status, connectUrl, and seleniumRemoteUrl. Sessions are cloud-hosted Chrome instances managed by Browserbase. Use for direct Playwright/Puppeteer connections if the runtime supports WebSocket. For most Mind use cases, prefer the Function-based tools (BB_Screenshot, BB_RunLighthouse, etc.) which handle session lifecycle internally. Session timeout defaults to project setting (max 21600 seconds / 6 hours). Status values: PENDING, RUNNING, ERROR, TIMED_OUT, COMPLETED. Errors: 401 unauthorized, 400 validation.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/sessions",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "browserSettings": {
+          "type": "object",
+          "description": "Browser configuration. Optional fields: viewport ({width, height}), blockAds (boolean), solveCaptchas (boolean, default true), recordSession (boolean, default true), logSession (boolean, default true)"
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Session duration in seconds (60-21600). Defaults to project timeout setting."
+        },
+        "keepAlive": {
+          "type": "boolean",
+          "description": "Maintain session after disconnections. Requires Hobby plan or above."
+        },
+        "region": {
+          "type": "string",
+          "description": "Deployment region for the browser instance.",
+          "enum": ["us-west-2", "us-east-1", "eu-central-1", "ap-southeast-1"]
+        },
+        "proxies": {
+          "type": "boolean",
+          "description": "Enable default Browserbase proxy. Set true for proxy, false/omit for direct."
+        },
+        "userMetadata": {
+          "type": "object",
+          "description": "Arbitrary metadata to attach to the session for tracking."
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["browserSettings", "timeout", "keepAlive", "region", "proxies", "userMetadata"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_ListSessions",
+    "toolPurpose": "List all browser sessions via GET /v1/sessions. Returns array of session objects with id, status, timestamps, and metadata. Filter by status (PENDING, RUNNING, ERROR, TIMED_OUT, COMPLETED). Use to check for active sessions or review session history.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Filter by session status.",
+          "enum": ["PENDING", "RUNNING", "ERROR", "TIMED_OUT", "COMPLETED"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["status"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetSession",
+    "toolPurpose": "Retrieve details of a specific browser session via GET /v1/sessions/{sessionId}. Returns session object with id, status, timestamps, connectUrl, region, proxyBytes, and userMetadata. Use to check session status before invoking functions or to get the session recording URL (https://browserbase.com/sessions/{id}). Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions/{sessionId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID format) to retrieve."
+        }
+      },
+      "required": ["sessionId"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_ReleaseSession",
+    "toolPurpose": "End a browser session early via POST /v1/sessions/{sessionId}. Sends {status: 'REQUEST_RELEASE'} to request that the session complete before its timeout — use to avoid unnecessary charges. Returns the updated session object. Only valid for RUNNING sessions. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/sessions/{sessionId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) to release."
+        },
+        "status": {
+          "type": "string",
+          "description": "Must be 'REQUEST_RELEASE' to end the session.",
+          "enum": ["REQUEST_RELEASE"]
+        }
+      },
+      "required": ["sessionId", "status"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId", "status"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetSessionDebugURLs",
+    "toolPurpose": "Get live debugger URLs for a running session via GET /v1/sessions/{sessionId}/debug. Returns {debuggerUrl, debuggerFullscreenUrl, wsUrl, pages: [{id, url, title, faviconUrl, debuggerUrl, debuggerFullscreenUrl}]}. The debuggerUrl opens Chrome DevTools in a browser. The debuggerFullscreenUrl is for embedding. The pages array shows each open tab with its own debugger URL. Share the debuggerFullscreenUrl with the Steward so they can watch the session live. Only works for RUNNING sessions. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions/{sessionId}/debug",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) of a RUNNING session."
+        }
+      },
+      "required": ["sessionId"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetSessionLogs",
+    "toolPurpose": "Retrieve CDP (Chrome DevTools Protocol) request/response logs for a session via GET /v1/sessions/{sessionId}/logs. Returns array of log entries, each with: method (CDP method name, e.g. 'Network.requestWillBeSent', 'Runtime.consoleAPICalled'), pageId, sessionId, timestamp (ms since epoch), request ({params, rawBody, timestamp}), response ({rawBody, result, timestamp}). Use to inspect low-level browser interactions: network events, DOM events, console calls, page lifecycle events. This is RAW CDP data — for user-friendly output, prefer BB_InspectNetwork (network) or BB_GetConsoleLogs (console). Available after session completes. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions/{sessionId}/logs",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) to retrieve logs for."
+        }
+      },
+      "required": ["sessionId"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetSessionRecording",
+    "toolPurpose": "Retrieve session recording data via GET /v1/sessions/{sessionId}/recording. Returns array of rrweb DOM replay events, each with: data (event payload), sessionId, timestamp (ms since epoch), type (rrweb event type number). NOTE: rrweb-based recordings are being deprecated by Browserbase — video recordings are now the primary format and are viewable at https://browserbase.com/sessions/{sessionId}. Use this endpoint only if you need programmatic access to DOM replay data. For most use cases, share the dashboard recording URL with the Steward instead. Available after session completes. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions/{sessionId}/recording",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) to retrieve recording for."
+        }
+      },
+      "required": ["sessionId"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetSessionDownloads",
+    "toolPurpose": "List files downloaded during a browser session via GET /v1/sessions/{sessionId}/downloads. Returns the downloaded file data. Use when a page interaction triggers a file download (PDF export, CSV download, etc.) and the Mind needs to retrieve it. Available after session completes or while running. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/sessions/{sessionId}/downloads",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) to list downloads for."
+        }
+      },
+      "required": ["sessionId"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_UploadToSession",
+    "toolPurpose": "Upload a file to a browser session via POST /v1/sessions/{sessionId}/uploads. The uploaded file becomes available for form file inputs during the session. Use when testing file upload flows (profile picture upload, document submission, etc.). Multipart form request — the file field contains the binary data. Returns {message: 'success'}. WRITE operation — confirm with Steward before uploading files to production sessions. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/sessions/{sessionId}/uploads",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session ID (UUID) to upload the file to."
+        },
+        "file": {
+          "type": "string",
+          "description": "The file to upload (binary data, multipart form)."
+        }
+      },
+      "required": ["sessionId", "file"]
+    },
+    "inputsSpec": {
+      "required": ["sessionId", "file"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_CreateContext",
+    "toolPurpose": "Create a persistent browser context via POST /v1/contexts. Contexts preserve cookies, localStorage, and authentication state across multiple sessions — create once, reuse across sessions by passing context.id in BB_CreateSession's browserSettings. Use for: testing authenticated flows without re-logging in every session, maintaining user state across multiple inspections, preserving cart/form data across sessions. Returns {id, uploadUrl, publicKey, cipherAlgorithm, initializationVectorSize}. The uploadUrl allows uploading a custom Chrome user-data-directory (encrypted). Errors: 401.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/contexts",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "Optional. Project ID — inferred from API key if omitted."
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["projectId"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetContext",
+    "toolPurpose": "Retrieve a browser context via GET /v1/contexts/{contextId}. Returns {id, projectId, createdAt, updatedAt}. Use to verify a context exists before linking it to a session. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/contexts/{contextId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "description": "Context ID (UUID) to retrieve."
+        }
+      },
+      "required": ["contextId"]
+    },
+    "inputsSpec": {
+      "required": ["contextId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_DeleteContext",
+    "toolPurpose": "Delete a browser context via DELETE /v1/contexts/{contextId}. Permanently removes the saved browser state (cookies, localStorage, auth). WRITE operation — confirm with Steward before deleting as this loses all saved authentication state. Returns void (204 No Content). Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "DELETE",
+    "endpoint": "/v1/contexts/{contextId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "description": "Context ID (UUID) to delete."
+        }
+      },
+      "required": ["contextId"]
+    },
+    "inputsSpec": {
+      "required": ["contextId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_FetchPage",
+    "toolPurpose": "Lightweight page fetch via POST /v1/fetch — retrieves a page's content, headers, and metadata WITHOUT spinning up a full browser session. Much faster and cheaper than a full session. Returns {id, content (HTML/text body), contentType (MIME type), encoding, headers (key-value), statusCode}. Use for: quick content checks, HTTP header inspection, status code verification, content scraping when JavaScript rendering is not needed. If the page requires JavaScript rendering, use a full session instead. Errors: 401, 400.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/fetch",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to fetch."
+        },
+        "allowInsecureSsl": {
+          "type": "boolean",
+          "description": "Bypass TLS certificate verification. Use for self-signed certs in staging environments."
+        },
+        "allowRedirects": {
+          "type": "boolean",
+          "description": "Whether to follow HTTP redirects."
+        },
+        "proxies": {
+          "type": "boolean",
+          "description": "Enable proxy support for the request."
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": ["allowInsecureSsl", "allowRedirects", "proxies"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_WebSearch",
+    "toolPurpose": "Perform a web search via POST /v1/search. Returns structured search results: {query, requestId, results: [{id, title, url, author, favicon, image, publishedDate}]}. Use when the Mind needs to look up documentation, find error explanations, research solutions, or discover resources related to a debugging task. Returns up to 25 results. Token-efficient — no browser session required. Errors: 401, 400.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/search",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The search query string."
+        },
+        "numResults": {
+          "type": "integer",
+          "description": "Number of results to return (1-25). Default varies."
+        }
+      },
+      "required": ["query"]
+    },
+    "inputsSpec": {
+      "required": ["query"],
+      "optional": ["numResults"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetUsage",
+    "toolPurpose": "Get project usage statistics via GET /v1/projects/{projectId}/usage. Returns {browserMinutes (integer, min 0), proxyBytes (integer, min 0)}. Use to monitor consumption, check remaining quota, or warn the Steward when approaching plan limits. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/projects/{projectId}/usage",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "Project ID (UUID). Can be found in Browserbase dashboard Settings."
+        }
+      },
+      "required": ["projectId"]
+    },
+    "inputsSpec": {
+      "required": ["projectId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_InvokeFunction",
+    "toolPurpose": "Invoke a deployed Browserbase Function via POST /v1/functions/{functionId}/invoke. Functions are serverless Playwright scripts that handle browser session lifecycle internally — the Mind does not need to manage sessions. Returns an Invocation object with id and status (PENDING initially). Use BB_GetInvocationResult to poll for completion. The params object is passed directly to the Function script. Response 202 Accepted. Errors: 401, 404 (function not found), 400 (invalid params).",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{functionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "functionId": {
+          "type": "string",
+          "description": "UUID of the deployed Browserbase Function to invoke."
+        },
+        "params": {
+          "type": "object",
+          "description": "Custom parameters passed to the Function script. Structure depends on which function is being invoked (e.g., {url: 'https://example.com'} for screenshot function)."
+        },
+        "sessionCreateParams": {
+          "type": "object",
+          "description": "Optional browser session configuration: viewport, timeout, proxies, blockAds, etc."
+        }
+      },
+      "required": ["functionId", "params"]
+    },
+    "inputsSpec": {
+      "required": ["functionId", "params"],
+      "optional": ["sessionCreateParams"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetInvocationResult",
+    "toolPurpose": "Poll for the result of a Function invocation via GET /v1/functions/invocations/{invocationId}. Returns the Invocation object with status (PENDING, RUNNING, COMPLETED, FAILED) and results (the Function's return value). Poll every ~5 seconds until status is COMPLETED or FAILED. Typical completion time: 5-30 seconds for simple tasks, up to 15 minutes for complex workflows. On COMPLETED, results contains the Function's output. On FAILED, results contains error details. Errors: 401, 404.",
+    "created_by": "human",
+    "httpMethod": "GET",
+    "endpoint": "/v1/functions/invocations/{invocationId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "invocationId": {
+          "type": "string",
+          "description": "Invocation ID (UUID) returned from BB_InvokeFunction."
+        }
+      },
+      "required": ["invocationId"]
+    },
+    "inputsSpec": {
+      "required": ["invocationId"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_Screenshot",
+    "toolPurpose": "Take a screenshot of any URL. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'navigate-and-screenshot' Function ID from TENET.config.browserbase.functions.screenshot. Input: URL to capture, optional full-page flag, optional viewport dimensions. Output: base64-encoded image, page title, final URL. Use for visual QA, design review, deployment verification, or bug evidence. Typical completion: 5-15 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{screenshotFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to navigate to and screenshot."
+        },
+        "fullPage": {
+          "type": "boolean",
+          "description": "Capture the full scrollable page (true) or just the viewport (false, default)."
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Viewport dimensions: {width: 1280, height: 720}. Defaults to 1280x720.",
+          "properties": {
+            "width": { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": ["fullPage", "viewport"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_RunLighthouse",
+    "toolPurpose": "Run a Lighthouse performance audit on any URL. Convenience wrapper for the 'run-lighthouse' Function. Returns scores for performance, accessibility, best practices, and SEO (0-100 each), plus detailed audit findings. Use to diagnose slow pages, accessibility issues, SEO problems, or best practice violations. Typical completion: 15-60 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{lighthouseFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to audit."
+        },
+        "categories": {
+          "type": "array",
+          "description": "Lighthouse categories to run. Default: all four.",
+          "items": {
+            "type": "string",
+            "enum": ["performance", "accessibility", "best-practices", "seo"]
+          }
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": ["categories"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_EvaluateScript",
+    "toolPurpose": "Execute JavaScript on any URL and return the result. Convenience wrapper for the 'evaluate-script' Function. Navigates to the URL, runs the provided script in the page context, and returns the result plus any console output and errors. Use for: checking DOM state, reading page data, testing client-side logic, extracting structured data from pages. WRITE operation if the script modifies page state — present script to Steward for confirmation. Typical completion: 5-15 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{evalScriptFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to navigate to before executing the script."
+        },
+        "script": {
+          "type": "string",
+          "description": "JavaScript code to execute in the page context. The return value of the last expression is captured as the result."
+        }
+      },
+      "required": ["url", "script"]
+    },
+    "inputsSpec": {
+      "required": ["url", "script"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_InspectNetwork",
+    "toolPurpose": "Capture all network requests made when loading a URL. Convenience wrapper for the 'inspect-network' Function. Navigates to the URL with network interception enabled, waits for page load (+ optional extra wait), and returns all captured requests with URL, method, status code, response size, duration, and content type. Also returns a summary: total requests, failed requests (4xx/5xx), slowest request, largest response. Use for: diagnosing slow pages, finding failed API calls, identifying large assets, detecting unnecessary requests. Typical completion: 10-30 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{networkFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to navigate to and inspect network traffic."
+        },
+        "waitMs": {
+          "type": "integer",
+          "description": "Additional milliseconds to wait after page load to capture late requests (default: 3000)."
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": ["waitMs"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_GetConsoleLogs",
+    "toolPurpose": "Capture all console output and JavaScript errors when loading a URL. Convenience wrapper for the 'get-console-logs' Function. Navigates to the URL, captures all console.log/warn/error/info messages and uncaught exceptions with source-mapped stack traces. Use for: debugging JavaScript errors, finding warnings, checking for deprecation notices, verifying logging output. Typical completion: 5-15 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{consoleFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to navigate to and capture console output."
+        },
+        "waitMs": {
+          "type": "integer",
+          "description": "Additional milliseconds to wait after page load for async console output (default: 3000)."
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": ["waitMs"]
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_CheckPageHealth",
+    "toolPurpose": "Combined page health check — screenshot + console errors + failed network requests + basic performance metrics in a single call. Convenience wrapper for the 'check-page-health' Function. Returns a comprehensive health snapshot: base64 screenshot, list of JS errors, list of failed HTTP requests (4xx/5xx), and performance metrics (page load time, DOMContentLoaded, first paint). Use as the go-to first step when a Steward reports a page issue. Typical completion: 10-20 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{healthFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to perform the health check on."
+        }
+      },
+      "required": ["url"]
+    },
+    "inputsSpec": {
+      "required": ["url"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  },
+  {
+    "toolSlug": "BB_FillForm",
+    "toolPurpose": "Navigate to a URL, fill form fields, submit, and capture before/after screenshots. Convenience wrapper for the 'fill-and-submit-form' Function. Use for: testing signup flows, verifying form validation, checking submission behavior. WRITE operation — always confirm with Steward before submitting forms, especially on production URLs. Typical completion: 10-30 seconds.",
+    "created_by": "human",
+    "httpMethod": "POST",
+    "endpoint": "/v1/functions/{formFunctionId}/invoke",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL of the page containing the form."
+        },
+        "fields": {
+          "type": "array",
+          "description": "Form fields to fill. Each: {selector: 'CSS selector', value: 'text to enter'}.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "selector": { "type": "string", "description": "CSS selector for the input element." },
+              "value": { "type": "string", "description": "Value to enter into the field." }
+            },
+            "required": ["selector", "value"]
+          }
+        },
+        "submitSelector": {
+          "type": "string",
+          "description": "CSS selector for the submit button to click after filling fields."
+        }
+      },
+      "required": ["url", "fields", "submitSelector"]
+    },
+    "inputsSpec": {
+      "required": ["url", "fields", "submitSelector"],
+      "optional": []
+    },
+    "schemaArtifactId": "BBDT-ART-001"
+  }
+]
