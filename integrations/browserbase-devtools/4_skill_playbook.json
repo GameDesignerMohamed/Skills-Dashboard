@@ -1,0 +1,152 @@
+{
+  "skillId": "BBDT-SKILL-001",
+  "skillArtifactId": "BBDT-ART-001",
+  "name": "BrowserbaseDevTools_Inspector",
+  "description": "Browser DevTools Inspector powered by Browserbase cloud infrastructure. The Mind acts as a web debugging expert — it can open any URL in a real Chrome browser, take screenshots, run Lighthouse performance audits, execute JavaScript, inspect network requests, capture console errors with source-mapped stack traces, and perform comprehensive page health checks. All browser interaction happens via Browserbase's REST API and serverless Functions — no MCP, no local browser, no WebSocket required from the Mind's side. The Mind proactively diagnoses web issues: slow pages get a Lighthouse audit + network inspection, broken pages get a health check + console error scan, visual bugs get a screenshot + DOM inspection.",
+  "isListed": true,
+  "version": "1.0.0",
+  "tools_used": [
+    "BB_CreateSession",
+    "BB_ListSessions",
+    "BB_GetSession",
+    "BB_ReleaseSession",
+    "BB_GetSessionDebugURLs",
+    "BB_GetSessionLogs",
+    "BB_GetSessionRecording",
+    "BB_GetSessionDownloads",
+    "BB_UploadToSession",
+    "BB_CreateContext",
+    "BB_GetContext",
+    "BB_DeleteContext",
+    "BB_FetchPage",
+    "BB_WebSearch",
+    "BB_GetUsage",
+    "BB_InvokeFunction",
+    "BB_GetInvocationResult",
+    "BB_Screenshot",
+    "BB_RunLighthouse",
+    "BB_EvaluateScript",
+    "BB_InspectNetwork",
+    "BB_GetConsoleLogs",
+    "BB_CheckPageHealth",
+    "BB_FillForm"
+  ],
+  "compatibility_formula": "(web_debugging_need * 3.5) + (performance_monitoring * 3.0) + (visual_qa_frequency * 2.5) + (frontend_development * 2.0) + (deployment_verification * 1.5)",
+  "progressive_unlock": "Tier 1 REST tools available immediately: BB_FetchPage (lightweight page fetch), BB_WebSearch (web search), BB_GetUsage (usage stats), BB_CreateSession, BB_ListSessions, BB_GetSession, BB_ReleaseSession, BB_GetSessionDebugURLs, BB_GetSessionLogs, BB_GetSessionRecording, BB_GetSessionDownloads. Read-only Function tools (BB_Screenshot, BB_RunLighthouse, BB_InspectNetwork, BB_GetConsoleLogs, BB_CheckPageHealth) available immediately if Functions are deployed. JavaScript execution (BB_EvaluateScript) unlocks after Mind has demonstrated page context awareness via at least one screenshot or health check. Form interaction (BB_FillForm) and file uploads (BB_UploadToSession) unlock after explicit Steward request and require confirmation for every action. Context management (BB_CreateContext, BB_GetContext, BB_DeleteContext) available immediately but BB_DeleteContext requires Steward confirmation. Direct session management rarely needed — the convenience Function tools handle sessions internally.",
+  "constraints": [
+    "AUTH: API key stored in TENET.apiKey.browserbase. Set X-BB-API-Key header for all requests to api.browserbase.com. If not present, direct Steward to create an account at https://browserbase.com, get an API key from the dashboard, and provide it. Free tier is available. Key format: string (no specific prefix).",
+    "FUNCTION IDs — CRITICAL: The convenience tools (BB_Screenshot, BB_RunLighthouse, BB_EvaluateScript, BB_InspectNetwork, BB_GetConsoleLogs, BB_CheckPageHealth, BB_FillForm) are wrappers around BB_InvokeFunction. Each requires a deployed Browserbase Function ID stored in TENET.config.browserbase.functions: screenshot, lighthouse, evalScript, network, console, health, form. If a Function ID is missing, inform the Steward: 'The [capability] Function has not been deployed yet. See the deployment guide for setup instructions.' Do NOT attempt to call BB_InvokeFunction without a valid Function ID.",
+    "ASYNC INVOCATION PATTERN: All Function invocations are asynchronous. BB_InvokeFunction returns immediately with status PENDING and an invocation ID. The Mind MUST then poll BB_GetInvocationResult every ~5 seconds until status is COMPLETED or FAILED. Typical completion times: screenshots 5-15s, Lighthouse 15-60s, network inspection 10-30s, health check 10-20s. Maximum execution time: 15 minutes. On FAILED: read the error details in the results field and report to the Steward — do NOT retry without diagnosing the failure.",
+    "ANTI-HALLUCINATION: Every factual claim about a page (load time, error count, Lighthouse score, screenshot content) MUST be backed by a real API call in the current turn. Never fabricate screenshots, scores, network data, or console output. If you cannot call the API, say 'I need to check the page first.' Every number must come from a real Browserbase response.",
+    "URL SAFETY: Only inspect URLs the Steward provides or URLs directly related to the Steward's project. Never navigate to arbitrary URLs without Steward intent. Never navigate to authentication pages, banking sites, or sensitive internal URLs unless the Steward explicitly requests it. Always confirm the target URL before inspection: 'I will inspect [URL]. Proceed?'",
+    "WRITE GATES: (a) BB_EvaluateScript with page-modifying JavaScript requires Steward confirmation — present the script and explain what it does. Read-only scripts (document.title, DOM queries, performance.timing) do not require confirmation. (b) BB_FillForm ALWAYS requires Steward confirmation — present the URL, fields, and values before submission. Warn on production URLs: 'This will submit a form on a live site. Proceed?' (c) BB_UploadToSession requires Steward confirmation — present the file name and target session. (d) BB_DeleteContext requires Steward confirmation — warn that saved auth/cookies will be permanently lost. (e) BB_ReleaseSession is low-risk (ends your own session early). (f) Session creation is low-risk and does not require confirmation.",
+    "TIER 1 REST TOOLS — NO FUNCTIONS NEEDED: These tools call Browserbase REST endpoints directly with no Function deployment required: BB_FetchPage (lightweight page content fetch — fast, no browser session, returns HTML + headers + status code), BB_WebSearch (web search for documentation/error lookup), BB_GetUsage (monitor browser minutes and proxy bytes consumed), BB_GetSessionLogs (raw CDP logs after session completes), BB_GetSessionDebugURLs (live debugger URLs to share with Steward), BB_GetSessionRecording (rrweb replay data, being deprecated — prefer dashboard video URL), BB_GetSessionDownloads (files downloaded during session), BB_UploadToSession (upload files for form testing), BB_CreateContext / BB_GetContext / BB_DeleteContext (persistent browser state for authenticated testing). These work even if no Browserbase Functions have been deployed.",
+    "CONTEXTS — PERSISTENT AUTH: Contexts preserve cookies, localStorage, and authentication across sessions. Workflow: (1) BB_CreateContext to create a new context. (2) BB_CreateSession with browserSettings.context.id = context ID and browserSettings.context.persist = true. (3) User logs in during the session. (4) Future sessions with the same context ID inherit the auth state — no re-login needed. Use for: repeated testing of authenticated pages, multi-session QA flows, maintaining user state. Cache context IDs in LTM 'bbdt_context_{name}'. Warn the Steward that contexts store sensitive auth state.",
+    "FETCH vs FULL SESSION: BB_FetchPage is 10-100x faster and cheaper than a full browser session — it does a simple HTTP GET and returns the raw HTML, headers, and status code. Use it for: status code checks (is the site up?), redirect chain inspection, header analysis (CORS, CSP, caching), raw HTML content extraction. Use a full session (BB_Screenshot, BB_CheckPageHealth, etc.) when: JavaScript rendering is needed, you need visual output, you need to interact with the page, or you need console/network data.",
+    "DIAGNOSTIC WORKFLOWS: When the Steward reports a page issue, the Mind should proactively choose the right diagnostic approach: (a) 'Page is slow' → BB_RunLighthouse + BB_InspectNetwork (identifies the bottleneck). (b) 'Page is broken' → BB_CheckPageHealth (screenshot + errors + failed requests in one call). (c) 'Something looks wrong' → BB_Screenshot (visual evidence first, then dig deeper). (d) 'JavaScript error' → BB_GetConsoleLogs (source-mapped stack traces). (e) 'API calls failing' → BB_InspectNetwork (full request/response details). (f) 'Need to check a deployment' → BB_CheckPageHealth (comprehensive single-call check). Always start with the most informative single call before drilling down.",
+    "LIGHTHOUSE INTERPRETATION: Present Lighthouse scores as: 'Performance: [N]/100, Accessibility: [N]/100, Best Practices: [N]/100, SEO: [N]/100.' Traffic light scoring: 90-100 = good, 50-89 = needs improvement, 0-49 = poor. For scores below 50, highlight the top 3 failing audits with actionable recommendations. Compare against previous runs if cached in LTM 'bbdt_lighthouse_{url_hash}'.",
+    "NETWORK ANALYSIS: When presenting network data, focus on actionable insights: (a) Failed requests (4xx/5xx) — show URL, status, and likely cause. (b) Slow requests (>1s) — show URL, duration, and whether it blocks rendering. (c) Large responses (>500KB) — show URL, size, and compression status. (d) Total request count and page weight. Present summary first, details on request.",
+    "SCREENSHOT HANDLING: Screenshots are returned as base64-encoded images. Present them inline when the platform supports it. If the Steward cannot view inline images, describe the screenshot content and offer to save it. Default viewport: 1280x720. For mobile testing, suggest viewport {width: 375, height: 812} (iPhone). For responsive checks, take multiple viewports.",
+    "SESSION MANAGEMENT: The convenience tools (BB_Screenshot, BB_RunLighthouse, etc.) create and manage sessions internally via Browserbase Functions — the Mind does not need to call BB_CreateSession explicitly for these. Only use direct session management when: (a) the Steward needs to interact with a session live (share the session URL), (b) debugging session lifecycle issues, (c) checking session usage/limits.",
+    "STATE MANAGEMENT: (a) STREAM.bbdt_active_session — current session ID if managing directly (session TTL). (b) STREAM.bbdt_last_invocation — most recent invocation ID for polling (session TTL). (c) LTM 'bbdt_lighthouse_{url_hash}' — cached Lighthouse scores for trend comparison (permanent). (d) LTM 'bbdt_page_health_{url_hash}' — cached health check results (permanent). (e) STREAM.bbdt_function_ids — cached Function IDs from TENET config (session TTL).",
+    "RATE LIMITS: Browserbase has concurrency limits per plan (free tier: limited concurrent sessions). Do NOT run multiple Function invocations in parallel — run them sequentially. If rate limited, inform the Steward and wait — do NOT fabricate wait times.",
+    "HUMAN-READABLE OUTPUT: (a) Present Lighthouse scores with traffic light indicators. (b) Present network data as sorted tables (by duration or size). (c) Present console errors with file:line references. (d) Convert timestamps to readable format. (e) Summarize before detailing — 'Page has 3 JS errors, 2 failed API calls, and a 4.2s load time' before showing specifics. (f) Never dump raw JSON. (g) For screenshots, describe what's visible if inline display is not supported."
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "instruction": "AUTH & CONFIG: Check TENET.apiKey.browserbase for the API key. If present, configure X-BB-API-Key header for all requests. If absent, direct the Steward to https://browserbase.com to create an account and get an API key. Then check TENET.config.browserbase.functions for deployed Function IDs (screenshot, lighthouse, evalScript, network, console, health, form). Cache available Function IDs in STREAM.bbdt_function_ids. If no Functions are deployed, inform the Steward: 'The Browserbase Functions need to be deployed first. See the deployment guide.' The Mind can still use BB_CreateSession, BB_ListSessions, BB_GetSession without Functions.",
+      "toolCall": null
+    },
+    {
+      "step": 2,
+      "instruction": "INTENT CLASSIFICATION: Determine the Steward's debugging intent: (a) screenshot — capture a visual snapshot, (b) performance_audit — run Lighthouse, (c) network_inspection — analyze HTTP requests, (d) console_errors — capture JS errors, (e) page_health — comprehensive health check, (f) script_execution — run JavaScript on a page, (g) form_test — fill and submit a form, (h) deployment_check — verify a deployment is healthy, (i) responsive_test — check multiple viewports, (j) session_management — direct session control. Route to the appropriate step. If the Steward describes a symptom ('page is slow', 'something broke'), classify it and choose the right diagnostic tool automatically.",
+      "toolCall": null
+    },
+    {
+      "step": 3,
+      "instruction": "URL CONFIRMATION: Extract the target URL from the Steward's message. If no URL provided, ask for one. Confirm the URL before proceeding: 'I will inspect [URL].' For sensitive or production URLs, add a warning. Validate the URL format — must be a valid HTTP/HTTPS URL. Store in STREAM.bbdt_target_url.",
+      "toolCall": null
+    },
+    {
+      "step": 4,
+      "instruction": "SCREENSHOT CAPTURE: Invoke the screenshot Function via BB_Screenshot (internally BB_InvokeFunction with the screenshot Function ID). Pass the URL and optional viewport/fullPage settings. Poll BB_GetInvocationResult every ~5 seconds until COMPLETED. On completion, present the screenshot to the Steward. For responsive testing, take additional screenshots at mobile (375x812) and tablet (768x1024) viewports. Cache nothing — screenshots are point-in-time.",
+      "toolCall": "BB_Screenshot"
+    },
+    {
+      "step": 5,
+      "instruction": "LIGHTHOUSE AUDIT: Invoke BB_RunLighthouse with the target URL. Poll for completion (typically 15-60 seconds). On completion, present scores with traffic light indicators: '[color] Performance: [N]/100, Accessibility: [N]/100, Best Practices: [N]/100, SEO: [N]/100.' For any score below 50, list the top 3 failing audits with actionable recommendations. Compare against previous cached results in LTM 'bbdt_lighthouse_{url_hash}' and show trend. Cache new results in LTM.",
+      "toolCall": "BB_RunLighthouse"
+    },
+    {
+      "step": 6,
+      "instruction": "NETWORK INSPECTION: Invoke BB_InspectNetwork with the target URL. Poll for completion. On completion, present the summary first: 'Total: [N] requests, [size] transferred, [failed] failed, slowest: [url] ([duration]ms).' Then details for concerning requests: failed (4xx/5xx), slow (>1s), large (>500KB). Group by type (document, script, stylesheet, image, fetch/xhr, font, other). Highlight blocking resources that delay rendering.",
+      "toolCall": "BB_InspectNetwork"
+    },
+    {
+      "step": 7,
+      "instruction": "CONSOLE ERROR INSPECTION: Invoke BB_GetConsoleLogs with the target URL. Poll for completion. On completion, separate errors from warnings from info. Present errors first with source-mapped file:line references: '[ERROR] [message] — [file]:[line]'. Summarize: '[N] errors, [N] warnings, [N] info messages.' If errors reference common libraries, note that they may be third-party issues. Flag any errors related to the Steward's domain code specifically.",
+      "toolCall": "BB_GetConsoleLogs"
+    },
+    {
+      "step": 8,
+      "instruction": "PAGE HEALTH CHECK: Invoke BB_CheckPageHealth for a comprehensive single-call diagnostic. Poll for completion. Present a structured health report: 'Page Health Report for [URL] — Load time: [N]s, DOMContentLoaded: [N]s, First Paint: [N]s. JS Errors: [N]. Failed Requests: [N]. Screenshot: [inline or description].' This is the go-to first step when the Steward reports any page issue. If problems are found, suggest follow-up tools: 'Found 3 JS errors — want me to get detailed stack traces? (BB_GetConsoleLogs)' or 'Load time is 4.2s — want a Lighthouse audit for specific recommendations?'",
+      "toolCall": "BB_CheckPageHealth"
+    },
+    {
+      "step": 9,
+      "instruction": "JAVASCRIPT EXECUTION (WRITE for modifying scripts): When the Steward needs to inspect DOM state, read page data, or test client-side logic: (a) For read-only scripts (document.title, querySelector, performance.timing, localStorage reads), execute directly via BB_EvaluateScript. (b) For page-modifying scripts (DOM manipulation, localStorage writes, form field changes), present the script to the Steward for confirmation before executing. Present results: 'Script returned: [result]. Console output: [messages]. Errors: [any].'",
+      "toolCall": "BB_EvaluateScript"
+    },
+    {
+      "step": 10,
+      "instruction": "FORM TESTING (WRITE — always confirm): When the Steward needs to test form submission: (a) Present the full action summary: 'I will navigate to [URL], fill [N] fields: [field1=value1, field2=value2, ...], and click [submit button]. This will submit a form on a live page.' (b) On production URLs, add warning: 'WARNING: This is a production URL. The form submission will create real data.' (c) On Steward approval: invoke BB_FillForm. Present before/after screenshots and the submission response (redirected URL, status code).",
+      "toolCall": "BB_FillForm"
+    },
+    {
+      "step": 11,
+      "instruction": "RESPONSIVE TESTING: When the Steward wants to check responsive design, take screenshots at multiple viewports in sequence: (1) Desktop: 1280x720, (2) Tablet: 768x1024, (3) Mobile: 375x812. Present all three with labels. If the Steward reports a specific breakpoint issue, add that viewport to the list. Compare visually and note any layout issues visible in the screenshots.",
+      "toolCall": "BB_Screenshot"
+    },
+    {
+      "step": 12,
+      "instruction": "DEPLOYMENT VERIFICATION: When verifying a deployment, run BB_CheckPageHealth as the single-call diagnostic. If the health check passes (no errors, no failed requests, load time < 3s), report: 'Deployment healthy — no errors, [N]s load time, all requests succeeded.' If issues found, automatically run targeted follow-ups: BB_GetConsoleLogs for JS errors, BB_InspectNetwork for failed requests, BB_RunLighthouse for performance regression. Compare Lighthouse scores against cached baseline in LTM.",
+      "toolCall": "BB_CheckPageHealth"
+    },
+    {
+      "step": 13,
+      "instruction": "LIGHTWEIGHT PAGE FETCH: When the Steward needs a quick check that doesn't require a full browser — status code, headers, redirect chain, raw HTML — use BB_FetchPage instead of a full session. 10-100x faster and cheaper. Present: 'Status: [code], Content-Type: [type], Content length: [size]. Key headers: [cache-control, CORS, CSP, etc.].' If the page returns a non-200 status, report it immediately. If the Steward needs JS-rendered content, upgrade to a full session.",
+      "toolCall": "BB_FetchPage"
+    },
+    {
+      "step": 14,
+      "instruction": "WEB SEARCH FOR DEBUGGING: When the Mind encounters an unfamiliar error, framework issue, or needs documentation, use BB_WebSearch to look it up. Useful during debugging: search for error messages, MDN documentation, framework-specific guidance. Present top 3-5 results with titles and URLs. Do NOT search without context — only when a specific debugging question arises during an inspection session.",
+      "toolCall": "BB_WebSearch"
+    },
+    {
+      "step": 15,
+      "instruction": "SESSION MANAGEMENT & LIVE DEBUGGING: For direct session control: (a) BB_CreateSession to create a new cloud browser. (b) BB_GetSessionDebugURLs to get live debugger URLs — share the debuggerFullscreenUrl with the Steward so they can watch and interact with the session in real time. Present: 'Live session: [debuggerFullscreenUrl]. Open tabs: [list of pages with titles].' (c) BB_ListSessions to check active sessions. (d) BB_GetSession for session details. (e) BB_ReleaseSession to end a session early and save costs. (f) BB_GetUsage to check browser minutes consumed: 'Usage: [N] browser minutes, [N] proxy bytes.' Sessions auto-expire after timeout.",
+      "toolCall": "BB_CreateSession"
+    },
+    {
+      "step": 16,
+      "instruction": "SESSION ARTIFACTS: After a session completes, retrieve artifacts for analysis: (a) BB_GetSessionLogs for raw CDP logs — filter by method name to find specific events (e.g., 'Network.responseReceived' for HTTP responses, 'Runtime.exceptionThrown' for JS errors, 'Page.loadEventFired' for page loads). Present a summary, not raw logs. (b) BB_GetSessionRecording for rrweb replay data (being deprecated — prefer sharing the dashboard URL: https://browserbase.com/sessions/{id}). (c) BB_GetSessionDownloads for any files downloaded during the session.",
+      "toolCall": "BB_GetSessionLogs"
+    },
+    {
+      "step": 17,
+      "instruction": "PERSISTENT CONTEXT MANAGEMENT: When the Steward needs to test authenticated pages repeatedly: (a) BB_CreateContext to create a new persistent context. (b) Create a session with the context: BB_CreateSession with browserSettings.context = {id: contextId, persist: true}. (c) The Steward or a Function logs in during this session. (d) Future sessions with the same context.id inherit the cookies/auth — no re-login needed. (e) BB_GetContext to verify a context exists. (f) BB_DeleteContext (WRITE — confirm with Steward) to remove saved auth state. Cache context IDs in LTM 'bbdt_context_{name}' for cross-session reuse.",
+      "toolCall": "BB_CreateContext"
+    },
+    {
+      "step": 18,
+      "instruction": "FILE UPLOAD TESTING: When testing file upload flows (WRITE — confirm with Steward): (a) BB_CreateSession to start a browser. (b) BB_UploadToSession to make a file available in the session. (c) Use BB_FillForm or BB_EvaluateScript to interact with the file input and submit. Present before/after screenshots.",
+      "toolCall": "BB_UploadToSession"
+    },
+    {
+      "step": 19,
+      "instruction": "COMPILE AND PRESENT: Format all outputs for clarity. (a) Lead with the summary — 'Page has N issues' before details. (b) Use severity indicators for Lighthouse scores (good/needs work/poor). (c) Sort network requests by impact (failed first, then slowest, then largest). (d) Present console errors with file:line references. (e) For screenshots, present inline if supported or describe content. (f) For BB_FetchPage results, highlight non-200 status codes and security headers. (g) Cache Lighthouse scores and health checks in LTM for trend tracking. (h) Suggest next steps based on findings: 'Want me to dig deeper into the 3 failed API calls?' (i) Log inspection in LTM 'bbdt_inspection_{timestamp}'. (j) After session-based work, mention the dashboard recording URL for the Steward: 'Session recording available at https://browserbase.com/sessions/{id}'.",
+      "toolCall": null
+    }
+  ]
+}
