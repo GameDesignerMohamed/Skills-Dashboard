@@ -1,0 +1,40 @@
+{
+  "appName": "BrowserbaseDevTools_Suite",
+  "description": "Browser DevTools capabilities via Browserbase cloud infrastructure. Provides Minds with the ability to open cloud Chrome instances, navigate to any URL, capture screenshots, run Lighthouse audits, execute JavaScript, inspect network traffic, and read console output — all through Browserbase's REST API and serverless Functions. No MCP, no local browser, no WebSocket required from the Mind's side.",
+  "domain": "web_development",
+  "use_case": "Web debugging, performance auditing, visual QA, console error inspection, network request analysis, page health monitoring, form testing, and screenshot capture for any publicly accessible URL.",
+  "tier": "verified",
+  "auth_type": "API Key",
+  "header_key": "X-BB-API-Key",
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "BB_CreateSession",
+        "BB_ListSessions",
+        "BB_GetSession",
+        "BB_ReleaseSession",
+        "BB_GetSessionDebugURLs",
+        "BB_GetSessionLogs",
+        "BB_GetSessionRecording",
+        "BB_GetSessionDownloads",
+        "BB_UploadToSession",
+        "BB_CreateContext",
+        "BB_GetContext",
+        "BB_DeleteContext",
+        "BB_FetchPage",
+        "BB_WebSearch",
+        "BB_GetUsage",
+        "BB_InvokeFunction",
+        "BB_GetInvocationResult",
+        "BB_Screenshot",
+        "BB_RunLighthouse",
+        "BB_EvaluateScript",
+        "BB_InspectNetwork",
+        "BB_GetConsoleLogs",
+        "BB_CheckPageHealth",
+        "BB_FillForm"
+      ]
+    }
+  ]
+}
