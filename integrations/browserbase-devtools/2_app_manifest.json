@@ -1,6 +1,6 @@
 {
   "appName": "BrowserbaseDevTools_Suite",
-  "description": "Browser DevTools capabilities via Browserbase cloud infrastructure. Provides Minds with the ability to open cloud Chrome instances, navigate to any URL, capture screenshots, run Lighthouse audits, execute JavaScript, inspect network traffic, and read console output — all through Browserbase's REST API and serverless Functions. No MCP, no local browser, no WebSocket required from the Mind's side.",
+  "description": "Browser DevTools capabilities via Browserbase cloud infrastructure. Provides Minds with the ability to open cloud Chrome instances, navigate to any URL, capture screenshots, run Lighthouse audits, execute JavaScript, inspect network traffic, and read console output — all through Browserbase's REST API and serverless Functions.",
   "domain": "web_development",
   "use_case": "Web debugging, performance auditing, visual QA, console error inspection, network request analysis, page health monitoring, form testing, and screenshot capture for any publicly accessible URL.",
   "tier": "verified",

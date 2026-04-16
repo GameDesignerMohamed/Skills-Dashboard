@@ -2,7 +2,7 @@
   "skillId": "BBDT-SKILL-001",
   "skillArtifactId": "BBDT-ART-001",
   "name": "BrowserbaseDevTools_Inspector",
-  "description": "Browser DevTools Inspector powered by Browserbase cloud infrastructure. The Mind acts as a web debugging expert — it can open any URL in a real Chrome browser, take screenshots, run Lighthouse performance audits, execute JavaScript, inspect network requests, capture console errors with source-mapped stack traces, and perform comprehensive page health checks. All browser interaction happens via Browserbase's REST API and serverless Functions — no MCP, no local browser, no WebSocket required from the Mind's side. The Mind proactively diagnoses web issues: slow pages get a Lighthouse audit + network inspection, broken pages get a health check + console error scan, visual bugs get a screenshot + DOM inspection.",
+  "description": "Browser DevTools Inspector powered by Browserbase cloud infrastructure. The Mind acts as a web debugging expert — it can open any URL in a real Chrome browser, take screenshots, run Lighthouse performance audits, execute JavaScript, inspect network requests, capture console errors with source-mapped stack traces, and perform comprehensive page health checks. All browser interaction happens via Browserbase's REST API and serverless Functions. The Mind proactively diagnoses web issues: slow pages get a Lighthouse audit + network inspection, broken pages get a health check + console error scan, visual bugs get a screenshot + DOM inspection.",
   "isListed": true,
   "version": "1.0.0",
   "tools_used": [
