@@ -6,6 +6,69 @@
   "tier": "verified",
   "auth_type": "API Key",
   "header_key": "X-BB-API-Key",
+  "runtime_model": {
+    "primary": {
+      "mode": "http_native",
+      "target": "Equipped Animoca Minds and other Ethoswarm runtimes",
+      "requires": [
+        "HTTPS access to https://api.browserbase.com",
+        "TENET.apiKey.browserbase",
+        "TENET.config.browserbase.functions"
+      ],
+      "note": "All Browserbase REST calls authenticate with TENET.apiKey.browserbase. The Function-backed convenience wrappers resolve their deployed Browserbase Function IDs from TENET.config.browserbase.functions at runtime before invoking BB_InvokeFunction."
+    }
+  },
+  "auth_options": {
+    "api_key": {
+      "description": "Browserbase API key used for both REST endpoints and Function invocation endpoints.",
+      "header_key": "X-BB-API-Key: {TENET.apiKey.browserbase}",
+      "tenet_key": "TENET.apiKey.browserbase",
+      "token_validity": "Until rotated or revoked in Browserbase",
+      "best_for": "All Browserbase DevTools operations",
+      "token_store": {
+        "api_key": "TENET.apiKey.browserbase"
+      }
+    }
+  },
+  "runtime_config": {
+    "resolver": "TENET",
+    "api_keys": {
+      "browserbase": "TENET.apiKey.browserbase"
+    },
+    "config": {
+      "browserbase": {
+        "functions": {
+          "screenshot": "TENET.config.browserbase.functions.screenshot",
+          "lighthouse": "TENET.config.browserbase.functions.lighthouse",
+          "evalScript": "TENET.config.browserbase.functions.evalScript",
+          "network": "TENET.config.browserbase.functions.network",
+          "console": "TENET.config.browserbase.functions.console",
+          "health": "TENET.config.browserbase.functions.health",
+          "form": "TENET.config.browserbase.functions.form"
+        }
+      }
+    }
+  },
+  "onboarding": {
+    "documentation_url": "https://browserbase.com",
+    "api_base_url": "https://api.browserbase.com",
+    "prerequisite": "Store a valid Browserbase API key in TENET.apiKey.browserbase and store the seven deployed Browserbase Function IDs in TENET.config.browserbase.functions before using the convenience wrappers.",
+    "expected_tenet_keys": [
+      "TENET.apiKey.browserbase",
+      "TENET.config.browserbase.functions.screenshot",
+      "TENET.config.browserbase.functions.lighthouse",
+      "TENET.config.browserbase.functions.evalScript",
+      "TENET.config.browserbase.functions.network",
+      "TENET.config.browserbase.functions.console",
+      "TENET.config.browserbase.functions.health",
+      "TENET.config.browserbase.functions.form"
+    ],
+    "troubleshooting": [
+      "If TENET.apiKey.browserbase is missing, direct the Steward to create a Browserbase account, generate an API key, and store it in TENET before retrying.",
+      "If a convenience wrapper cannot resolve its Function ID, check the corresponding TENET.config.browserbase.functions entry and do not invoke BB_InvokeFunction until it exists.",
+      "If only the API key is present, Tier 1 REST tools still work; only the Function-backed wrappers remain unavailable until all required IDs are stored."
+    ]
+  },
   "versions": [
     {
       "semver": "1.0.0",

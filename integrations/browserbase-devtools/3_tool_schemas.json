@@ -434,6 +434,10 @@
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{screenshotFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.screenshot"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -464,10 +468,14 @@
   },
   {
     "toolSlug": "BB_RunLighthouse",
-    "toolPurpose": "Run a Lighthouse performance audit on any URL. Convenience wrapper for the 'run-lighthouse' Function. Returns scores for performance, accessibility, best practices, and SEO (0-100 each), plus detailed audit findings. Use to diagnose slow pages, accessibility issues, SEO problems, or best practice violations. Typical completion: 15-60 seconds.",
+    "toolPurpose": "Run a Lighthouse performance audit on any URL. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'run-lighthouse' Function ID from TENET.config.browserbase.functions.lighthouse. Returns scores for performance, accessibility, best practices, and SEO (0-100 each), plus detailed audit findings. Use to diagnose slow pages, accessibility issues, SEO problems, or best practice violations. Typical completion: 15-60 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{lighthouseFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.lighthouse"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -494,10 +502,14 @@
   },
   {
     "toolSlug": "BB_EvaluateScript",
-    "toolPurpose": "Execute JavaScript on any URL and return the result. Convenience wrapper for the 'evaluate-script' Function. Navigates to the URL, runs the provided script in the page context, and returns the result plus any console output and errors. Use for: checking DOM state, reading page data, testing client-side logic, extracting structured data from pages. WRITE operation if the script modifies page state — present script to Steward for confirmation. Typical completion: 5-15 seconds.",
+    "toolPurpose": "Execute JavaScript on any URL and return the result. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'evaluate-script' Function ID from TENET.config.browserbase.functions.evalScript. Navigates to the URL, runs the provided script in the page context, and returns the result plus any console output and errors. Use for: checking DOM state, reading page data, testing client-side logic, extracting structured data from pages. WRITE operation if the script modifies page state — present script to Steward for confirmation. Typical completion: 5-15 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{evalScriptFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.evalScript"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -520,10 +532,14 @@
   },
   {
     "toolSlug": "BB_InspectNetwork",
-    "toolPurpose": "Capture all network requests made when loading a URL. Convenience wrapper for the 'inspect-network' Function. Navigates to the URL with network interception enabled, waits for page load (+ optional extra wait), and returns all captured requests with URL, method, status code, response size, duration, and content type. Also returns a summary: total requests, failed requests (4xx/5xx), slowest request, largest response. Use for: diagnosing slow pages, finding failed API calls, identifying large assets, detecting unnecessary requests. Typical completion: 10-30 seconds.",
+    "toolPurpose": "Capture all network requests made when loading a URL. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'inspect-network' Function ID from TENET.config.browserbase.functions.network. Navigates to the URL with network interception enabled, waits for page load (+ optional extra wait), and returns all captured requests with URL, method, status code, response size, duration, and content type. Also returns a summary: total requests, failed requests (4xx/5xx), slowest request, largest response. Use for: diagnosing slow pages, finding failed API calls, identifying large assets, detecting unnecessary requests. Typical completion: 10-30 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{networkFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.network"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -546,10 +562,14 @@
   },
   {
     "toolSlug": "BB_GetConsoleLogs",
-    "toolPurpose": "Capture all console output and JavaScript errors when loading a URL. Convenience wrapper for the 'get-console-logs' Function. Navigates to the URL, captures all console.log/warn/error/info messages and uncaught exceptions with source-mapped stack traces. Use for: debugging JavaScript errors, finding warnings, checking for deprecation notices, verifying logging output. Typical completion: 5-15 seconds.",
+    "toolPurpose": "Capture all console output and JavaScript errors when loading a URL. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'get-console-logs' Function ID from TENET.config.browserbase.functions.console. Navigates to the URL, captures all console.log/warn/error/info messages and uncaught exceptions with source-mapped stack traces. Use for: debugging JavaScript errors, finding warnings, checking for deprecation notices, verifying logging output. Typical completion: 5-15 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{consoleFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.console"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -572,10 +592,14 @@
   },
   {
     "toolSlug": "BB_CheckPageHealth",
-    "toolPurpose": "Combined page health check — screenshot + console errors + failed network requests + basic performance metrics in a single call. Convenience wrapper for the 'check-page-health' Function. Returns a comprehensive health snapshot: base64 screenshot, list of JS errors, list of failed HTTP requests (4xx/5xx), and performance metrics (page load time, DOMContentLoaded, first paint). Use as the go-to first step when a Steward reports a page issue. Typical completion: 10-20 seconds.",
+    "toolPurpose": "Combined page health check — screenshot + console errors + failed network requests + basic performance metrics in a single call. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'check-page-health' Function ID from TENET.config.browserbase.functions.health. Returns a comprehensive health snapshot: base64 screenshot, list of JS errors, list of failed HTTP requests (4xx/5xx), and performance metrics (page load time, DOMContentLoaded, first paint). Use as the go-to first step when a Steward reports a page issue. Typical completion: 10-20 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{healthFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.health"
+    },
     "parameters": {
       "type": "object",
       "properties": {
@@ -594,10 +618,14 @@
   },
   {
     "toolSlug": "BB_FillForm",
-    "toolPurpose": "Navigate to a URL, fill form fields, submit, and capture before/after screenshots. Convenience wrapper for the 'fill-and-submit-form' Function. Use for: testing signup flows, verifying form validation, checking submission behavior. WRITE operation — always confirm with Steward before submitting forms, especially on production URLs. Typical completion: 10-30 seconds.",
+    "toolPurpose": "Navigate to a URL, fill form fields, submit, and capture before/after screenshots. This is a CONVENIENCE WRAPPER — internally calls BB_InvokeFunction with the 'fill-and-submit-form' Function ID from TENET.config.browserbase.functions.form. Use for: testing signup flows, verifying form validation, checking submission behavior. WRITE operation — always confirm with Steward before submitting forms, especially on production URLs. Typical completion: 10-30 seconds.",
     "created_by": "human",
     "httpMethod": "POST",
     "endpoint": "/v1/functions/{formFunctionId}/invoke",
+    "runtimeBinding": {
+      "apiKey": "TENET.apiKey.browserbase",
+      "functionId": "TENET.config.browserbase.functions.form"
+    },
     "parameters": {
       "type": "object",
       "properties": {
