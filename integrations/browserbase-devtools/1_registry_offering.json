@@ -1,0 +1,7 @@
+{
+  "offeringId": "BBDT-001-DEVTOOLS",
+  "title": "Browserbase DevTools Inspector v1.0.0",
+  "description": "Cloud-based browser DevTools access via Browserbase. Enables Minds to navigate any URL, take screenshots, run Lighthouse performance audits, execute JavaScript, inspect network requests, capture console errors with source-mapped stack traces, and perform page health checks — all via HTTP REST calls to cloud-hosted Chrome instances. No local browser or MCP server required. Auth via Browserbase API key.",
+  "endpoints": ["https://api.browserbase.com"],
+  "lastUpdate": "2026-04-16"
+}
