@@ -21,7 +21,7 @@
   "compatibility_formula": null,
   "progressive_unlock": "If the final run scope yields fewer than 25 open opportunities, suppress byOwner and bottleneckStages to avoid small-sample noise, set runFlags.low_signal=true, and keep byStage, byPosting, staleHeroes, lossReasonRollup, totals, and warnings available.",
   "constraints": [
-    "TENET.apiKey.lever is the only credential source. Use it as the HTTP Basic Auth username with a blank password, encoded as Authorization: Basic <base64(apiKey + ':')>. Never ask the Steward to paste the key into chat and never expose the resolved key.",
+    "TENET.apiKey.lever is the only credential source. Use it as the HTTP Basic Auth username with a blank password, and construct the request auth header only inside the runtime. Never ask the Steward to paste the key into chat and never expose the resolved key.",
     "All Lever HTTP calls must target https://api.lever.co/v1 over HTTPS. Do not use any service, browser automation, webhook, or data source outside the Lever Data API tools in this playbook.",
     "Never expose the Lever API key, Authorization header, Basic Auth value, request signing material, or credential-derived string in logs, traces, artifacts, note bodies, error messages, or user-facing output.",
     "Redact Authorization headers before writing any run trace. A grep for Authorization header contents after a run must return no credential value.",

@@ -9,8 +9,10 @@
   "providerKey": "lever",
   "auth_options": {
     "api_key": {
-      "description": "Lever API key sent using HTTP Basic auth in the Authorization header.",
-      "header_key": "Authorization: Basic <base64(TENET.apiKey.lever + ':')>",
+      "description": "Lever API key used as the HTTP Basic auth username with a blank password. The runtime constructs the Authorization header internally.",
+      "header_key": "Authorization",
+      "auth_scheme": "Basic",
+      "credential_binding": "username=TENET.apiKey.lever; password=blank",
       "tenet_key": "TENET.apiKey.lever",
       "token_validity": "Until rotated or revoked in Lever",
       "best_for": "All Lever Data API operations used by PipelineHealth_v1",
@@ -45,7 +47,7 @@
     }
   ],
   "notes": [
-    "Auth header sent as 'Authorization: Basic <base64(apiKey + \":\")>'. Key is retrieved from TENET.apiKey.lever and never logged.",
+    "The runtime constructs HTTP Basic auth from TENET.apiKey.lever internally; no serialized Authorization header value is stored in this manifest.",
     "All paginated Lever endpoints return a 'next' cursor on 'has_next': true. The skill iterates until exhaustion or a configurable hard cap.",
     "No real credentials or secret values are stored in this manifest; only TENET key references are declared."
   ]
