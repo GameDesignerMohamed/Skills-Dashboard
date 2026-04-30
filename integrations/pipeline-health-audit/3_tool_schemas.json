@@ -1,0 +1,412 @@
+[
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListOpportunities",
+    "toolPurpose": "GET /v1/opportunities. Paginated list, filterable by stage, posting, owner, and archived state.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/opportunities",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of opportunities to return per page (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from the previous Lever response"
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "true = archived only, false = active only, omit = both"
+        },
+        "stage_id": {
+          "type": "string",
+          "description": "Filter opportunities by current Lever stage ID"
+        },
+        "posting_id": {
+          "type": "string",
+          "description": "Filter opportunities by associated Lever posting ID"
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "Filter opportunities by owner or recruiter user ID"
+        },
+        "expand": {
+          "type": "array",
+          "description": "Lever opportunity expansions, for example stage, owner, postings, or sources",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "cursor", "archived", "stage_id", "posting_id", "owner_id", "expand"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_GetOpportunity",
+    "toolPurpose": "GET /v1/opportunities/{id}. Returns the full opportunity record.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/opportunities/{opportunityId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "opportunityId": {
+          "type": "string",
+          "description": "Lever opportunity ID to retrieve"
+        },
+        "expand": {
+          "type": "array",
+          "description": "Lever opportunity expansions to include in the response",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["opportunityId"]
+    },
+    "inputsSpec": {
+      "required": ["opportunityId"],
+      "optional": ["expand"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListOpportunityStageHistory",
+    "toolPurpose": "GET /v1/opportunities/{id}/stage_changes. Returns the ordered stage transition log used to compute time-in-stage.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/opportunities/{opportunityId}/stage_changes",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "opportunityId": {
+          "type": "string",
+          "description": "Lever opportunity ID whose stage history should be retrieved"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Number of stage transitions to return per page (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from the previous Lever response"
+        }
+      },
+      "required": ["opportunityId"]
+    },
+    "inputsSpec": {
+      "required": ["opportunityId"],
+      "optional": ["limit", "cursor"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListPostings",
+    "toolPurpose": "GET /v1/postings. Paginated. Provides role, team, and location join keys for opportunity grouping.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/postings",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of postings to return per page (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from the previous Lever response"
+        },
+        "state": {
+          "type": "string",
+          "description": "Posting state filter",
+          "enum": ["published", "unlisted", "closed", "draft", "rejected"]
+        },
+        "team": {
+          "type": "string",
+          "description": "Filter postings by Lever team"
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "cursor", "state", "team"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_GetPosting",
+    "toolPurpose": "GET /v1/postings/{id}. Used for targeted scope queries.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/postings/{postingId}",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "postingId": {
+          "type": "string",
+          "description": "Lever posting ID to retrieve"
+        }
+      },
+      "required": ["postingId"]
+    },
+    "inputsSpec": {
+      "required": ["postingId"],
+      "optional": []
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListStages",
+    "toolPurpose": "GET /v1/stages. Returns the canonical pipeline stages and their order. Cached for the run duration.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/stages",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": []
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListUsers",
+    "toolPurpose": "GET /v1/users. Returns owner identities for the load distribution analysis.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/users",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Number of users to return per page (1-100)",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Pagination cursor from the previous Lever response"
+        },
+        "includeDeactivated": {
+          "type": "boolean",
+          "description": "Include deactivated Lever users when resolving opportunity owners",
+          "default": false
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["limit", "cursor", "includeDeactivated"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_ListArchiveReasons",
+    "toolPurpose": "GET /v1/archive_reasons. Returns canonical archive reasons, grouped as hired or non-hired, for loss-reason rollups.",
+    "created_by": "system",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "GET",
+    "endpoint": "/archive_reasons",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Archive reason type filter",
+          "enum": ["hired", "non-hired"]
+        }
+      },
+      "required": []
+    },
+    "inputsSpec": {
+      "required": [],
+      "optional": ["type"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "Lever_AddOpportunityNote",
+    "toolPurpose": "POST /v1/opportunities/{id}/notes. WRITE operation - requires explicit user/steward intent before execution. Idempotency is enforced at the skill layer via a deterministic note key embedded as the first line of the body.",
+    "created_by": "mind",
+    "provider": "lever",
+    "providerKey": "lever",
+    "authType": "apikey",
+    "httpMethod": "POST",
+    "endpoint": "/opportunities/{opportunityId}/notes",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "opportunityId": {
+          "type": "string",
+          "description": "Lever opportunity ID that should receive the note"
+        },
+        "value": {
+          "type": "string",
+          "description": "Markdown-safe private note body. Must begin with the idempotency key prefix '[PipelineHealth/{YYYY-MM-DD}]'."
+        },
+        "secret": {
+          "type": "boolean",
+          "description": "true = hiring-team-only/private note",
+          "default": true
+        }
+      },
+      "required": ["opportunityId", "value"]
+    },
+    "inputsSpec": {
+      "required": ["opportunityId", "value"],
+      "optional": ["secret"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "PipelineHealth_ComputeStats",
+    "toolPurpose": "Pure-logic reducer. Joins opportunities, stage histories, stages, postings, users, archive reasons, stage SLAs, and asOf into the report payload.",
+    "created_by": "mind",
+    "provider": "pipeline-health",
+    "providerKey": "pipeline-health",
+    "authType": "none",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "opportunities": {
+          "type": "array",
+          "description": "Lever opportunity records included in the run scope",
+          "items": {
+            "type": "object"
+          }
+        },
+        "stageHistories": {
+          "type": "object",
+          "description": "Map of opportunityId -> array of Lever stage transition records",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "stages": {
+          "type": "array",
+          "description": "Lever pipeline stages in canonical order",
+          "items": {
+            "type": "object"
+          }
+        },
+        "postings": {
+          "type": "array",
+          "description": "Lever postings used for role, team, and location grouping",
+          "items": {
+            "type": "object"
+          }
+        },
+        "users": {
+          "type": "array",
+          "description": "Lever users used to resolve opportunity owners",
+          "items": {
+            "type": "object"
+          }
+        },
+        "archiveReasons": {
+          "type": "array",
+          "description": "Lever archive reasons used for hired and non-hired loss-reason rollups",
+          "items": {
+            "type": "object"
+          }
+        },
+        "stageSlas": {
+          "type": "object",
+          "description": "Map of stageId -> SLA in days",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "asOf": {
+          "type": "string",
+          "description": "ISO-8601 reference timestamp for aging calculations",
+          "format": "date-time"
+        }
+      },
+      "required": ["opportunities", "stageHistories", "stages", "postings", "users", "asOf"]
+    },
+    "inputsSpec": {
+      "required": ["opportunities", "stageHistories", "stages", "postings", "users", "asOf"],
+      "optional": ["archiveReasons", "stageSlas"]
+    }
+  },
+  {
+    "schemaArtifactId": "PHA-ART-001",
+    "toolSlug": "PipelineHealth_EmitArtifact",
+    "toolPurpose": "Persist the report payload as an Ethoswarm Artifact with logicalType=reference and fileType=json.",
+    "created_by": "system",
+    "provider": "ethoswarm",
+    "providerKey": "ethoswarm",
+    "authType": "none",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable artifact name"
+        },
+        "payload": {
+          "type": "object",
+          "description": "PipelineHealth report payload. The full payload contract is owned by the playbook and validation layer."
+        }
+      },
+      "required": ["name", "payload"]
+    },
+    "inputsSpec": {
+      "required": ["name", "payload"],
+      "optional": []
+    }
+  }
+]
