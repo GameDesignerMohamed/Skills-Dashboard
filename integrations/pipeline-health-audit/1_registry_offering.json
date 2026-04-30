@@ -1,0 +1,8 @@
+{
+  "offeringId": "PHA-001-AUDIT",
+  "title": "Pipeline Health Audit v1.0.0",
+  "description": "On-demand recruiting pipeline audit driven entirely by Lever's Data API. Computes funnel conversion, time-in-stage, SLA breaches, owner load, and stale-hero risk. Optional private-note write-back on stuck candidates. Requires 'LeverOps_Suite' app and 'PipelineHealth_v1' skill.",
+  "endpoints": ["https://api.lever.co/v1"],
+  "providerKey": "lever",
+  "lastUpdate": "2026-04-30"
+}

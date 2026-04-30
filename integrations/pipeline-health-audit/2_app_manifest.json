@@ -1,0 +1,52 @@
+{
+  "appName": "LeverOps_Suite",
+  "description": "Lever ATS read-mostly operations bridge. Wraps Lever Data API endpoints used for pipeline reporting and lightweight write-back.",
+  "domain": "talent",
+  "use_case": "Pipeline auditing, funnel analytics, candidate aging, owner-load reports, and idempotent note write-back.",
+  "tier": "verified",
+  "auth_type": "API Key",
+  "header_key": "Authorization",
+  "providerKey": "lever",
+  "auth_options": {
+    "api_key": {
+      "description": "Lever API key sent using HTTP Basic auth in the Authorization header.",
+      "header_key": "Authorization: Basic <base64(TENET.apiKey.lever + ':')>",
+      "tenet_key": "TENET.apiKey.lever",
+      "token_validity": "Until rotated or revoked in Lever",
+      "best_for": "All Lever Data API operations used by PipelineHealth_v1",
+      "token_store": {
+        "api_key": "TENET.apiKey.lever"
+      }
+    }
+  },
+  "runtime_config": {
+    "resolver": "TENET",
+    "api_keys": {
+      "lever": "TENET.apiKey.lever"
+    },
+    "base_url": "https://api.lever.co/v1"
+  },
+  "versions": [
+    {
+      "semver": "1.0.0",
+      "tools": [
+        "Lever_ListOpportunities",
+        "Lever_GetOpportunity",
+        "Lever_ListOpportunityStageHistory",
+        "Lever_ListPostings",
+        "Lever_GetPosting",
+        "Lever_ListStages",
+        "Lever_ListUsers",
+        "Lever_ListArchiveReasons",
+        "Lever_AddOpportunityNote",
+        "PipelineHealth_ComputeStats",
+        "PipelineHealth_EmitArtifact"
+      ]
+    }
+  ],
+  "notes": [
+    "Auth header sent as 'Authorization: Basic <base64(apiKey + \":\")>'. Key is retrieved from TENET.apiKey.lever and never logged.",
+    "All paginated Lever endpoints return a 'next' cursor on 'has_next': true. The skill iterates until exhaustion or a configurable hard cap.",
+    "No real credentials or secret values are stored in this manifest; only TENET key references are declared."
+  ]
+}
