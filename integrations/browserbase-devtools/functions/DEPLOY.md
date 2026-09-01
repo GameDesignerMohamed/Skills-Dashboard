@@ -37,7 +37,7 @@ Nothing else to configure. In the Mind, the DevTools capability tools call `BB_L
 ## Re-deploy / update
 Re-running `bb publish index.ts` overwrites the same nine functions in place (their ids are stable across republishes), so updates are safe and need no changes in the Mind. **Because this is BYOK, bug fixes only reach your account when you re-run the publish above** — a fix landing in this repo does not touch already-deployed accounts.
 
-The current bundle is the **2026-08-18** build (see `Integrations/Browserbase/DEVTOOLS_FIXES_2026-08-17.md`). If you deployed before that, re-publish to get: `check-page-health` no longer hanging on heavy pages; screenshots/logs that fit the platform result cap instead of failing; and `BB_FillForm` selecting radios/checkboxes — including ARIA `role="radio"` widgets like Google Forms — not just text fields.
+The current bundle is the **2026-09-01** build (see `Integrations/Browserbase/DEVTOOLS_FIXES_2026-08-17.md`). If you deployed before that, re-publish to get: a working `BB_RunLighthouse` (see below — the old in-sandbox harness died on every call); `check-page-health` no longer hanging on heavy pages; screenshots/logs that fit the platform result cap instead of failing; and `BB_FillForm` selecting radios/checkboxes — including ARIA `role="radio"` widgets like Google Forms — not just text fields.
 
 ## Behavior notes (result size)
 Browserbase caps a Function's result at **64 KB**; over that the call fails `RESULTS_TOO_LARGE`. So the suite fits within it:
@@ -48,4 +48,10 @@ Browserbase caps a Function's result at **64 KB**; over that the call fails `RES
 ## Notes
 - The functions run in `us-west-2` and consume browser-minutes from *your* Browserbase plan (one short session per capability call).
 - The screenshot and evaluate capabilities have no hosted (function-free) equivalent, which is why the deploy is required to use them. Everything else in the suite is function-free.
-- **`BB_RunLighthouse` is currently non-functional** in the Function sandbox (it exceeds the sandbox's resources and the invocation dies with `WORKLOAD_ERROR`). This is a platform limitation, not a deploy problem — re-publishing will not fix it. Use `BB_CheckPageHealth` for basic load-timing metrics until Browserbase raises Function memory.
+
+## `BB_RunLighthouse` — how the 2026-09-01 build works
+The in-process Lighthouse harness exceeds the Function sandbox's memory and kills the invocation with an uncatchable `WORKLOAD_ERROR`, so the function never runs it. Instead it has two engines behind the same tool contract (`{url, categories}` in; scores + worst-first audits out):
+- **`psi`** — real Lighthouse, run by Google's PageSpeed Insights API and distilled under the 64KB result cap. Public URLs only. The keyless quota is shared across all anonymous users and is routinely exhausted; pass the optional `psiApiKey` param (a free Google API key restricted to the PSI API, 25k queries/day) to make it dependable. Invocation params appear in Browserbase session logs, so restrict that key.
+- **`local`** — an in-sandbox CDP audit: measured lab Web Vitals (FCP, LCP, CLS, TBT, TTFB) scored on Lighthouse's own log-normal curves, plus deterministic accessibility / best-practices / SEO checks. Works on anything the sandbox browser can reach (including staging hosts Google can't see). Results carry `scoresApproximate: true` — no throttling and no Speed Index, so treat scores as directional, not comparable to lab Lighthouse.
+- **`engine` defaults to `auto`**: try PSI, fall back to `local` on any PSI failure (the result then carries a `note` naming the PSI error). `strategy` (`desktop` default, or `mobile`) picks emulation on PSI and the scoring curves locally.
+- **Privacy:** `auto`/`psi` send the audited URL to Google's PageSpeed Insights API, which then fetches the page itself. Use `engine:"local"` for private, tokenized, or signed URLs; `auto` already skips PSI on its own when the URL's query looks credential-bearing (S3 presigns, `?token=…` and the like) and says so in the `note`.

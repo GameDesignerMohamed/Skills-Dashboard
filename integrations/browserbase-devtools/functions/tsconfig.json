@@ -32,6 +32,10 @@
     // "noFallthroughCasesInSwitch": true,
     // "noPropertyAccessFromIndexSignature": true,
 
+    // Local test harness imports ./index.ts directly (tsc runs with no emit)
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",

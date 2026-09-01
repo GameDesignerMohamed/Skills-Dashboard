@@ -1,7 +1,5 @@
 import { defineFn } from "@browserbasehq/sdk-functions";
-import lighthouse, { desktopConfig } from "lighthouse";
 import { chromium } from "playwright-core";
-import puppeteer from "puppeteer-core";
 import { z } from "zod";
 
 // Credential-surface refusal patterns — checked against caller-supplied script source
@@ -341,6 +339,18 @@ const lighthouseParamsSchema = z.object({
     "best-practices",
     "seo",
   ]),
+  // desktop matches the old in-sandbox desktopConfig default; mobile applies mobile
+  // scoring curves (PSI additionally emulates a mobile device server-side).
+  strategy: z.enum(["desktop", "mobile"]).optional().default("desktop"),
+  // auto: real Lighthouse via the PageSpeed Insights API, falling back to the in-sandbox
+  // CDP audit when PSI can't run (private URL, quota, blocked egress). psi/local pin one
+  // engine and error instead of silently switching.
+  engine: z.enum(["auto", "psi", "local"]).optional().default("auto"),
+  // Optional Google API key for PSI. The keyless anonymous quota is shared globally and
+  // is routinely exhausted (verified 429 "Queries per day" 2026-09-01), so a key is what
+  // makes engine:"psi" dependable. Free tier: 25k queries/day. Note invocation params
+  // are visible in Browserbase session logs — use a key restricted to the PSI API.
+  psiApiKey: z.string().min(1).optional(),
 });
 
 const evaluateScriptParamsSchema = z.object({
@@ -560,30 +570,6 @@ async function withPlaywrightPage<T>(
     // never resolves, so the whole Function hangs to its 15-min limit AFTER the work is done
     // (observed live 2026-08-17 on hellominds.ai). Cap teardown; the Browserbase session
     // expires on its own if the close does not complete.
-    await Promise.race([
-      browser.close().catch(() => undefined),
-      new Promise<void>((resolve) => setTimeout(resolve, 5000)),
-    ]);
-  }
-}
-
-async function withPuppeteerPage<T>(
-  connectUrl: string,
-  callback: (page: import("puppeteer-core").Page) => Promise<T>,
-): Promise<T> {
-  const browser = await puppeteer.connect({
-    browserWSEndpoint: connectUrl,
-    protocolTimeout: 30000,
-  });
-
-  try {
-    const pages = await browser.pages();
-    const page = pages[0] ?? (await browser.newPage());
-    page.setDefaultNavigationTimeout(30000);
-    page.setDefaultTimeout(30000);
-
-    return await callback(page);
-  } finally {
     await Promise.race([
       browser.close().catch(() => undefined),
       new Promise<void>((resolve) => setTimeout(resolve, 5000)),
@@ -859,14 +845,520 @@ async function getPageMetrics(page: import("playwright-core").Page) {
   });
 }
 
-function getCategoryScore(
-  category: import("lighthouse").Result["categories"][string] | undefined,
-) {
-  if (!category || category.score === null) {
-    return null;
+// ---------------------------------------------------------------------------
+// run-lighthouse engine. The full Lighthouse harness OOMs the Function sandbox
+// with an uncatchable process-level exit (WORKLOAD_ERROR ~13s, diagnosed
+// 2026-08-17), so calling lighthouse() in-process is fatal to the invocation and
+// permits no fallback. It is never attempted here. Instead:
+//   psi   — real Lighthouse, run by Google's PageSpeed Insights API and distilled
+//           under the 64KB result cap. Public URLs only; keyless quota is modest.
+//   local — in-sandbox CDP audit: measured lab Web Vitals (FCP/LCP/CLS/TBT/TTFB)
+//           scored on Lighthouse's log-normal curves, plus deterministic
+//           accessibility / best-practices / SEO checks. Works on anything the
+//           sandbox browser can reach; scores flagged approximate.
+//   auto  — psi, falling back to local on any PSI failure (which, unlike the old
+//           OOM, is a catchable fetch error).
+// ---------------------------------------------------------------------------
+
+type AuditEntry = {
+  id: string;
+  title: string;
+  score: number | null;
+  scoreDisplayMode: string;
+  displayValue: string | null;
+  description: string | null;
+};
+
+// Abramowitz & Stegun 7.1.26 complementary error function (max abs error ~1.5e-7),
+// the same numerical approach Lighthouse's scoring module uses.
+function erfc(x: number): number {
+  const z = Math.abs(x);
+  const t = 1 / (1 + z / 2);
+  const r =
+    t *
+    Math.exp(
+      -z * z -
+        1.26551223 +
+        t *
+          (1.00002368 +
+            t *
+              (0.37409196 +
+                t *
+                  (0.09678418 +
+                    t *
+                      (-0.18628806 +
+                        t *
+                          (0.27886807 +
+                            t *
+                              (-1.13520398 +
+                                t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))),
+    );
+  return x >= 0 ? r : 2 - r;
+}
+
+// Lighthouse's log-normal metric scoring: score 0.9 at p10, 0.5 at the median.
+function logNormalScore(p10: number, median: number, value: number): number {
+  if (value <= 0) return 1;
+  const INVERSE_ERFC_ONE_FIFTH = 0.9061938024368232;
+  const xLogRatio = Math.log(Math.max(Number.MIN_VALUE, value / median));
+  const p10LogRatio = -Math.log(Math.max(Number.MIN_VALUE, p10 / median));
+  const standardized = (xLogRatio * INVERSE_ERFC_ONE_FIFTH) / p10LogRatio;
+  return Math.min(1, Math.max(0, erfc(standardized) / 2));
+}
+
+// Lighthouse v10 performance control points and weights, minus Speed Index (frame
+// analysis is not available via CDP timings alone) with the remaining weights
+// renormalized. Sources: lighthouse metric audits' desktop/mobile scoring options.
+const PERF_CURVES = {
+  desktop: {
+    fcp: { p10: 934, median: 1600, weight: 10 },
+    lcp: { p10: 1200, median: 2400, weight: 25 },
+    tbt: { p10: 150, median: 350, weight: 30 },
+    cls: { p10: 0.1, median: 0.25, weight: 25 },
+  },
+  mobile: {
+    fcp: { p10: 1800, median: 3000, weight: 10 },
+    lcp: { p10: 2500, median: 4000, weight: 25 },
+    tbt: { p10: 200, median: 600, weight: 30 },
+    cls: { p10: 0.1, median: 0.25, weight: 25 },
+  },
+} as const;
+
+function formatMs(value: number | null): string | null {
+  if (value === null) return null;
+  return value >= 1000 ? `${(value / 1000).toFixed(1)} s` : `${Math.round(value)} ms`;
+}
+
+// Bound the audit list for the 64KB result cap: worst-first, strings clamped,
+// descriptions kept only on failing audits, then byte-budgeted.
+function boundAudits(audits: AuditEntry[], maxBytes = 30000) {
+  const prepared = audits
+    .map((audit) => ({
+      ...audit,
+      title: clampString(audit.title, 120),
+      displayValue: audit.displayValue === null ? null : clampString(audit.displayValue, 120),
+      description:
+        audit.score !== null && audit.score < 90 && audit.description
+          ? clampString(audit.description, 200)
+          : null,
+    }))
+    .sort((left, right) => (left.score ?? 101) - (right.score ?? 101));
+  const { kept, dropped } = fitArrayToBudget(prepared, maxBytes);
+  return { audits: kept, auditsTotal: prepared.length, auditsDropped: dropped };
+}
+
+const PSI_CATEGORY_MAP: Record<string, string> = {
+  performance: "PERFORMANCE",
+  accessibility: "ACCESSIBILITY",
+  "best-practices": "BEST_PRACTICES",
+  seo: "SEO",
+};
+
+type LighthouseParams = z.infer<typeof lighthouseParamsSchema>;
+
+// URLs whose query smells of signed/tokenized access (S3 presigns, capability links,
+// OAuth codes). Under engine=auto these skip PSI so the URL is never shipped to a
+// third party by default; pinned engine:"psi" is the explicit opt-in override.
+const CREDENTIAL_QUERY_PARAM = /^(x-amz-|x-goog-)|^(token|access_token|id_token|jwt|sig|signature|key|api[-_]?key|apikey|secret|auth|authorization|session|sas|code)$/i;
+
+function urlLooksCredentialBearing(raw: string): boolean {
+  try {
+    const parsed = new URL(raw);
+    if (parsed.username || parsed.password) return true;
+    for (const name of parsed.searchParams.keys()) {
+      if (CREDENTIAL_QUERY_PARAM.test(name)) return true;
+    }
+  } catch {
+    /* unparseable URLs already failed schema validation */
+  }
+  return false;
+}
+
+// Real Lighthouse via the PageSpeed Insights API. The LHR comes back whole
+// (hundreds of KB) and is distilled to the bounded result shape here.
+export async function runPsiLighthouse(params: LighthouseParams) {
+  const psiUrl = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
+  psiUrl.searchParams.set("url", params.url);
+  psiUrl.searchParams.set("strategy", params.strategy.toUpperCase());
+  for (const category of params.categories) {
+    psiUrl.searchParams.append("category", PSI_CATEGORY_MAP[category] ?? category.toUpperCase());
+  }
+  if (params.psiApiKey) {
+    psiUrl.searchParams.set("key", params.psiApiKey);
   }
 
-  return Math.round(category.score * 100);
+  // The deadline covers headers AND body (fetch resolves on headers alone, and an
+  // unbounded text() after it would hang engine=auto past its fallback). The body is
+  // streamed under a hard size cap: this sandbox dies of memory pressure with an
+  // uncatchable exit, so an over-large LHR must become a normal, catchable throw.
+  const MAX_PSI_BODY_BYTES = 12 * 1024 * 1024;
+  const { response, bodyText } = await withDeadline("PageSpeed Insights fetch", 110000, async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 105000);
+    try {
+      const psiResponse = await fetch(psiUrl.toString(), { signal: controller.signal });
+      const declaredLength = Number(psiResponse.headers.get("content-length") ?? 0);
+      if (declaredLength > MAX_PSI_BODY_BYTES) {
+        controller.abort();
+        throw new Error(`psi_response_too_large: declared ${declaredLength} bytes`);
+      }
+      if (!psiResponse.body) {
+        return { response: psiResponse, bodyText: await psiResponse.text() };
+      }
+      const reader = psiResponse.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > MAX_PSI_BODY_BYTES) {
+          await reader.cancel().catch(() => undefined);
+          controller.abort();
+          throw new Error(`psi_response_too_large: body exceeded ${MAX_PSI_BODY_BYTES} bytes`);
+        }
+        chunks.push(value);
+      }
+      return { response: psiResponse, bodyText: Buffer.concat(chunks).toString("utf8") };
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `psi_http_${response.status}: ${clampString(bodyText.replace(/\s+/g, " "), 300)}`,
+    );
+  }
+
+  let lhr: {
+    categories?: Record<string, { score: number | null; auditRefs?: Array<{ id: string }> }>;
+    audits?: Record<
+      string,
+      {
+        title?: string;
+        score?: number | null;
+        scoreDisplayMode?: string;
+        displayValue?: string;
+        description?: string;
+      }
+    >;
+    fetchTime?: string;
+    finalDisplayedUrl?: string;
+    finalUrl?: string;
+    lighthouseVersion?: string;
+    runtimeError?: { code?: string; message?: string };
+  };
+  try {
+    lhr = (JSON.parse(bodyText) as { lighthouseResult?: typeof lhr }).lighthouseResult ?? {};
+  } catch {
+    throw new Error("psi_parse_error: response was not valid JSON");
+  }
+  const categories = lhr.categories ?? {};
+  if (Object.keys(categories).length === 0) {
+    throw new Error("psi_empty_result: response carried no lighthouseResult categories");
+  }
+  // PSI can 200 with an LHR whose run failed (NO_FCP, ERRORED_DOCUMENT_REQUEST, …):
+  // categories present, every score null. That must throw so engine=auto falls back
+  // instead of presenting null scores as an authoritative Lighthouse result. Healthy
+  // runs serialize runtimeError.code as "NO_ERROR", which must pass.
+  if (lhr.runtimeError?.code && lhr.runtimeError.code !== "NO_ERROR") {
+    throw new Error(
+      `psi_runtime_error_${lhr.runtimeError.code}: ${clampString(
+        (lhr.runtimeError.message ?? "").replace(/\s+/g, " "),
+        200,
+      )}`,
+    );
+  }
+  if (
+    params.categories.every(
+      (id) => categories[id]?.score === null || categories[id]?.score === undefined,
+    )
+  ) {
+    throw new Error(
+      "psi_null_scores: PSI returned an LHR with every requested category score null " +
+        "(Google's fetcher likely failed to render the page)",
+    );
+  }
+
+  const categoryScore = (id: string) => {
+    const category = categories[id];
+    return category && category.score !== null && category.score !== undefined
+      ? Math.round(category.score * 100)
+      : null;
+  };
+
+  const auditIds = [
+    ...new Set(
+      params.categories.flatMap(
+        (category) => categories[category]?.auditRefs?.map((ref) => ref.id) ?? [],
+      ),
+    ),
+  ];
+  const auditEntries: AuditEntry[] = auditIds.flatMap((auditId) => {
+    const audit = lhr.audits?.[auditId];
+    if (!audit) return [];
+    return [
+      {
+        id: auditId,
+        title: audit.title ?? auditId,
+        score: audit.score === null || audit.score === undefined ? null : Math.round(audit.score * 100),
+        scoreDisplayMode: audit.scoreDisplayMode ?? "numeric",
+        displayValue: audit.displayValue ?? null,
+        description: audit.description ?? null,
+      },
+    ];
+  });
+
+  return {
+    scores: {
+      performance: categoryScore("performance"),
+      accessibility: categoryScore("accessibility"),
+      bestPractices: categoryScore("best-practices"),
+      seo: categoryScore("seo"),
+    },
+    ...boundAudits(auditEntries),
+    fetchTime: lhr.fetchTime ?? new Date().toISOString(),
+    url: clampString(lhr.finalDisplayedUrl ?? lhr.finalUrl ?? params.url, 2000),
+    engine: "psi" as const,
+    scoresApproximate: false,
+    lighthouseVersion: lhr.lighthouseVersion ?? null,
+    strategy: params.strategy,
+  };
+}
+
+// In-sandbox audit over the Browserbase session. Buffered PerformanceObservers
+// recover LCP / CLS / long-task entries after navigation, so no init script is
+// needed; every page.evaluate is deadline-bounded and degrades to null (the
+// check-page-health lesson — evaluate can hang forever on a churning SPA).
+export async function runLocalLighthouseAudit(
+  page: import("playwright-core").Page,
+  params: LighthouseParams,
+) {
+  const consoleCapture = attachConsoleCapture(page);
+  const requests = attachNetworkCapture(page);
+  await navigateAndSettle(page, params.url, 1000);
+
+  // The remote bb build bundles with esbuild keepNames, which injects __name(...)
+  // helper calls into the SERIALIZED source of evaluate callbacks that contain named
+  // inner functions; the helper doesn't exist inside the page, so the callback throws
+  // "ReferenceError: __name is not defined" (live invocation 891e97a8, 2026-09-01).
+  // A string-form evaluate is invisible to esbuild and shims it globally.
+  await page
+    .evaluate("window.__name = window.__name || ((target) => target)")
+    .catch(() => undefined);
+
+  // Degraded stages surface WHY (metricsError/checksError) — a silent null made the
+  // sandbox-vs-local behavior gap undiagnosable on the first live run (2026-09-01).
+  let metricsError: string | null = null;
+  let checksError: string | null = null;
+  const metrics = await withDeadline("collect performance metrics", 12000, () =>
+    page.evaluate(async () => {
+      const collect = (type: string) => {
+        const entries: PerformanceEntry[] = [];
+        try {
+          const observer = new PerformanceObserver((list) => entries.push(...list.getEntries()));
+          observer.observe({ type, buffered: true } as PerformanceObserverInit);
+          return { entries, observer };
+        } catch {
+          return { entries, observer: null };
+        }
+      };
+      const lcp = collect("largest-contentful-paint");
+      const shifts = collect("layout-shift");
+      const tasks = collect("longtask");
+      // Buffered entries are delivered on a queued task, not synchronously.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      for (const { entries, observer } of [lcp, shifts, tasks]) {
+        if (observer) entries.push(...observer.takeRecords());
+      }
+
+      const navigation = performance.getEntriesByType("navigation")[0] as
+        | PerformanceNavigationTiming
+        | undefined;
+      const paints = performance.getEntriesByType("paint");
+      const fcp =
+        paints.find((entry) => entry.name === "first-contentful-paint")?.startTime ?? null;
+      const lcpValue = lcp.entries[lcp.entries.length - 1]?.startTime ?? null;
+      // CLS per the current (2021+) definition Lighthouse scores against: the max
+      // session window (5s cap, 1s entry gap), not a lifetime sum — a page with
+      // continuous small shifts would otherwise accumulate far past the real value.
+      const clsShifts = shifts.entries
+        .map((entry) => entry as PerformanceEntry & { value?: number; hadRecentInput?: boolean })
+        .filter((shift) => !shift.hadRecentInput && (shift.value ?? 0) > 0)
+        .sort((left, right) => left.startTime - right.startTime);
+      let cls = 0;
+      let windowSum = 0;
+      let windowStart = 0;
+      let prevShiftTime = -Infinity;
+      for (const shift of clsShifts) {
+        if (shift.startTime - prevShiftTime > 1000 || shift.startTime - windowStart > 5000) {
+          windowSum = 0;
+          windowStart = shift.startTime;
+        }
+        windowSum += shift.value ?? 0;
+        prevShiftTime = shift.startTime;
+        if (windowSum > cls) cls = windowSum;
+      }
+      const tbt = tasks.entries.reduce((sum, entry) => {
+        if (fcp !== null && entry.startTime < fcp) return sum;
+        return sum + Math.max(0, entry.duration - 50);
+      }, 0);
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+
+      return {
+        ttfb: navigation ? navigation.responseStart : null,
+        domContentLoaded: navigation?.domContentLoadedEventEnd ?? null,
+        loadTime: navigation?.loadEventEnd ?? null,
+        fcp,
+        lcp: lcpValue,
+        cls: Math.round(cls * 1000) / 1000,
+        tbt: Math.round(tbt),
+        resourceCount: resources.length,
+        transferBytes: resources.reduce((sum, r) => sum + (r.transferSize || 0), 0),
+      };
+    }),
+  ).catch((error) => {
+    metricsError = clampString(error instanceof Error ? error.message : String(error), 300);
+    return null;
+  });
+
+  const checks = await withDeadline("collect document checks", 12000, () =>
+    page.evaluate(() => {
+      const images = [...document.querySelectorAll("img")];
+      const missingAlt = images.filter((img) => !img.hasAttribute("alt")).length;
+      const httpsPage = location.protocol === "https:";
+      const insecureResources = httpsPage
+        ? performance
+            .getEntriesByType("resource")
+            .filter((entry) => entry.name.startsWith("http://")).length
+        : 0;
+      return {
+        htmlLang: !!document.documentElement.getAttribute("lang"),
+        title: !!document.title.trim(),
+        metaViewport: !!document.querySelector('meta[name="viewport"]'),
+        metaDescription: !!(
+          document
+            .querySelector('meta[name="description"]')
+            ?.getAttribute("content") ?? ""
+        ).trim(),
+        hasDoctype: !!document.doctype,
+        httpsPage,
+        insecureResources,
+        imagesTotal: images.length,
+        imagesMissingAlt: missingAlt,
+      };
+    }),
+  ).catch((error) => {
+    checksError = clampString(error instanceof Error ? error.message : String(error), 300);
+    return null;
+  });
+
+  const failedRequests = requests.filter(
+    (request) => request.status === null || request.status >= 400,
+  ).length;
+  const consoleErrors = consoleCapture.errors.length;
+
+  const audits: AuditEntry[] = [];
+  const scores: Record<"performance" | "accessibility" | "bestPractices" | "seo", number | null> = {
+    performance: null,
+    accessibility: null,
+    bestPractices: null,
+    seo: null,
+  };
+
+  if (params.categories.includes("performance") && metrics) {
+    const curves = PERF_CURVES[params.strategy];
+    const metricAudits: Array<{ id: string; title: string; key: keyof typeof curves; value: number | null; display: string | null }> = [
+      { id: "first-contentful-paint", title: "First Contentful Paint", key: "fcp", value: metrics.fcp, display: formatMs(metrics.fcp) },
+      { id: "largest-contentful-paint", title: "Largest Contentful Paint", key: "lcp", value: metrics.lcp, display: formatMs(metrics.lcp) },
+      { id: "total-blocking-time", title: "Total Blocking Time", key: "tbt", value: metrics.tbt, display: formatMs(metrics.tbt) },
+      { id: "cumulative-layout-shift", title: "Cumulative Layout Shift", key: "cls", value: metrics.cls, display: metrics.cls === null ? null : String(metrics.cls) },
+    ];
+    let weightSum = 0;
+    let weighted = 0;
+    for (const metric of metricAudits) {
+      const curve = curves[metric.key];
+      const score =
+        metric.value === null ? null : Math.round(logNormalScore(curve.p10, curve.median, metric.value) * 100);
+      if (score !== null) {
+        weightSum += curve.weight;
+        weighted += score * curve.weight;
+      }
+      audits.push({
+        id: metric.id,
+        title: metric.title,
+        score,
+        scoreDisplayMode: "numeric",
+        displayValue: metric.display,
+        description: null,
+      });
+    }
+    scores.performance = weightSum > 0 ? Math.round(weighted / weightSum) : null;
+    audits.push(
+      { id: "server-response-time", title: "Time to First Byte", score: null, scoreDisplayMode: "informative", displayValue: formatMs(metrics.ttfb), description: null },
+      { id: "page-weight", title: "Subresource transfer size", score: null, scoreDisplayMode: "informative", displayValue: `${Math.round(metrics.transferBytes / 1024)} KB across ${metrics.resourceCount} requests`, description: null },
+    );
+  }
+
+  const binary = (pass: boolean) => (pass ? 100 : 0);
+  const pushChecks = (
+    category: "accessibility" | "bestPractices" | "seo",
+    entries: Array<AuditEntry | null>,
+  ) => {
+    const kept = entries.filter((entry): entry is AuditEntry => entry !== null);
+    const scored = kept.filter((entry) => entry.score !== null);
+    if (scored.length > 0) {
+      scores[category] = Math.round(
+        scored.reduce((sum, entry) => sum + (entry.score ?? 0), 0) / scored.length,
+      );
+    }
+    audits.push(...kept);
+  };
+
+  if (params.categories.includes("accessibility") && checks) {
+    pushChecks("accessibility", [
+      { id: "html-has-lang", title: "<html> element has a lang attribute", score: binary(checks.htmlLang), scoreDisplayMode: "binary", displayValue: null, description: "Screen readers use the lang attribute to pick the right pronunciation." },
+      { id: "document-title", title: "Document has a title", score: binary(checks.title), scoreDisplayMode: "binary", displayValue: null, description: "The title names the page for assistive technology and tabs." },
+      checks.imagesTotal > 0
+        ? { id: "image-alt", title: "Images have alt attributes", score: binary(checks.imagesMissingAlt === 0), scoreDisplayMode: "binary", displayValue: `${checks.imagesTotal - checks.imagesMissingAlt}/${checks.imagesTotal} images`, description: "Images without alt text are invisible to screen readers." }
+        : null,
+    ]);
+  }
+
+  if (params.categories.includes("best-practices") && checks) {
+    pushChecks("bestPractices", [
+      { id: "uses-https", title: "Page is served over HTTPS", score: binary(checks.httpsPage), scoreDisplayMode: "binary", displayValue: null, description: "Serve all pages over HTTPS." },
+      { id: "no-mixed-content", title: "No insecure (http://) subresources", score: binary(checks.insecureResources === 0), scoreDisplayMode: "binary", displayValue: checks.insecureResources > 0 ? `${checks.insecureResources} insecure requests` : null, description: "Mixed content is blocked or degraded by browsers." },
+      { id: "errors-in-console", title: "No browser errors in the console", score: binary(consoleErrors === 0), scoreDisplayMode: "binary", displayValue: consoleErrors > 0 ? `${consoleErrors} errors` : null, description: "Console errors usually indicate real page faults." },
+      { id: "no-failed-requests", title: "No failed network requests", score: binary(failedRequests === 0), scoreDisplayMode: "binary", displayValue: failedRequests > 0 ? `${failedRequests} failed requests` : null, description: "4xx/5xx or aborted subresources point at broken assets or endpoints." },
+      { id: "doctype", title: "Page has an HTML doctype", score: binary(checks.hasDoctype), scoreDisplayMode: "binary", displayValue: null, description: "A missing doctype triggers quirks mode." },
+    ]);
+  }
+
+  if (params.categories.includes("seo") && checks) {
+    pushChecks("seo", [
+      { id: "document-title", title: "Document has a title", score: binary(checks.title), scoreDisplayMode: "binary", displayValue: null, description: "Titles are the primary search-result headline." },
+      { id: "meta-description", title: "Document has a meta description", score: binary(checks.metaDescription), scoreDisplayMode: "binary", displayValue: null, description: "Meta descriptions feed search-result snippets." },
+      { id: "viewport", title: "Page has a viewport meta tag", score: binary(checks.metaViewport), scoreDisplayMode: "binary", displayValue: null, description: "Without a viewport tag, mobile browsers render at desktop width." },
+    ]);
+  }
+
+  return {
+    scores,
+    ...boundAudits(audits),
+    fetchTime: new Date().toISOString(),
+    url: clampString(page.url(), 2000),
+    engine: "local" as const,
+    // Performance uses Lighthouse's own scoring curves on measured lab values (no
+    // Speed Index, no throttling); category checks are a small deterministic subset
+    // of Lighthouse's audit set. Directionally comparable, not score-identical.
+    scoresApproximate: true,
+    strategy: params.strategy,
+    metrics,
+    ...(metricsError ? { metricsError } : {}),
+    ...(checksError ? { checksError } : {}),
+  };
 }
 
 async function fillField(
@@ -993,70 +1485,53 @@ defineFn(
   async (context, rawParams) => {
     assertNoContext(context, "run-lighthouse");
     const params = lighthouseParamsSchema.parse(rawParams);
-    return withPuppeteerPage(context.session.connectUrl, async (page) => {
-      // NOTE: lighthouse currently fails in the Function sandbox with an uncatchable process-level
-      // exit (no rejected promise reaches a try/catch here; the invocation dies as WORKLOAD_ERROR
-      // within ~13s). Diagnosed 2026-08-17 as a serverless resource limit (probable OOM running the
-      // full audit) — not fixable from function code, since the SDK exposes no memory/timeout knob.
-      // Pre-existing and independent of the 2026-08 bug fixes. For basic load timing, use
-      // check-page-health (returns navigation metrics). Revisit if the platform raises Function
-      // memory or exposes a config for it.
-      const runnerResult = await lighthouse(
-        params.url,
-        {
-          disableStorageReset: true,
-          logLevel: "error",
-          onlyCategories: params.categories,
-        },
-        desktopConfig,
-        page,
-      );
+    // The zod default fires only when the key is absent; an explicit [] (a wire form
+    // the dispatch wrapper can produce) must mean "all four", identically on both
+    // engines — PSI would otherwise apply Google's own default while local audits none.
+    if (params.categories.length === 0) {
+      params.categories = ["performance", "accessibility", "best-practices", "seo"];
+    }
 
-      if (!runnerResult) {
-        throw new Error("Lighthouse did not return a result");
+    // Don't ship signed/tokenized URLs to Google by default; audit them in-sandbox.
+    if (params.engine === "auto" && urlLooksCredentialBearing(params.url)) {
+      return withPlaywrightPage(context.session.connectUrl, undefined, async (page) => ({
+        ...(await runLocalLighthouseAudit(page, params)),
+        note:
+          "URL query looks credential-bearing (signed/tokenized); PSI was skipped so the " +
+          'URL is not sent to Google. Pass engine:"psi" to override.',
+      }));
+    }
+
+    // The in-process Lighthouse harness is never attempted: it OOMs the Function
+    // sandbox with an uncatchable process exit (WORKLOAD_ERROR, 2026-08-17), which
+    // kills the invocation before any fallback could run. See the engine block above.
+    if (params.engine !== "local") {
+      try {
+        return await runPsiLighthouse(params);
+      } catch (error) {
+        if (params.engine === "psi") {
+          throw new Error(
+            `psi_engine_failed: ${error instanceof Error ? error.message : String(error)}. ` +
+              `PSI runs real Lighthouse on Google's servers and only reaches public URLs; ` +
+              `the keyless quota is shared and often exhausted — pass psiApiKey (a free ` +
+              `Google API key) to make it dependable, or retry with engine:"local"/"auto" ` +
+              `for the in-sandbox audit.`,
+          );
+        }
+        const psiError = clampString(
+          error instanceof Error ? error.message : String(error),
+          300,
+        );
+        return withPlaywrightPage(context.session.connectUrl, undefined, async (page) => ({
+          ...(await runLocalLighthouseAudit(page, params)),
+          note: `PSI engine unavailable (${psiError}); fell back to the in-sandbox audit.`,
+        }));
       }
+    }
 
-      const lhr = runnerResult.lhr;
-      const auditIds = [
-        ...new Set(
-          params.categories.flatMap(
-            (category) => lhr.categories[category]?.auditRefs.map((auditRef) => auditRef.id) ?? [],
-          ),
-        ),
-      ];
-
-      const audits = auditIds
-        .map((auditId) => {
-          const audit = lhr.audits[auditId];
-
-          if (!audit) {
-            return null;
-          }
-
-          return {
-            id: auditId,
-            title: audit.title,
-            score: audit.score === null ? null : Math.round(audit.score * 100),
-            scoreDisplayMode: audit.scoreDisplayMode,
-            displayValue: audit.displayValue ?? null,
-            description: audit.description,
-          };
-        })
-        .filter((audit): audit is NonNullable<typeof audit> => audit !== null)
-        .sort((left, right) => (left.score ?? 101) - (right.score ?? 101));
-
-      return {
-        scores: {
-          performance: getCategoryScore(lhr.categories.performance),
-          accessibility: getCategoryScore(lhr.categories.accessibility),
-          bestPractices: getCategoryScore(lhr.categories["best-practices"]),
-          seo: getCategoryScore(lhr.categories.seo),
-        },
-        audits,
-        fetchTime: lhr.fetchTime,
-        url: lhr.finalUrl ?? params.url,
-      };
-    });
+    return withPlaywrightPage(context.session.connectUrl, undefined, (page) =>
+      runLocalLighthouseAudit(page, params),
+    );
   },
   {
     parametersSchema: lighthouseParamsSchema,
@@ -1194,6 +1669,7 @@ const REDACTED_HEADERS = new Set([
 const REDACTED_BODY_KEYS = new Set([
   "password", "token", "apikey", "api_key", "secret", "sessionid", "session_id",
   "authtoken", "auth_token", "bearer", "credentials", "credential", "otp", "pin",
+  "psiapikey",
   // OAuth / JWT flow keys — missing in the prior set, Codex flagged
   "access_token", "accesstoken", "refresh_token", "refreshtoken",
   "id_token", "idtoken", "client_secret", "clientsecret",
@@ -1204,7 +1680,7 @@ const REDACTED_QUERY_KEYS = [
   "password", "token", "apikey", "api_key", "secret", "sessionid", "session_id",
   "authtoken", "auth_token", "bearer", "otp", "pin", "credentials",
   "access_token", "refresh_token", "id_token", "client_secret",
-  "authorization_code", "code",
+  "authorization_code", "code", "psiapikey",
 ];
 
 function redactString(input: string): string {
